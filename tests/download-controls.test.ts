@@ -26,7 +26,7 @@ describe('download controls',()=>{
       await downloads.add(items);await vi.waitFor(()=>expect(started).toBe(1))
       const ids=downloads.snapshot().entries.map(e=>e.id)
       expect((await downloads.batch(ids,'pause')).failed).toEqual([])
-      expect(downloads.snapshot().entries.every(e=>e.status==='paused')).toBe(true)
+      expect(downloads.snapshot().entries.map(e=>({status:e.status,error:e.error}))).toEqual([{status:'paused',error:'Paused. Retry restarts this download.'},{status:'paused',error:undefined}])
       expect(fetchMock).toHaveBeenCalledTimes(1)
       // An immediate resume waits for cancellation/cleanup rather than losing the command.
       slow=false;await downloads.batch(ids,'retry')

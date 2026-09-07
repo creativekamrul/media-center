@@ -78,7 +78,7 @@ export class Downloads extends EventEmitter {
     if (!actual) return
     const root = await realpath(this.root)
     if (!actual.toLowerCase().startsWith((root + sep).toLowerCase()) || resolve(dir).toLowerCase() !== actual.toLowerCase()) throw new Error('Download directory escapes its storage folder.')
-    await rm(dir, { recursive: true, force: true })
+    await rm(dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
   }
   async action(id: string, action: 'pause' | 'retry' | 'remove') {
     const result = await this.batch([id], action)
@@ -142,7 +142,10 @@ export class Downloads extends EventEmitter {
           if (Date.now()-lastUpdate > 500) { lastUpdate = Date.now(); this.persist() }
           callback(null, chunk)
         } })
-        await pipeline(Readable.fromWeb(response.body as never), meter, createWriteStream(destination+'.part'), { signal: controller.signal })
+        const output = createWriteStream(destination+'.part')
+        const closed = new Promise<void>(resolve => output.once('close', resolve))
+        try { await pipeline(Readable.fromWeb(response.body as never), meter, output, { signal: controller.signal }) }
+        finally { await closed } // On cancellation, Windows may still hold the file after pipeline rejects.
         if (!bytes || (length && bytes !== length)) throw new Error('Download was incomplete. Retry to download again.')
         await rename(destination+'.part', destination)
         entry.files.push({ name: `${index}.audio`, startOffset: file.startOffset, duration: file.duration, bytes })

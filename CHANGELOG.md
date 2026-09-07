@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.4
+
+- Wait for the download output stream to close before deleting partial files after cancellation; retry transient Windows file locks during cleanup.
+- Includes the chart, selection, pause/resume, and simplified-card changes listed under 0.3.3. The v0.3.3 tag remains an implementation snapshot; its release stopped at a Windows cancellation regression before publication.
+
 ## 0.3.3
 
 - Fix the listening graph with 30 calendar-day slots, zero-activity days, date and time labels, hover values, and an empty state. One listening day is now one narrow bar.

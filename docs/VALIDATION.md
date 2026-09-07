@@ -1,4 +1,4 @@
-# Validation — 0.3.3
+# Validation — 0.3.4
 
 Validation date: 2026-09-08. Supported target: Windows x64.
 
@@ -8,7 +8,7 @@ Validation date: 2026-09-08. Supported target: Windows x64.
 - 70 unit/regression tests cover domain separation, whole-book timelines, exact episode routes, provider transport, playlist duplicate ordering, catalog pagination, status filters, local metadata/path containment, queue edits, buffering-aware listening time, MPV readiness, update actions and installation preparation.
 - Real NSIS updater tests verify manual downloads, matching SHA-512 checksums, corrupt-file rejection, same/older version rejection, and disabled installation on quit. Downloads use inert fixture files and never execute an installer. See `artifacts/updater-smoke.json` after running `npm run test:updater`.
 - Source-build native desktop integration passes with no renderer exceptions. The test uses isolated Navidrome and Audiobookshelf fixture servers, encrypted SQLite connections, and muted real MPV.
-- The complete native suite also passes against the packaged 0.3.3 Windows executable using `MEDIA_CENTER_EXECUTABLE`, with no renderer errors. Its outcome is written to `artifacts/packaged-smoke.json`; source results are in `artifacts/desktop-smoke.json`.
+- The complete native suite also passes against the packaged 0.3.4 Windows executable using `MEDIA_CENTER_EXECUTABLE`, with no renderer errors. Its outcome is written to `artifacts/packaged-smoke.json`; source results are in `artifacts/desktop-smoke.json`.
 
 - Calendar regressions cover one-day activity, empty history, month boundaries, and leap years. Download regressions exercise real temporary files and controlled streaming for bulk pause, resume, active removal, and book/episode identity.
 - Desktop checks cover empty/populated charts, partial/all download selection, canceled and confirmed bulk removal, and thin history rows.
