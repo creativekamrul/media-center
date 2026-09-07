@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.5
+
+- Resolve the configured download storage root before checking child paths, allowing valid Windows short paths and folder aliases without allowing redirected download directories.
+- Add regression tests for normal storage, aliased storage, and refusal to remove a directory redirected outside the storage root.
+- Includes the 0.3.3 UI/download changes and 0.3.4 stream-close handling. Neither earlier tag was published: Windows CI blocked them before release while the cleanup issue was investigated.
+
 ## 0.3.4
 
 - Wait for the download output stream to close before deleting partial files after cancellation; retry transient Windows file locks during cleanup.
