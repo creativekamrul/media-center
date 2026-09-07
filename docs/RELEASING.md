@@ -8,7 +8,7 @@ The installer, app interface and Audiobookshelf client identification all use th
 2. Add a matching `## 0.2.2` section to `CHANGELOG.md`, describing the actual changes.
 3. Run `npm run release:check`, `npm test`, `npm run build` and the appropriate desktop checks.
 4. Commit the changes on `main`. Review staged files; do not include media, databases, test profiles, credentials or build output.
-5. Preview with `npm run release -- -DryRun`, then run `npm run release`.
+5. Preview with `npm run release:preview`, then run `npm run release`.
 
 The helper requires GitHub CLI authentication, a clean working tree and an `origin` remote. It refuses existing version tags, creates an annotated tag, and atomically pushes `main` and that tag. It does not commit unreviewed files or move existing tags. If a push fails, inspect the error and retry the existing tag push after resolving it; do not create a different release from the same version.
 

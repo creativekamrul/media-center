@@ -47,7 +47,7 @@ For muted native playback tests, set `MPV_TEST_PATH` to your MPV executable. For
 
 ## Release a version
 
-Update the package version and changelog, run checks, and commit on `main`. Run `npm run release -- -DryRun` to preview, then `npm run release` to push the version tag using your authenticated GitHub CLI. GitHub Actions builds and tests the Windows app before publishing its installer, corresponding source, and checksums. See [the release guide](docs/RELEASING.md) for setup and troubleshooting. Installed versions from 0.2.2 onward can use **Settings → App updates → Check for updates → Download update → Restart and install**. Versions 0.2.1 and earlier need one manual upgrade. Updates use stable releases only; download and installation require your action.
+Update the package version and changelog, run checks, and commit on `main`. Run `npm run release:preview` to preview, then `npm run release` to push the version tag using your authenticated GitHub CLI. GitHub Actions builds and tests the Windows app before publishing its installer, corresponding source, and checksums. See [the release guide](docs/RELEASING.md) for setup and troubleshooting. Installed versions from 0.2.2 onward can use **Settings → App updates → Check for updates → Download update → Restart and install**. Versions 0.2.1 and earlier need one manual upgrade. Updates use stable releases only; download and installation require your action.
 
 ## Playback and privacy
 

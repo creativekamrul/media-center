@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.3
+
+- Added a dedicated `npm run release:preview` command so npm on Windows cannot swallow the preview flag and publish a version accidentally.
+- Retains the in-app GitHub updater introduced in 0.2.2.
+
 ## 0.2.2
 
 - Added Settings → App updates: check GitHub stable releases, download with progress, and restart to install.

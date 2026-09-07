@@ -1,4 +1,7 @@
 param([switch]$DryRun)
+# npm on Windows may consume flags instead of forwarding them to PowerShell.
+# Support its parsed dry-run settings as a fail-safe; release:preview is preferred.
+if ($env:npm_config_dry_run -eq 'true' -or $env:npm_config_dryrun -eq 'true') { $DryRun = $true }
 $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath (Split-Path -Parent $PSScriptRoot)
 function Invoke-Checked([string]$Executable, [string[]]$Arguments) {

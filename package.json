@@ -1,6 +1,6 @@
 {
   "name": "media-center",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "description": "A desktop home for music, audiobooks, and podcasts",
   "author": "Media Center",
@@ -17,7 +17,8 @@
     "release:check": "node scripts/release-check.cjs",
     "release:assets": "node scripts/release-assets.cjs",
     "release": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/publish-version.ps1",
-    "test:updater": "node scripts/test-updater.cjs"
+    "test:updater": "node scripts/test-updater.cjs",
+    "release:preview": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/publish-version.ps1 -DryRun"
   },
   "dependencies": {
     "electron-updater": "^6.8.9",
