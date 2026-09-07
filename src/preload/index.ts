@@ -41,6 +41,7 @@ const api: DesktopAPI = {
   miniPlayer: input => ipcRenderer.invoke('mini:command', input),
   discordSettings: () => ipcRenderer.invoke('discord:get'),
   saveDiscordSettings: input => ipcRenderer.invoke('discord:save', input),
+  retryDiscordArtwork: () => ipcRenderer.invoke('discord:retry-artwork'),
   discordStatus: () => ipcRenderer.invoke('discord:status'),
   onDownloads: listener => { const callback = (_event: unknown, state: import('../shared/daily').DownloadState) => listener(state); ipcRenderer.on('downloads:state', callback); return () => ipcRenderer.removeListener('downloads:state', callback) },
   updateState: () => ipcRenderer.invoke('updates:get'),

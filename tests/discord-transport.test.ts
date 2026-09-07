@@ -15,8 +15,30 @@ class Pipe extends EventEmitter {
   end(){return this}
   destroy(){if(!this.destroyed){this.destroyed=true;this.emit('close')}return this}
 }
-afterEach(()=>{vi.useRealTimers();vi.restoreAllMocks()})
+afterEach(()=>{vi.useRealTimers();vi.restoreAllMocks();vi.unstubAllGlobals()})
 describe('Discord local transport',()=>{
+  it('keeps artwork errors visible after acknowledgements and retries the same track',async()=>{
+    vi.useFakeTimers();const pipe=new Pipe()
+    vi.mocked(createConnection).mockImplementation((()=>{queueMicrotask(()=>pipe.emit('connect'));return pipe}) as unknown as typeof createConnection)
+    const target={kind:'local-file' as const,serverId:'local' as const,rootId:'root',fileId:'track'}
+    const state={...emptyPlayback,status:'playing' as const,kind:'local-file' as const,title:'Track',subtitle:'Artist',duration:90,queue:[{target,title:'Track',subtitle:'Artist'}],queueIndex:0}
+    const settings={...discordDefaults,enabled:true,local:true,applicationId:'123456789012345678'}
+    const cache=new Map<string,{value:unknown;updated:number}>()
+    const store={get:(key:string)=>key==='discordSettings'?settings:undefined,secret:()=> 'a'.repeat(32),cache:(key:string)=>cache.get(key),cacheSet:(key:string,value:unknown)=>cache.set(key,{value,updated:Date.now()})} as unknown as Store
+    const fetcher=vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(JSON.stringify({error:10})))
+    vi.stubGlobal('fetch',fetcher)
+    const rpc=new DiscordPresence(store,{state} as Player,()=>{throw new Error('No provider access expected')},{metadata:async()=>({artist:'Artist',album:'Album',title:'Track'})} as unknown as LocalFiles)
+    const acknowledge=()=>{const activity=JSON.parse(pipe.frames.at(-1)!.subarray(8).toString());pipe.emit('data',rpcFrame(1,{nonce:activity.nonce,data:{}}));return activity}
+    try{
+      await vi.advanceTimersByTimeAsync(1);pipe.emit('data',rpcFrame(1,{evt:'READY'}));await vi.advanceTimersByTimeAsync(1)
+      acknowledge();expect(rpc.status.message).toBe('Connected to Discord.');expect(rpc.status.artworkMessage).toContain('API key')
+      const cover='https://lastfm.freetls.fastly.net/i/u/300x300/album.png'
+      fetcher.mockImplementation(async()=>new Response(JSON.stringify({album:{image:[{'#text':cover,size:'large'}]}})))
+      await vi.advanceTimersByTimeAsync(63000)
+      expect(acknowledge().args.activity.assets.large_image).toBe(cover)
+      expect(rpc.status.artworkMessage).toContain('Album cover found');expect(rpc.status.artwork).toBe(true)
+    }finally{rpc.stop()}
+  })
   it('handles fragmented READY frames, acknowledgement, ping/pong, privacy clearing and reconnect',async()=>{
     vi.useFakeTimers();const pipes:Pipe[]=[]
     vi.mocked(createConnection).mockImplementation((()=>{const pipe=new Pipe();pipes.push(pipe);queueMicrotask(()=>pipe.emit('connect'));return pipe}) as unknown as typeof createConnection)

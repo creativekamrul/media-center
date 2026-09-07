@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.1
+
+- Add Last.fm track matching when an album lookup has no usable cover, including music without an album tag. Preserve explicit album corrections and reject placeholder/private artwork URLs.
+- Retry transient artwork errors on the same track, provide a Retry artwork control, and show connection and artwork status separately so acknowledgements and saved-preference notices do not hide failures.
+- Explain how to rename the Discord application to Media Center in the Developer Portal; the Discord heading is controlled by that application name.
+- Add artwork fallback, cache, privacy, authentication, retry, response-size and Discord acknowledgement regressions.
+
 ## 0.5.0
 
 - Fix nested search-field backgrounds and constrain window scrolling to the content pane, keeping the player anchored at the bottom.

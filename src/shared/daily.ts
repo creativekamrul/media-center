@@ -13,7 +13,7 @@ export interface HomeData { continuing: ContinueItem[]; albums: MusicAlbum[]; ep
 export interface ListeningStats { days: { day: string; seconds: number; music: number; books: number; podcasts: number; local: number }[]; totalSeconds: number; finishedBooks: number; finishedEpisodes: number; top: { title: string; subtitle: string; seconds: number }[] }
 export interface BackupPreview { token: string; queues: number; notes: number; plans: number; rules: number; unmatchedServers: number; unmatchedFolders: number }
 export interface DiscordSettings { enabled: boolean; applicationId: string; music: boolean; books: boolean; podcasts: boolean; local: boolean; showPaused: boolean; hasLastfmKey: boolean }
-export interface DiscordStatus { connected: boolean; message: string; artwork: boolean }
+export interface DiscordStatus { connected: boolean; message: string; artwork: boolean; artworkMessage?: string }
 export interface DailyAPI {
   lyrics(input:{refresh?:boolean}):Promise<import('./lyrics').LyricsResult>
   seekLyric(input:{key:string;time:number}):Promise<void>
@@ -54,6 +54,7 @@ export interface DailyAPI {
   miniPlayer(input: { action: 'open' | 'close' | 'main' | 'pin'; pinned?: boolean }): Promise<{pinned:boolean}>
   discordSettings(): Promise<DiscordSettings>
   saveDiscordSettings(input: Omit<DiscordSettings, 'hasLastfmKey'> & { lastfmKey?: string }): Promise<void>
+  retryDiscordArtwork(): Promise<void>
   discordStatus(): Promise<DiscordStatus>
   correctDiscordArtwork(input: { artist: string; album: string }): Promise<void>
 }

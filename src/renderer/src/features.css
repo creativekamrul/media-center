@@ -2,3 +2,7 @@
 @media(max-width:1150px){.song-row{gap:7px}.song-row>.format{display:none}.song-title strong{font-size:12px}.song-title small{font-size:10px}.expanded-player{gap:23px;grid-template-columns:minmax(220px,.9fr) minmax(290px,1.1fr)}.expanded-art h1{font-size:28px}.local-file-row{gap:10px}.local-file-row>.format{max-width:120px}.listen-actions .secondary,.listen-actions .primary{padding:8px 10px}.music-browser h1,.spoken-browser h1,.local-page h1,.later-page h1{font-size:36px}.plan-card{padding:18px}.engine-card{display:none}}
 
 .library-toolbar>.search{max-width:none;margin-left:0}
+
+.discord-diagnostics { margin: 16px 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; }
+.discord-diagnostics p { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; margin: 0 0 12px; overflow-wrap: anywhere; }
+@media (max-width: 700px) { .discord-diagnostics p { grid-template-columns: 1fr; gap: 4px; } }

@@ -4,6 +4,13 @@ module.exports=async function themeSmoke(page,artifacts){
  const original=await page.evaluate(()=>window.mediaCenter.preferences())
  await page.getByRole('button',{name:'Settings',exact:true}).click()
  await page.locator('.theme-grid').waitFor()
+ await page.locator('.discord-diagnostics').waitFor()
+ assert.match(await page.locator('.discord-diagnostics').innerText(),/Connection[\s\S]*Artwork/)
+ assert.equal(await page.getByRole('button',{name:'Retry artwork',exact:true}).isDisabled(),true)
+ assert.equal((await page.evaluate(()=>window.mediaCenter.discordStatus())).connected,false)
+ assert.match(await page.locator('.settings-panel').filter({has:page.locator('.discord-diagnostics')}).innerText(),/Change Name to Media Center/)
+ await page.locator('.discord-diagnostics').scrollIntoViewIfNeeded()
+ await page.screenshot({path:resolve(artifacts,'discord-settings.png')})
  assert.equal(await page.locator('.theme-swatch').count(),13)
  for(const name of ['Glass','Midnight','Ocean','Rose','Lavender','Ember','Coffee','Nord','Monochrome','Aubergine','Black Glass']){
   await page.getByRole('button',{name,exact:true}).click()

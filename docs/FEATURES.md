@@ -34,7 +34,7 @@ Audiobookshelf search follows its relevance-ranked endpoint, capped at 100 match
 | Selected feature | Implemented scope |
 |---|---|
 | 1 — Discord Rich Presence | Optional own Application ID; local Windows IPC, reconnect, music/book/episode/local privacy switches, pause and speed-adjusted timestamps. Requires live Discord setup to verify a real profile. |
-| 2 — Last.fm artwork | Encrypted user key; album lookup; seven-day positive and one-hour negative cache; per-track artist/album correction; only public Last.fm CDN URLs. Books/podcasts use text-only presence. |
+| 2 — Last.fm artwork | Encrypted user key; album lookup with track fallback; seven-day positive and one-hour negative cache; bounded responses; transient retries and manual refresh; separate artwork diagnostics; per-track artist/album correction; only public Last.fm CDN URLs. Books/podcasts use text-only presence. |
 | 3 — Home | Server Continue Listening with equal-sized fluid cards, recent albums, newest unfinished indexed episodes, Listen Later plans. |
 | 4 — Offline audio | Original music/book/episode files, sequential download queue, quota, pause/resume, bulk pause/resume, item/all selection and confirmed removal, cached covers, offline MPV, retained checkpoints, explicit conflict-checked position sync. Retries restart partial downloads. |
 | 6 — Gapless | Prepares the next music/local track in MPV's internal playlist; waits for its file-loaded event; format changes may reopen the device. Crossfade is not included. |
