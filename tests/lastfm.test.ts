@@ -1,4 +1,5 @@
 import {afterEach,describe,expect,it,vi} from 'vitest'
+import {createHash} from 'node:crypto'
 import {LastfmArtwork,publicArtwork} from '../src/main/lastfm'
 import type {Store} from '../src/main/store'
 
@@ -7,12 +8,46 @@ const metadata={artist:'Shunno',album:'Tagged album',title:'Shono Mohajon'}
 function fixture(){
   const cache=new Map<string,{value:unknown;updated:number}>()
   const store={secret:()=> 'a'.repeat(32),cache:(key:string)=>cache.get(key),cacheSet:(key:string,value:unknown)=>cache.set(key,{value,updated:Date.now()})} as unknown as Store
-  const fetcher=vi.fn<typeof fetch>(),client=new LastfmArtwork(store,fetcher)
-  return {store,cache,fetcher,client}
+  const fetcher=vi.fn<typeof fetch>(),imageFetcher=vi.fn<typeof fetch>().mockImplementation(async()=>new Response(null,{headers:{'content-type':'image/jpeg'}}))
+  const client=new LastfmArtwork(store,(input,init)=>new URL(String(input)).hostname==='ws.audioscrobbler.com'?fetcher(input,init):imageFetcher(input,init))
+  return {store,cache,fetcher,imageFetcher,client}
 }
 const response=(body:unknown)=>new Response(JSON.stringify(body),{headers:{'content-type':'application/json'}})
 afterEach(()=>{vi.useRealTimers();vi.restoreAllMocks()})
 describe('Last.fm artwork lookup',()=>{
+  it('checks a missing current-CDN cover at the same path on the legacy CDN without credentials',async()=>{
+    const {client,fetcher,imageFetcher}=fixture()
+    const currentCover=cover.replace('lastfm.','lastfm-img.')
+    fetcher.mockResolvedValueOnce(response({album:{image:[{'#text':currentCover,size:'mega'}]}}))
+    imageFetcher.mockResolvedValueOnce(new Response(null,{status:404}))
+    expect((await client.lookup({...metadata,corrected:true})).url).toBe(cover)
+    expect(imageFetcher.mock.calls.map(call=>call[0])).toEqual([currentCover,cover])
+    for(const [,options] of imageFetcher.mock.calls){expect(options?.credentials).toBe('omit');expect(options?.redirect).toBe('error');expect(options?.headers).toBeUndefined()}
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+  it('does not send nonexistent covers or cache image server failures as missing matches',async()=>{
+    const {client,fetcher,imageFetcher,cache}=fixture()
+    const currentCover=cover.replace('lastfm.','lastfm-img.')
+    fetcher.mockImplementation(async()=>response({album:{image:[{'#text':currentCover,size:'mega'}]}}))
+    imageFetcher.mockImplementation(async()=>new Response(null,{status:404}))
+    expect((await client.lookup({...metadata,corrected:true})).url).toBeUndefined()
+    expect(imageFetcher).toHaveBeenCalledTimes(2)
+    cache.clear();imageFetcher.mockResolvedValueOnce(new Response(null,{status:503}))
+    await expect(client.lookup(metadata)).rejects.toThrow('artwork server failed');expect(cache.size).toBe(0)
+    client.reset();imageFetcher.mockResolvedValueOnce(new Response('<html>Not an image</html>',{headers:{'content-type':'text/html'}}))
+    await expect(client.lookup(metadata)).rejects.toThrow('unsupported image');expect(cache.size).toBe(0)
+  })
+  it('accepts the current Last.fm image CDN for a corrected album and bypasses old cached misses',async()=>{
+    const {client,fetcher,cache}=fixture()
+    const corrected={artist:'Pritam',album:'Ae Dil Hai Mushkil (Original Motion Picture Soundtrack) [Deluxe Edition]',title:'Ae Dil Hai Mushkil (Title Track)',corrected:true}
+    const currentCover='https://lastfm-img.freetls.fastly.net/i/u/300x300/98a9460a6ebe178b5524ac41d5bbfda4.jpg'
+    const oldKey='lastfm:v2:'+createHash('sha256').update(JSON.stringify(corrected)).digest('hex')
+    cache.set(oldKey,{value:{message:'No public cover found'},updated:Date.now()})
+    fetcher.mockResolvedValueOnce(response({album:{image:[{'#text':currentCover.replace('300x300','34s'),size:'small'},{'#text':currentCover,size:'mega'}]}}))
+    expect((await client.lookup(corrected)).url).toBe(currentCover)
+    expect((await client.lookup(corrected)).url).toBe(currentCover)
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
   it('prefers the largest album image and caches without storing an API key',async()=>{
     const {client,fetcher,cache}=fixture()
     fetcher.mockResolvedValue(response({album:{image:[{'#text':cover,size:'extralarge'},{'#text':cover.replace('300x300','34s'),size:'small'}]}}))

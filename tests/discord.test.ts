@@ -17,6 +17,16 @@ describe('Discord presence privacy and artwork',()=>{
     expect(publicArtwork(art)).toBe(art);expect(presence(playing,settings,art)?.assets?.large_image).toBe(art)
     for(const url of ['https://private.test/cover?token=secret','file:///C:/music/cover.jpg','http://lastfm.freetls.fastly.net/image','https://lastfm.freetls.fastly.net/image?token=secret','https://user:pass@lastfm.freetls.fastly.net/image','https://lastfm.freetls.fastly.net.attacker.test/image']){expect(publicArtwork(url)).toBeUndefined();expect(presence(playing,settings,url)?.assets).toBeUndefined()}
   })
+  it('sends the current Last.fm CDN cover while rejecting lookalike hosts and unsafe URL variants',()=>{
+    const art='https://lastfm-img.freetls.fastly.net/i/u/300x300/98a9460a6ebe178b5524ac41d5bbfda4.jpg'
+    expect(presence(playing,settings,art)?.assets?.large_image).toBe(art)
+    for(const url of [
+      art.replace('https:','http:'),art.replace('.net/','.net.attacker.test/'),
+      art.replace('lastfm-img.','other.'),art.replace('https://','https://user:pass@'),
+      art.replace('.net/','.net:444/'),art+'?token=secret',art+'#fragment',
+      art.replace('98a9460a6ebe178b5524ac41d5bbfda4','2a96cbd8b46e442fc41c2b86b821562f')
+    ])expect(presence(playing,settings,url)?.assets).toBeUndefined()
+  })
   it('validates configuration without accepting a bot token',()=>{
     const {hasLastfmKey:_,...base}=discordDefaults
     expect(discordSchema.safeParse(base).success).toBe(true);expect(discordSchema.safeParse({...base,enabled:true}).success).toBe(false);expect(discordSchema.safeParse({...base,applicationId:'abc'}).success).toBe(false);expect(discordSchema.safeParse({...base,botToken:'no'}).success).toBe(false)

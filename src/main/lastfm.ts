@@ -6,7 +6,7 @@ export function publicArtwork(value:string):string|undefined {
   try {
     const url=new URL(value)
     if(url.protocol==='https:'&&!url.username&&!url.password&&!url.port&&!url.search&&!url.hash&&
-      ['lastfm.freetls.fastly.net','lastfm-img2.akamaized.net'].includes(url.hostname)&&
+      ['lastfm-img.freetls.fastly.net','lastfm.freetls.fastly.net','lastfm-img2.akamaized.net'].includes(url.hostname)&&
       !url.pathname.toLowerCase().includes('2a96cbd8b46e442fc41c2b86b821562f'))return url.href
   }catch{}
 }
@@ -29,15 +29,16 @@ export class LastfmArtwork {
     const apiKey=this.store.secret('lastfm')
     if(!apiKey)return {message:'Add a Last.fm API key to look up album covers.'}
     if(!metadata.artist.trim()||(!metadata.album.trim()&&!metadata.title.trim()))return {message:'Artwork needs an artist and an album or track title in the audio tags.'}
-    const key='lastfm:v2:'+createHash('sha256').update(JSON.stringify(metadata)).digest('hex')
+    // Older lookups cached misses when Last.fm returned its current image CDN.
+    const key='lastfm:v3:'+createHash('sha256').update(JSON.stringify(metadata)).digest('hex')
     const cached=this.store.cache<ArtworkResult>(key)
     if(!refresh&&cached&&Date.now()-cached.updated<(cached.value.url?604800000:3600000)&&(!cached.value.url||publicArtwork(cached.value.url)))return cached.value
     if(this.retryAt>Date.now())throw new Error(this.error)
     try {
       let url:string|undefined,source='album'
-      if(metadata.album.trim())url=bestImage((await this.request('album.getInfo',{artist:metadata.artist,album:metadata.album},apiKey))?.album?.image)
+      if(metadata.album.trim())url=await this.resolveImage((await this.request('album.getInfo',{artist:metadata.artist,album:metadata.album},apiKey))?.album?.image)
       // A deliberate album correction must not silently fall back to a different release.
-      if(!url&&metadata.title.trim()&&!metadata.corrected){source='track';url=bestImage((await this.request('track.getInfo',{artist:metadata.artist,track:metadata.title},apiKey))?.track?.album?.image)}
+      if(!url&&metadata.title.trim()&&!metadata.corrected){source='track';url=await this.resolveImage((await this.request('track.getInfo',{artist:metadata.artist,track:metadata.title},apiKey))?.track?.album?.image)}
       const result:ArtworkResult=url?{url,message:`Album cover found through Last.fm ${source} matching. Discord controls when the image appears.`}:{message:'No public cover found on Last.fm for this track. Try correcting the album match below.'}
       this.store.cacheSet(key,result)
       return result
@@ -45,6 +46,26 @@ export class LastfmArtwork {
       const message=e instanceof Error&&e.message.startsWith('Last.fm ')?e.message:'Last.fm could not be reached or returned an unsupported response. Check your connection and retry.'
       this.error=message;this.retryAt=Date.now()+60000
       throw new Error(message)
+    }
+  }
+  private async resolveImage(items:z.infer<typeof images>=[]):Promise<string|undefined> {
+    const image=bestImage(items)
+    if(!image)return undefined
+    const candidates=[image],url=new URL(image)
+    // Some API covers are missing on the current CDN but exist at the same
+    // public path on Last.fm's older CDN. Probe both without sending API keys.
+    if(url.hostname==='lastfm-img.freetls.fastly.net'){
+      url.hostname='lastfm.freetls.fastly.net';candidates.push(url.href)
+    }
+    for(const candidate of candidates){
+      const response=await this.fetcher(candidate,{signal:AbortSignal.timeout(8000),redirect:'error',credentials:'omit'})
+      // GET checks the URL Discord will fetch; cancel immediately after headers.
+      await response.body?.cancel()
+      if(response.status===404||response.status===410)continue
+      if(response.status===429)throw new Error('Last.fm artwork is rate limited. Try again in a minute.')
+      if(!response.ok)throw new Error(`Last.fm artwork server failed (HTTP ${response.status}). Try again shortly.`)
+      if(!/^image\/(jpeg|png|webp|gif|avif)(?:\s*;|$)/i.test(response.headers.get('content-type')??''))throw new Error('Last.fm artwork server returned an unsupported image response. Try again shortly.')
+      return candidate
     }
   }
   private async request(method:string,params:Record<string,string>,apiKey:string) {

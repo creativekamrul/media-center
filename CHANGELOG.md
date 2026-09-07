@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.2
+
+- Accept Last.fm's current `lastfm-img.freetls.fastly.net` artwork CDN. Valid covers from this host were incorrectly reported as missing and omitted from Discord presence.
+- Check image responses before sending artwork to Discord. When a current-CDN image returns 404/410, try the same public image path on Last.fm's older CDN; keep image service failures distinct from missing matches.
+- Invalidate earlier artwork lookup caches so a cached miss does not hide a newly supported cover. Preserve HTTPS, exact-host, placeholder, and credential checks.
+- Add regressions for the corrected Pritam album response, old cached misses, and Discord artwork URL validation.
+
 ## 0.6.1
 
 - Read structured Last.fm API errors on HTTP 400/403/404 responses. A missing-album API error can now continue to track matching instead of stopping with a generic HTTP 404 error.

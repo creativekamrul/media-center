@@ -32,8 +32,8 @@ describe('Discord local transport',()=>{
     try{
       await vi.advanceTimersByTimeAsync(1);pipe.emit('data',rpcFrame(1,{evt:'READY'}));await vi.advanceTimersByTimeAsync(1)
       acknowledge();expect(rpc.status.message).toBe('Connected to Discord.');expect(rpc.status.artworkMessage).toContain('API key')
-      const cover='https://lastfm.freetls.fastly.net/i/u/300x300/album.png'
-      fetcher.mockImplementation(async()=>new Response(JSON.stringify({album:{image:[{'#text':cover,size:'large'}]}})))
+      const cover='https://lastfm-img.freetls.fastly.net/i/u/300x300/album.png'
+      fetcher.mockImplementation(async(input)=>new URL(String(input)).hostname==='ws.audioscrobbler.com'?new Response(JSON.stringify({album:{image:[{'#text':cover,size:'large'}]}})):new Response(null,{headers:{'content-type':'image/png'}}))
       await vi.advanceTimersByTimeAsync(63000)
       expect(acknowledge().args.activity.assets.large_image).toBe(cover)
       expect(rpc.status.artworkMessage).toContain('Album cover found');expect(rpc.status.artwork).toBe(true)

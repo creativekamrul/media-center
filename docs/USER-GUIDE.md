@@ -84,6 +84,8 @@ Preview a backup before restoring. Connect matching servers with the same base U
 
 ## Discord and Last.fm
 
+Version 0.6.2 supports Last.fm's current image host and checks cover availability before sending it to Discord. If that host returns a missing image, the app checks the same public image on Last.fm's older CDN. Earlier cached misses are refreshed automatically. Keep a saved album correction if it matches the intended release; use Retry artwork to request a fresh lookup. A successful artwork status means a reachable image was selected, while Discord controls its final display.
+
 Discord integration is optional and off initially. Create an application in the [Discord Developer Portal](https://discord.com/developers/applications), name it Media Center, and copy the numeric Application ID from General Information. No bot token or client secret is needed. Keep the Discord desktop app open, enable activity sharing in Discord, and save the Application ID in this app's Settings before enabling presence.
 
 Choose which media types to share. Music is selected initially; books, podcasts, and local files are private unless enabled. Pause handling is configurable. Disconnects are retried automatically. Media Center only updates your activity; it does not send Discord chat messages.
