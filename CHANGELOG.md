@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.2
+
+- Shrink Home album cards to a bounded 180-pixel width and keep long titles and fallback artwork compact. Sparse sections no longer expand their cards to fill the window.
+- Make Home and library Continue listening cards shorter, with aligned progress and one row of accessible icon actions. Play remains visually prominent.
+- Reduce collection header artwork and spacing; group Export, Edit, and Delete playlist controls together.
+- Fix undersized listening-note search fields and allow long introductory copy to wrap.
+- Add Electron layout coverage for long titles, sparse collections, control hit areas, and search fields at 1008, 1440, and 1920 pixels across both themes.
+
 ## 0.3.1
 
 - Keep playlist playback actions aligned at the smallest Windows content width by showing Download as an accessible icon button there.

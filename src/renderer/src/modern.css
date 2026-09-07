@@ -29,3 +29,37 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .mini-controls .play-main{background:var(--accent,#e8c2a8);color:#1b241c}.mini-controls .play-main:hover{filter:brightness(1.1)}
 
 @media(max-width:1150px){.listen-actions button[aria-label="Download selection"] .action-label{display:none}.listen-actions button[aria-label="Download selection"]{width:42px;min-width:42px;padding-inline:0;justify-content:center}}
+
+/* Browsing cards stay compact even when a section contains only one item. */
+.home-album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,180px));gap:16px}
+.daily-card.home-album-card{display:flex;flex-direction:column;padding:12px;border-radius:14px}
+.home-album-card>.art{width:100%;border-radius:9px;margin-bottom:10px}
+.home-album-card .art strong{font-size:18px;line-height:1.15;padding:0 12px;margin:10px 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.home-album-card h3,.resume-card h3{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;font-size:15px;line-height:1.4;min-height:42px;margin:0 0 4px}
+.home-album-card p,.resume-card p{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;line-height:20px;margin:0}
+.home-album-card>button.primary{align-self:flex-start;margin-top:12px;min-height:36px;padding:7px 12px;font-size:13px}
+.home-continue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,270px));gap:12px}
+.daily-card.resume-card,.continue-grid article.resume-card{display:flex;flex-direction:column;align-items:stretch;min-width:0;padding:14px;border-radius:14px}
+.continue-grid{gap:12px;align-items:flex-start;scrollbar-width:thin}
+.continue-grid article.resume-card{flex:0 0 250px}
+.resume-card .daily-status,.resume-card .progress-badge{align-self:flex-start;border:0;border-radius:999px;padding:4px 9px;margin:0 0 9px;font-size:12px;line-height:18px}
+.resume-card .daily-meter,.resume-card>progress{width:100%;height:4px;margin:10px 0 8px;flex-shrink:0}
+.resume-card .listen-actions.compact{gap:5px;margin:0;min-height:36px}
+.resume-card .listen-actions.compact button[aria-label="Play selection"]{background:var(--accent,#e8c2a8);color:#1b241c}
+.resume-card .listen-actions.compact button[aria-label="Download selection"]{width:36px;min-width:36px;padding:0}
+
+/* Search fields and long copy must fit the content column. */
+.daily-controls>input{width:360px;max-width:100%;min-width:0;min-height:42px;padding:10px 14px;font-size:14px;border:1px solid #637469;border-radius:12px;background:var(--bg,#121716);color:var(--text,#edf0e7)}
+.daily-controls>select{max-width:100%;min-height:42px;padding:8px 12px;font-size:14px}
+.page-intro{white-space:normal;overflow-wrap:anywhere;line-height:1.65}
+.daily-row h3{overflow-wrap:anywhere}
+
+.detail-hero{padding:20px;gap:24px;margin-bottom:24px}
+.detail-hero>.art{width:140px}
+.detail-hero .art strong{font-size:16px;line-height:1.2;padding:0 8px;margin:8px 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.detail-hero h1,.detail-hero h2{font:500 clamp(28px,2.5vw,36px)/1.15 Georgia,serif;margin:6px 0 10px}
+.detail-hero .listen-actions{margin:14px 0 0;gap:8px}
+.collection-management{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.collection-management:empty{display:none}
+.collection-management button.secondary{min-height:36px;padding:7px 13px;font-size:13px}
+@media(max-width:1150px){.detail-hero{gap:18px;padding:18px}.detail-hero>.art{width:112px}.detail-hero .listen-actions{gap:6px}}

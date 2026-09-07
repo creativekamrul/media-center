@@ -59,7 +59,7 @@ async function main() {
       if (url.pathname.includes('getGenres')) data.genres = { genre: [{ value: 'Jazz', songCount: 1, albumCount: 1 }] }
       if (url.pathname.includes('getInternetRadioStations')) data.internetRadioStations = { internetRadioStation: [] }
       if (url.pathname.includes('getMusicFolders')) data.musicFolders = { musicFolder: [{ id: '1', name: 'Test Music' }] }
-      if (url.pathname.includes('getAlbumList2') || url.pathname.includes('search3')) data[url.pathname.includes('search3') ? 'searchResult3' : 'albumList2'] = { album: [...Array.from({length:24},(_,i)=>({id:'archive-'+i,name:'Archive recording '+(i+1),artist:'Fixture Artist',songCount:1,year:2025})), { id: 'album', name: 'The Test Album', artist: 'Test Artist', songCount: 1, year: 2026 }] }
+      if (url.pathname.includes('getAlbumList2') || url.pathname.includes('search3')) data[url.pathname.includes('search3') ? 'searchResult3' : 'albumList2'] = { album: [...Array.from({length:24},(_,i)=>({id:'archive-'+i,name:i===0?'A very long album title with multiple movements (Original Motion Picture Soundtrack)':'Archive recording '+(i+1),artist:'Fixture Artist',songCount:1,year:2025})), { id: 'album', name: 'The Test Album', artist: 'Test Artist', songCount: 1, year: 2026 }] }
       if (url.pathname.includes('getAlbum.view')) data.album = { id: 'album', name: 'The Test Album', artist: 'Test Artist', songCount: 1, song: [{ id: 'song', title: 'Original Audio', artist: 'Test Artist', duration: 300, suffix: 'flac', samplingRate: 96000, bitDepth: 24 }] }
       if (url.pathname.includes('getSong.view')) data.song = { id: 'song', title: 'Original Audio', artist: 'Test Artist', album: 'The Test Album', duration: 600, suffix: 'wav', samplingRate: 96000, bitDepth: 24 }
       return res.end(JSON.stringify({ 'subsonic-response': data }))
@@ -76,7 +76,7 @@ async function main() {
     if (url.pathname === '/api/items/book-one/play') return res.end(JSON.stringify({ id: 'book-session', duration: 1000, currentTime: 450, playMethod: 0, audioTracks: [{ index: 1, title: 'A', startOffset: 0, duration: 400, contentUrl: '/audio/a.wav' }, { index: 2, title: 'B', startOffset: 400, duration: 600, contentUrl: '/audio/b.wav' }] }))
     if (url.pathname === '/api/items/show-one/play/episode-one') return res.end(JSON.stringify({ id: 'episode-session', duration: 1200, currentTime: 20, playMethod: 0, audioTracks: [{ index: 1, title: 'Episode', startOffset: 0, duration: 1200, contentUrl: '/audio/episode.wav' }] }))
     if (/^\/api\/session\/[^/]+\/(sync|close)$/.test(url.pathname)) { let body = ''; req.on('data', chunk => { body += chunk }); req.on('end', () => { syncRequests.push({ path: url.pathname, ...JSON.parse(body) }); res.end('{}') }); return }
-    if (url.pathname === '/api/me/items-in-progress') return res.end(JSON.stringify({ libraryItems: [book, { ...podcast, recentEpisode: podcast.media.episodes[0] }] }))
+    if (url.pathname === '/api/me/items-in-progress') return res.end(JSON.stringify({ libraryItems: [{...book,media:{...book.media,metadata:{...book.media.metadata,title:'A long audiobook title: collected stories and adventures from another world'}}}, { ...podcast, recentEpisode: podcast.media.episodes[0] }] }))
     if (url.pathname === '/api/me') return res.end(JSON.stringify({ id: 'test-user', mediaProgress: progress, bookmarks }))
     if (url.pathname.startsWith('/api/me/progress/') && req.method === 'PATCH') { let body = ''; for await (const chunk of req) body += chunk; const payload = JSON.parse(body), parts = url.pathname.split('/'), itemId = parts[4], episodeId = parts[5]; let p = progress.find(p => p.libraryItemId === itemId && p.episodeId === episodeId); if (!p) { p = { libraryItemId: itemId, episodeId }; progress.push(p) }; Object.assign(p, payload); mutations.push({ path: url.pathname, payload }); return res.end('OK') }
     if (url.pathname.includes('/bookmark')) { let body = ''; for await (const chunk of req) body += chunk; if (req.method === 'POST' || req.method === 'PATCH') bookmarks.push({ libraryItemId: 'book-one', ...JSON.parse(body) }); if (req.method === 'DELETE') bookmarks = bookmarks.filter(b => b.time !== Number(url.pathname.split('/').at(-1))); return res.end('OK') }
@@ -151,6 +151,7 @@ async function main() {
     assert.ok(!JSON.stringify(saved).includes('test-token'))
     assert.ok(!JSON.stringify(saved).includes('test-password'))
     const navId = saved.connections.find(c => c.provider === 'navidrome').id, absId = saved.connections.find(c => c.provider === 'audiobookshelf').id
+    await require('./layout-smoke.cjs')(page, artifacts)
     await page.getByRole('button', { name: 'Music', exact: true }).click()
     await page.getByRole('button', { name: 'Playlists', exact: true }).click()
     await page.getByRole('button', { name: 'New playlist', exact: true }).click()
@@ -167,6 +168,10 @@ async function main() {
     const actionBoxes = await page.locator('.detail-hero .listen-actions').first().locator('button').evaluateAll(buttons => buttons.map(b => { const r=b.getBoundingClientRect(),s=getComputedStyle(b); return {y:r.y,height:r.height,font:parseFloat(s.fontSize)} }))
     assert.ok(actionBoxes.every(b=>b.height>=40 && b.font>=13), 'Playlist actions should be readable and easy to click')
     assert.ok(actionBoxes.every(b=>Math.abs(b.y-actionBoxes[0].y)<2), 'Play must align with its neighboring actions')
+    assert.ok((await page.locator('.detail-hero').boundingBox()).height < 300, 'Playlist header should leave room for tracks')
+    const management = await page.locator('.collection-management button').evaluateAll(bs=>bs.map(b=>b.getBoundingClientRect().y))
+    assert.equal(management.length,3)
+    assert.ok(management.every(y=>Math.abs(y-management[0])<2), 'Playlist management actions share one row')
     await page.screenshot({ path: resolve(artifacts,'playlist-v021.png') })
     await page.setViewportSize({width:1440,height:940})
     await page.getByRole('button', { name: 'Back', exact: true }).click()

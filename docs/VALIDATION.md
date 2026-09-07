@@ -1,4 +1,4 @@
-# Validation — 0.3.1
+# Validation — 0.3.2
 
 Validation date: 2026-09-08. Supported target: Windows x64.
 
@@ -8,7 +8,7 @@ Validation date: 2026-09-08. Supported target: Windows x64.
 - 67 unit/regression tests cover domain separation, whole-book timelines, exact episode routes, provider transport, playlist duplicate ordering, catalog pagination, status filters, local metadata/path containment, queue edits, buffering-aware listening time, MPV readiness, update actions and installation preparation.
 - Real NSIS updater tests verify manual downloads, matching SHA-512 checksums, corrupt-file rejection, same/older version rejection, and disabled installation on quit. Downloads use inert fixture files and never execute an installer. See `artifacts/updater-smoke.json` after running `npm run test:updater`.
 - Source-build native desktop integration passes with no renderer exceptions. The test uses isolated Navidrome and Audiobookshelf fixture servers, encrypted SQLite connections, and muted real MPV.
-- The complete native suite also passes against the packaged 0.3.1 Windows executable using `MEDIA_CENTER_EXECUTABLE`, with no renderer errors. Its outcome is written to `artifacts/packaged-smoke.json`; source results are in `artifacts/desktop-smoke.json`.
+- The complete native suite also passes against the packaged 0.3.2 Windows executable using `MEDIA_CENTER_EXECUTABLE`, with no renderer errors. Its outcome is written to `artifacts/packaged-smoke.json`; source results are in `artifacts/desktop-smoke.json`.
 
 ## Native scenarios
 
@@ -27,6 +27,7 @@ Verified against fixtures:
 - Live ReplayGain and equalizer commands.
 - Restart restores queue, roots, plans and preferences without autoplay.
 - Credentials excluded from renderer settings; explicit sample/real-library distinction; minimum 1024 × 720 layout without horizontal page overflow.
+- Compact Home album and Continue listening cards with long titles and sparse collections; single-row resume actions with 36-pixel hit targets; readable notes search fields at 1008, 1440, and 1920 pixels in forest and charcoal themes.
 - Playlist action alignment and minimum button sizes; detail navigation resets inherited scroll; episode status and playback controls remain grouped at 1024 and 1920 pixels.
 
 Reviewed screenshots include playlist detail, episode status controls, Now Playing, local files, listening plans, and the minimum-size window. Test artifacts and profiles are ignored by source control and excluded from releases.
