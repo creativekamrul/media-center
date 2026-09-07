@@ -105,7 +105,7 @@ else {
     handle('settings:audio', z.object({ exclusive: z.boolean(), audioDevice: z.string().min(1).max(1024) }).strict(), input => { store.set('exclusive', input.exclusive); store.set('audioDevice', input.audioDevice) })
     handle('audio:devices', z.undefined(), async () => { await mpv.start(store.settings().mpvPath); return z.array(z.object({ name: z.string(), description: z.string() })).parse(await mpv.command(['get_property', 'audio-device-list'])) })
     handle('libraries:list', z.undefined(), async () => {
-      store.cacheClear()
+      store.cacheClear('music:')
       const connections = store.connections()
       const results = await Promise.allSettled(connections.map(c => provider(c.id).libraries()))
       return { libraries: results.flatMap(r => r.status === 'fulfilled' ? r.value : []), errors: results.flatMap((r, i) => r.status === 'rejected' ? [`${connections[i].name}: Could not load libraries. Check the server connection and permissions.`] : []) }

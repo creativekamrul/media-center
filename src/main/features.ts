@@ -27,7 +27,7 @@ export function registerFeatures(handle: Handle, store: Store, player: Player, l
   handle('spoken:progress', z.object({ target: spokenTarget, action: z.enum(['finished','unfinished','reset']) }).strict(), async i => {
     const current = player.state.queue[player.state.queueIndex]
     if (current && progressKey(current.target) === progressKey(i.target) && player.state.status !== 'idle') await player.command({ action: 'stop' })
-    await abs(i.target.serverId).setProgress(i.target, i.action)
+    await abs(i.target.serverId).setProgress(i.target, i.action); store.cacheClear('podcast-inbox')
   })
   handle('spoken:continue', z.object({ serverId: id, libraryId: id.optional() }).strict(), i => abs(i.serverId).continuing(i.libraryId))
   handle('spoken:bookmarks', z.object({ serverId: id, bookId: id }).strict(), i => abs(i.serverId).bookmarks(i.bookId))

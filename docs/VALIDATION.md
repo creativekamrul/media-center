@@ -1,14 +1,14 @@
-# Validation — 0.3.0
+# Validation — 0.3.1
 
 Validation date: 2026-09-08. Supported target: Windows x64.
 
 ## Automated checks
 
 - Strict TypeScript checking and the production Electron/Vite build pass.
-- 66 unit/regression tests cover domain separation, whole-book timelines, exact episode routes, provider transport, playlist duplicate ordering, catalog pagination, status filters, local metadata/path containment, queue edits, buffering-aware listening time, MPV readiness, update actions and installation preparation.
+- 67 unit/regression tests cover domain separation, whole-book timelines, exact episode routes, provider transport, playlist duplicate ordering, catalog pagination, status filters, local metadata/path containment, queue edits, buffering-aware listening time, MPV readiness, update actions and installation preparation.
 - Real NSIS updater tests verify manual downloads, matching SHA-512 checksums, corrupt-file rejection, same/older version rejection, and disabled installation on quit. Downloads use inert fixture files and never execute an installer. See `artifacts/updater-smoke.json` after running `npm run test:updater`.
 - Source-build native desktop integration passes with no renderer exceptions. The test uses isolated Navidrome and Audiobookshelf fixture servers, encrypted SQLite connections, and muted real MPV.
-- The complete native suite also passes against the packaged 0.3.0 Windows executable using `MEDIA_CENTER_EXECUTABLE`, with no renderer errors. Its outcome is written to `artifacts/packaged-smoke.json`; source results are in `artifacts/desktop-smoke.json`.
+- The complete native suite also passes against the packaged 0.3.1 Windows executable using `MEDIA_CENTER_EXECUTABLE`, with no renderer errors. Its outcome is written to `artifacts/packaged-smoke.json`; source results are in `artifacts/desktop-smoke.json`.
 
 ## Native scenarios
 
@@ -34,6 +34,8 @@ Reviewed screenshots include playlist detail, episode status controls, Now Playi
 ## Daily-use regression coverage
 
 The 0.3 suite additionally covers:
+
+- Persistent podcast/Last.fm cache isolation when music libraries refresh, plus the exact 1008-pixel Windows client width seen on CI.
 
 - Original book-file download routes versus independently identified podcast audio files, and raw Navidrome downloads.
 - Offline book chapters spanning two physical files, whole-book seek conversion, paused seeks, and separate episode identity.

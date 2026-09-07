@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1
+
+- Keep playlist playback actions aligned at the smallest Windows content width by showing Download as an accessible icon button there.
+- Exercise that exact viewport in the desktop regression suite, independent of the runner's display size.
+- Preserve the podcast index and Last.fm artwork cache across library refreshes and app restarts; invalidate the podcast index after manual status changes.
+- Includes the 0.3.0 daily-listening feature set. The v0.3.0 tag is retained as the first implementation snapshot; its release workflow stopped at the small-window layout check before publication.
+
 ## 0.3.0
 
 - Added Home with Continue Listening, recent albums, fresh episodes, and upcoming listening plans.

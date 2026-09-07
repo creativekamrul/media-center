@@ -18,7 +18,7 @@ export class Store {
   secret(key: string) { const value = this.get<string>(`secret:${key}`); return value ? safeStorage.decryptString(Buffer.from(value, 'base64')) : '' }
   cache<T>(key: string): { value: T; updated: number } | undefined { const row = this.db.prepare('SELECT value,updated FROM catalog_cache WHERE key=?').get(key); return row ? { value: JSON.parse(row.value as string), updated: Number(row.updated) } : undefined }
   cacheSet(key: string, value: unknown) { this.db.prepare('INSERT INTO catalog_cache VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated=excluded.updated').run(key, JSON.stringify(value), Date.now()); this.db.exec('DELETE FROM catalog_cache WHERE key IN (SELECT key FROM catalog_cache ORDER BY updated DESC LIMIT -1 OFFSET 1000)') }
-  cacheClear() { this.db.exec('DELETE FROM catalog_cache') }
+  cacheClear(prefix = '') { this.db.prepare("DELETE FROM catalog_cache WHERE key LIKE ? AND key NOT LIKE 'lastfm:%'").run(prefix + '%') }
   restorePersonal(values: Record<string,unknown>) { this.db.exec('BEGIN'); try { for (const [key,value] of Object.entries(values)) this.set(key,value); this.db.exec('COMMIT') } catch(error) { this.db.exec('ROLLBACK'); throw error } }
   recordListening(item: QueueItem, seconds: number, finished = false) {
     const now = new Date(), day = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`

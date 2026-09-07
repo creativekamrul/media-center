@@ -27,3 +27,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(max-height:800px){.sidebar-bottom .engine-card,.sidebar-bottom .profile{display:none}.sidebar{padding-top:20px}.sidebar .brand{margin-bottom:20px}}
 
 .mini-controls .play-main{background:var(--accent,#e8c2a8);color:#1b241c}.mini-controls .play-main:hover{filter:brightness(1.1)}
+
+@media(max-width:1150px){.listen-actions button[aria-label="Download selection"] .action-label{display:none}.listen-actions button[aria-label="Download selection"]{width:42px;min-width:42px;padding-inline:0;justify-content:center}}
