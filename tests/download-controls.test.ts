@@ -1,5 +1,6 @@
 import {afterEach,describe,it,expect,vi} from 'vitest'
-import {mkdtemp,rm,readdir} from 'node:fs/promises'
+import {mkdtemp,mkdir,symlink,rm,readdir,writeFile,readFile} from 'node:fs/promises'
+import {randomUUID} from 'node:crypto'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 vi.mock('electron',()=>({safeStorage:{}}))
@@ -10,8 +11,19 @@ import type {QueueItem} from '../src/shared/types'
 
 afterEach(()=>vi.restoreAllMocks())
 describe('download controls',()=>{
-  it('pauses active and queued items atomically, resumes, and removes both book and episode files',async()=>{
-    const root=await mkdtemp(join(tmpdir(),'media-download-control-')),store=new Store(':memory:')
+  it('refuses removal when an individual download redirects outside the canonical storage root',async()=>{
+    const container=await mkdtemp(join(tmpdir(),'media-download-boundary-')),root=join(container,'storage'),outside=join(container,'outside'),id=randomUUID(),store=new Store(':memory:')
+    await mkdir(root);await mkdir(outside);await writeFile(join(outside,'keep.txt'),'keep')
+    await symlink(outside,join(root,id),'junction')
+    store.set('downloads',[{id,item:{target:{kind:'audiobook',serverId:'s',bookId:'book'},title:'Book',subtitle:''},status:'ready',bytes:4,total:4,createdAt:0,duration:1,chapters:[],files:[]}])
+    const downloads=new Downloads(root,store,()=>{throw new Error('No server needed')})
+    try { expect((await downloads.batch([id],'remove')).failed).toEqual([id]);expect(await readFile(join(outside,'keep.txt'),'utf8')).toBe('keep');expect(downloads.snapshot().entries).toHaveLength(1) }
+    finally {await downloads.stop();store.close();await rm(container,{recursive:true,force:true})}
+  })
+  it.each([false,true])('pauses/resumes/removes books and episodes through a storage alias: %s',async alias=>{
+    const container=await mkdtemp(join(tmpdir(),'media-download-control-')),storage=join(container,'storage'),root=alias?join(container,'alias'):storage,store=new Store(':memory:')
+    await mkdir(storage)
+    if(alias)await symlink(storage,root,'junction')
     const provider=new Audiobookshelf({id:'s',provider:'audiobookshelf',url:'https://example.test',name:'ABS',username:''},'token')
     vi.spyOn(provider,'get').mockImplementation(async path=>path.includes('/book')?{id:'book',libraryId:'books',mediaType:'book',media:{metadata:{title:'Book'},duration:10,tracks:[{index:1,ino:'file',duration:10,startOffset:0}],chapters:[]}}:{id:'show',libraryId:'podcasts',mediaType:'podcast',media:{metadata:{title:'Show'},episodes:[{id:'episode',title:'Episode',audioFile:{ino:'file',duration:10}}]}})
     vi.spyOn(provider,'cover').mockResolvedValue(null)
@@ -37,6 +49,6 @@ describe('download controls',()=>{
       slow=true;await downloads.add(items);await vi.waitFor(()=>expect(started).toBe(4))
       expect((await downloads.batch(downloads.snapshot().entries.map(e=>e.id),'remove')).failed).toEqual([])
       expect(downloads.snapshot().entries).toEqual([]);expect(await readdir(root)).toEqual([])
-    } finally { await downloads.stop();store.close();await rm(root,{recursive:true,force:true}) }
+    } finally { await downloads.stop();store.close();await rm(container,{recursive:true,force:true}) }
   })
 })

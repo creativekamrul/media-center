@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events'
 import { randomUUID } from 'node:crypto'
 import { createWriteStream } from 'node:fs'
 import { mkdir, rename, rm, stat, realpath } from 'node:fs/promises'
-import { join, resolve, sep } from 'node:path'
+import { join, sep } from 'node:path'
 import { Readable, Transform } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { z } from 'zod'
@@ -77,7 +77,9 @@ export class Downloads extends EventEmitter {
     const dir = this.folder(id), actual = await realpath(dir).catch(() => null)
     if (!actual) return
     const root = await realpath(this.root)
-    if (!actual.toLowerCase().startsWith((root + sep).toLowerCase()) || resolve(dir).toLowerCase() !== actual.toLowerCase()) throw new Error('Download directory escapes its storage folder.')
+    // Canonicalize the configured root too: Windows short paths/junctions may name the same folder.
+    // The item itself must still resolve to its exact child directory, never a redirected target.
+    if (join(root, id).toLowerCase() !== actual.toLowerCase()) throw new Error('Download directory escapes its storage folder.')
     await rm(dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
   }
   async action(id: string, action: 'pause' | 'retry' | 'remove') {
