@@ -3,10 +3,34 @@ vi.mock('electron',()=>({safeStorage:{}}))
 import {Store} from '../src/main/store'
 import {LyricsClient} from '../src/main/lyrics'
 import {parseLrc,activeLyricIndex} from '../src/shared/lyrics'
+import {progressKey} from '../src/shared/timeline'
 const signature={title:'Fixture song',artist:'Fixture artist',album:'Fixture album',duration:120}
 const payload={instrumental:false,duration:120,plainLyrics:'First fixture line',syncedLyrics:'[00:01.50]First fixture line\n[00:03.25]Second fixture line'}
 afterEach(()=>vi.useRealTimers())
 describe('LRCLIB integration',()=>{
+ it('searches and retrieves a chosen record, and keeps the binding outside the evictable cache',async()=>{
+  const record={...payload,id:42,trackName:'Chosen version',artistName:'Artist',albumName:'Album'},store=new Store(':memory:')
+  const fetcher=vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(JSON.stringify([record]))).mockResolvedValueOnce(new Response(JSON.stringify(record)))
+  try{
+   const client=new LyricsClient(store,fetcher),results=await client.search('Chosen Artist')
+   expect(results[0].title).toBe('Chosen version');expect(results[0].lines).toHaveLength(2)
+   const chosen=await client.get(42),key=progressKey({kind:'music-track',serverId:'one',trackId:'song'})
+   client.save(key,chosen);store.cacheClear()
+   const offline=vi.fn<typeof fetch>().mockRejectedValue(new Error('Offline')),restarted=new LyricsClient(store,offline)
+   expect(restarted.saved(key)).toEqual(chosen)
+   expect(restarted.saved(progressKey({kind:'music-track',serverId:'two',trackId:'song'}))).toBeUndefined()
+   expect(restarted.saved(progressKey({kind:'local-file',serverId:'local',rootId:'one',fileId:'song'}))).toBeUndefined()
+   restarted.clear(key);expect(restarted.saved(key)).toBeUndefined();expect(offline).not.toHaveBeenCalled()
+   expect(String(fetcher.mock.calls[0][0])).toContain('/api/search?q=Chosen+Artist');expect(String(fetcher.mock.calls[1][0])).toContain('/api/get/42')
+  }finally{store.close()}
+ })
+ it('rejects an incorrect record ID and shares rate limits between search and automatic lookup',async()=>{
+  const store=new Store(':memory:');try{
+   const fetcher=vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(JSON.stringify({...payload,id:43,trackName:'Wrong',artistName:'Artist',albumName:''}))).mockResolvedValueOnce(new Response('',{status:429,headers:{'Retry-After':'60'}}))
+   const client=new LyricsClient(store,fetcher);await expect(client.get(42)).rejects.toThrow('different lyrics record')
+   await expect(client.search('Artist')).rejects.toThrow('rate limiting');await expect(client.lookup(signature)).rejects.toThrow('wait');expect(fetcher).toHaveBeenCalledTimes(2)
+  }finally{store.close()}
+ })
  it('parses multiple timestamps, fractional seconds, blank breaks and out-of-order lines',()=>{
   const rows=parseLrc('[ar:Test]\n[00:04.250]Last\n[00:01.5][00:03]Repeat\n[00:02.00]\n[00:99]Invalid')
   expect(rows).toEqual([{time:1.5,text:'Repeat'},{time:2,text:''},{time:3,text:'Repeat'},{time:4.25,text:'Last'}])

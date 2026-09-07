@@ -1,5 +1,6 @@
 export interface LyricLine {time:number;text:string}
-export interface LyricsResult {key:string;title:string;artist:string;status:'found'|'missing'|'instrumental'|'unsupported';plain:string;lines:LyricLine[]}
+export interface LyricsResult {key:string;title:string;artist:string;status:'found'|'missing'|'instrumental'|'unsupported';plain:string;lines:LyricLine[];saved?:boolean;recordId?:number}
+export interface LyricsRecord {id:number;title:string;artist:string;album:string;duration:number;status:'found'|'missing'|'instrumental';plain:string;lines:LyricLine[]}
 export interface LyricsSignature {title:string;artist:string;album:string;duration:number}
 export function parseLrc(input:string):LyricLine[] {
   const lines:LyricLine[]=[]

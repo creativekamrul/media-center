@@ -16,6 +16,9 @@ export interface DiscordSettings { enabled: boolean; applicationId: string; musi
 export interface DiscordStatus { connected: boolean; message: string; artwork: boolean; artworkMessage?: string }
 export interface DailyAPI {
   lyrics(input:{refresh?:boolean}):Promise<import('./lyrics').LyricsResult>
+  searchLyrics(input:{key:string;query:string}):Promise<import('./lyrics').LyricsRecord[]>
+  bindLyrics(input:{key:string;id:number}):Promise<void>
+  clearLyrics(input:{key:string}):Promise<void>
   seekLyric(input:{key:string;time:number}):Promise<void>
   dailySettings(): Promise<DailySettings>
   saveDailySettings(input: DailySettings): Promise<void>
@@ -46,7 +49,7 @@ export interface DailyAPI {
   exportRecap(input: {range: import('./recap').RecapRange;png:string}): Promise<boolean>
   miniState(): Promise<{pinned:boolean}>
   onMiniState(listener:(state:{pinned:boolean})=>void):()=>void
-  onTheme(listener:(theme:import('./themes').ThemeId)=>void):()=>void
+  onTheme(listener:(theme:import('./types').Preferences)=>void):()=>void
   listeningStats(): Promise<ListeningStats>
   exportBackup(): Promise<boolean>
   previewBackup(): Promise<BackupPreview | null>

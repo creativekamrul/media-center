@@ -69,4 +69,10 @@ Research references: [Feishin](https://github.com/jeffvli/feishin), [Navidrome 0
 - Five background presets, adjustable lyric text, saved appearance, smooth following/background motion, and system reduced-motion support. No duplicate lyric panel.
 - Spoken media retains explicit audiobook chapter vs. podcast episode behavior; no spoken-media lyric lookups.
 - Main/mini scrubber supports first click, captured drag/release, keyboard changes, cancellation and track-change reset. Main-process seek guards include media identity and queue position.
-- Does not include user-uploaded/video backgrounds, custom fonts, or waveform visualization.
+- Does not include user-uploaded/video backgrounds, imported font files, or waveform visualization.
+
+## Personalization (0.7.0)
+
+- Manual LRCLIB search, preview, and persistent per-source/song lyric binding for music and local audio. Saved content bypasses automatic network lookups and cache expiry, including offline use. Clear/replace controls are in the lyrics panel. Search displays up to 20 results; no pagination or lyric editing/upload is provided.
+- Five optional color overrides and six system font choices for interface, headings, and lyrics. In-app preview, reset, persistence, validated preference backups, and live mini-player synchronization. Arbitrary CSS and font file imports remain unsupported.
+- Lyric bindings are device-local and are not currently exported in personal backups or synchronized to media servers.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0
+
+- Add manual LRCLIB search with result metadata, synced/plain indicators, lyric previews, and a per-song saved match. Store the selected lyrics in SQLite outside the expiring cache, so reopening the song needs no provider or LRCLIB request. Replace or clear a match from the lyrics panel.
+- Guard manual binding against track changes and keep music/local identities distinct. Books, podcasts, and radio do not use lyric search. Share bounded, sequential requests and rate-limit handling across automatic lookup, search, and record retrieval.
+- Add theme customization in Settings: background, panel, accent, main/secondary text colors, and interface, heading, and lyric fonts. Include preview, per-color defaults, reset, persistent preferences, and live mini-player updates. Font choices use local system families with fallbacks.
+- Include the Last.fm image host and verified image fallback fixes from 0.6.2, plus the structured HTTP error handling from 0.6.1.
+
 ## 0.6.2
 
 - Accept Last.fm's current `lastfm-img.freetls.fastly.net` artwork CDN. Valid covers from this host were incorrectly reported as missing and omitted from Discord presence.

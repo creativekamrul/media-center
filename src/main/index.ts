@@ -46,7 +46,7 @@ function handle<T extends z.ZodTypeAny>(channel: string, schema: T, action: (inp
     if (!owner || (owner === miniWindow && !['player:get','player:command','player:seek','item:cover','local:cover','preferences:get','mini:command','mini:get'].includes(channel))) throw new Error('Untrusted desktop request.')
     const parsed = schema.safeParse(raw)
     if (!parsed.success) throw new Error('Invalid desktop request. Please check the entered values.')
-    try { const result=await action(parsed.data);if(channel==='preferences:save')for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('theme:state',store.preferences().theme);return result }
+    try { const result=await action(parsed.data);if(channel==='preferences:save'||channel==='backup:restore')for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('theme:state',store.preferences());return result }
     catch (error) {
       if (error instanceof z.ZodError) throw new Error('The server response does not match the supported API format. Check the server version and selected library.')
       throw error instanceof Error ? error : new Error('The operation failed.')
@@ -83,10 +83,20 @@ else {
     player.on('state', state => { for(const w of [window,miniWindow]) if(w && !w.isDestroyed()) w.webContents.send('player:state',state) })
     downloads.on('state',state=>{if(window && !window.isDestroyed()) window.webContents.send('downloads:state',state)})
     const lyrics=new LyricsClient(store)
+    const lyricTarget=(key:string)=>{
+      const target=player.state.queue[player.state.queueIndex]?.target
+      if(!target||!['music-track','local-file'].includes(target.kind)||progressKey(target)!==key)throw new Error('The playing track changed. Open lyrics for the current song.')
+    }
+    const lyricKey=z.string().min(1).max(10000)
+    handle('lyrics:search',z.object({key:lyricKey,query:z.string().trim().min(2).max(300)}).strict(),async i=>{lyricTarget(i.key);const results=await lyrics.search(i.query);lyricTarget(i.key);return results})
+    handle('lyrics:bind',z.object({key:lyricKey,id:z.number().int().positive().safe()}).strict(),async i=>{lyricTarget(i.key);const record=await lyrics.get(i.id);lyricTarget(i.key);if(record.status==='missing')throw new Error('This result contains no lyrics. Choose another result.');lyrics.save(i.key,record)})
+    handle('lyrics:clear',z.object({key:lyricKey}).strict(),i=>{lyricTarget(i.key);lyrics.clear(i.key)})
     handle('lyrics:get',z.object({refresh:z.boolean().optional()}).strict(),async i=>{
       const item=player.state.queue[player.state.queueIndex],target=item?.target
       const key=target?progressKey(target):'',base={key,title:item?.title??'',artist:item?.subtitle??'',plain:'',lines:[]}
       if(!target||!['music-track','local-file'].includes(target.kind))return {...base,status:'unsupported'} satisfies LyricsResult
+      const binding=lyrics.saved(key)
+      if(binding)return {...binding,key,saved:true,recordId:binding.id} satisfies LyricsResult
       let signature
       if(target.kind==='music-track'){
         const p=provider(target.serverId);if(!(p instanceof Navidrome))throw new Error('Choose a music source.')
@@ -96,8 +106,10 @@ else {
         const file=await local.metadata(target.rootId,target.fileId);signature={title:file.title,artist:file.artist,album:file.album,duration:file.duration}
       }else return {...base,status:'unsupported'} satisfies LyricsResult
       if(!signature.title.trim()||!signature.artist.trim())throw new Error('Track title and artist tags are needed to find lyrics.')
-      if(progressKey(player.state.queue[player.state.queueIndex]?.target??target)!==key)throw new Error('The playing track changed. Open lyrics for the current track.')
-      return {...base,title:signature.title,artist:signature.artist,...await lyrics.lookup(signature,!!i.refresh)} satisfies LyricsResult
+      lyricTarget(key)
+      const content=await lyrics.lookup(signature,!!i.refresh);lyricTarget(key)
+      const saved=lyrics.saved(key)
+      return saved?{...saved,key,saved:true,recordId:saved.id}:{...base,title:signature.title,artist:signature.artist,...content} satisfies LyricsResult
     })
     handle('lyrics:seek',z.object({key:z.string().max(10000),time:z.number().finite().nonnegative()}).strict(),async i=>{
       const target=player.state.queue[player.state.queueIndex]?.target

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { LyricSearch } from './LyricSearch'
+import { Search, RefreshCw } from 'lucide-react'
 import type { PlaybackState } from '../../shared/types'
 import { progressKey } from '../../shared/timeline'
 import { activeLyricIndex, type LyricsResult } from '../../shared/lyrics'
@@ -8,6 +9,8 @@ import { message } from './ui'
 export function LyricsPanel({player,immersive=false,motion=true}:{player:PlaybackState;immersive?:boolean;motion?:boolean}) {
  const item=player.queue[player.queueIndex],key=item?progressKey(item.target):''
  const [result,setResult]=useState<LyricsResult>(),[error,setError]=useState(''),[loading,setLoading]=useState(false),[revision,setRevision]=useState(0),[follow,setFollow]=useState(true)
+ const [searchKey,setSearchKey]=useState<string>()
+ useEffect(()=>setSearchKey(undefined),[key])
  const lastRevision=useRef(0)
  const box=useRef<HTMLDivElement>(null),rows=useRef<(HTMLButtonElement|null)[]>([])
  useEffect(()=>{let live=true;setResult(undefined);setError('');setLoading(true);setFollow(true)
@@ -17,7 +20,7 @@ export function LyricsPanel({player,immersive=false,motion=true}:{player:Playbac
  },[key,revision])
  const shown=result?.key===key?result:undefined,active=activeLyricIndex(shown?.lines??[],player.position)
  useEffect(()=>{const el=rows.current[active],root=box.current;if(follow&&el&&root)root.scrollTo({top:Math.max(0,el.offsetTop-root.clientHeight/2+el.clientHeight/2),behavior:immersive&&motion&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches?'smooth':'auto'})},[active,follow,shown,immersive,motion])
- return <section className="lyrics-panel" aria-label="Lyrics"><div className="section-title"><div><h2>Lyrics</h2><p className="muted">LRCLIB · {shown?.lines.length?'Synced to MPV':'Song lyrics'}</p></div><button className="icon-button" aria-label="Refresh lyrics" disabled={loading} onClick={()=>setRevision(n=>n+1)}><RefreshCw size={18}/></button></div><p className="lyrics-caption">{item?.title} · {item?.subtitle}</p>
+ return <section className="lyrics-panel" aria-label="Lyrics"><div className="section-title"><div><h2>Lyrics</h2><p className="muted">LRCLIB · {shown?.lines.length?'Synced to MPV':'Song lyrics'}</p></div><button className="icon-button" aria-label="Refresh lyrics" disabled={loading} onClick={()=>setRevision(n=>n+1)}><RefreshCw size={18}/></button></div>{item&&['music-track','local-file'].includes(item.target.kind)&&<div className="lyrics-tools"><button className="secondary" onClick={()=>setSearchKey(key)}><Search size={16}/>Find lyrics</button>{shown?.saved&&<><span className="muted">Saved match · #{shown.recordId}</span><button className="text-button" onClick={()=>void api.clearLyrics({key}).then(()=>setRevision(n=>n+1)).catch(e=>setError(message(e)))}>Clear saved match</button></>}</div>}{searchKey===key&&<LyricSearch key={key} songKey={key} title={item?.title??''} artist={item?.subtitle??''} close={()=>setSearchKey(undefined)} saved={()=>setRevision(n=>n+1)}/>}<p className="lyrics-caption">{item?.title} · {item?.subtitle}</p>
  {loading&&<p role="status" className="lyrics-message">Finding lyrics…</p>}{error&&<p role="alert" className="lyrics-message">{error}</p>}
  {shown?.status==='unsupported'&&<p className="lyrics-message">Lyrics are available for music and tagged local audio.</p>}
  {shown?.status==='instrumental'&&<p className="lyrics-message">Instrumental — no lyrics for this track.</p>}

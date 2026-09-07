@@ -76,6 +76,14 @@ Music → Playlists supports Media Center JSON export/import. Exported files con
 
 Listening stats counts time actually spent playing on this device, excluding pause and buffering. It shows a 30-day bar chart including days without activity, daily totals, media categories, top listens and completion counts. Hover over a bar for its date and listening time; the daily breakdown lists the same data in text. Set a daily minute goal in Settings; zero disables the goal. Existing server statistics are not imported.
 
+## Manual lyric matches and theme customization
+
+Open Now Playing → Lyrics (or the immersive player), then **Find lyrics**. Search by song, artist, or album, select a result to preview its lyrics and duration, and choose **Use these lyrics**. The selected record and its text are stored in SQLite for that source/song. They do not expire or require another search, even offline. **Clear saved match** restores automatic lookup; **Find lyrics** lets you replace the choice. Manual choices can select a different recording length, so check the preview and timing. Books, podcasts, and radio do not offer lyric search.
+
+In Settings, below the theme palettes, **Customize this theme** offers background, panel, accent, main text, and secondary text colors, plus interface, heading, and lyric font families. **Preview in app** applies unsaved changes temporarily. **Save audio preferences** saves audio and appearance together and updates the mini player. Leaving Settings discards an unsaved preview. Use a color's **Default** or **Reset customization** to return to the selected theme. These are local system fonts, with fallbacks if a family is unavailable.
+
+Appearance preferences are included in personal backups. Manual lyric bindings currently remain only in this device's database and are not included in exported backups.
+
 ## Personal backups
 
 Settings → Export personal backup saves preferences, named queues, listening notes, Listen Later plans, local rule playlists, and source references. It excludes passwords, Last.fm keys, Discord configuration, MPV paths, downloaded audio, listening statistics, and server progress.

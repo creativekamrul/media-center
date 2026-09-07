@@ -47,3 +47,10 @@ Navidrome **0.60.3** downloads use the Subsonic `download` endpoint. Network pla
 Offline spoken checkpoint writes use the same exact book/episode progress endpoint as status writes, with `currentTime`, `duration`, `progress` and `isFinished`. They follow an explicit preview and second server-state check. They do not synthesize listening sessions or historical listening-time deltas.
 
 Sources: [ABS 2.35.1 API router](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/routers/ApiRouter.js), [Book model](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/models/Book.js), [podcast query helpers](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/utils/queries/libraryItemsPodcastFilters.js).
+
+
+## LRCLIB manual matching (0.7.0)
+
+Use the [official LRCLIB API](https://lrclib.net/docs): GET `/api/search?q=...` returns candidate records, and GET `/api/get/{id}` retrieves the selected record. Requests remain in Electron main, use the app User-Agent, reject redirects, share a sequential queue with 250 ms spacing, and honor Retry-After. Search responses are bounded to 4 MiB and 20 displayed results; individual records to 512 KiB. Text is rendered as text, never HTML.
+
+A saved match uses a SHA-256 key derived from the complete source/media identity and stores the validated record's content in SQLite's durable key/value table, separate from the expiring/evictable automatic lyric cache. Bind operations verify the current music/local target before fetching and again before writing. Stored content is returned before asking a media provider for metadata. Removing a binding restores automatic matching. Bindings do not sync to a server or enter personal backup exports.

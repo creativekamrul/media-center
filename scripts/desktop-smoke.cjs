@@ -276,6 +276,7 @@ async function main() {
       assert.equal((await page.evaluate(() => window.mediaCenter.playback())).queue.length,1)
       const snapshots = await page.evaluate(async () => ({ plans: await window.mediaCenter.laterList(), roots: await window.mediaCenter.localRoots(), history: await window.mediaCenter.history() }))
       await require('./daily-smoke.cjs')({desktop,page,waitPlayback,artifacts})
+      await require('./customization-smoke.cjs')({desktop,page,artifacts})
       assert.equal(snapshots.plans[0].done,true); assert.equal(snapshots.plans[0].due,'2026-09-10'); assert.equal(snapshots.roots.length,1); assert.ok(snapshots.history.length>0)
     }
     await page.setViewportSize({ width: 1024, height: 720 })
@@ -287,6 +288,8 @@ async function main() {
       desktop = await electron.launch({ executablePath: process.env.MEDIA_CENTER_EXECUTABLE || undefined, args: process.env.MEDIA_CENTER_EXECUTABLE ? [profileArg] : [resolve('out/main/index.js'),profileArg], env: { ...process.env, MEDIA_CENTER_SMOKE:'1' }, timeout:30000 })
       const restoredPage = await desktop.firstWindow()
       await desktop.evaluate(({ BrowserWindow }, visible) => { for (const window of BrowserWindow.getAllWindows()) { window.webContents.setBackgroundThrottling(false); if (visible) window.showInactive() } }, !!process.env.MEDIA_CENTER_EXECUTABLE)
+      await restoredPage.waitForFunction(()=>getComputedStyle(document.body).fontFamily.includes('Verdana'))
+      const persistedLyrics=await restoredPage.evaluate(()=>window.mediaCenter.lyrics({}));assert.equal(persistedLyrics.recordId,42);assert.equal(persistedLyrics.saved,true)
       const restored = await restoredPage.evaluate(async () => ({ playback: await window.mediaCenter.playback(), plans: await window.mediaCenter.laterList(), roots: await window.mediaCenter.localRoots(), prefs: await window.mediaCenter.preferences() }))
       assert.equal(restored.playback.status,'idle'); assert.equal(restored.playback.queue.length,1); assert.equal(restored.playback.queue[0].target.kind,'local-file'); assert.equal(restored.plans[0].done,true); assert.equal(restored.roots.length,1); assert.equal(restored.prefs.equalizer[5],2)
       await restoredPage.getByRole('button', { name:'Resume playback',exact:true }).click()

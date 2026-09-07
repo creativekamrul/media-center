@@ -1,4 +1,5 @@
 import {defaultPlayingScreen,playingScreenSchema} from '../shared/playing-screen'
+import { appearanceSchema } from '../shared/appearance'
 import { themeIds } from '../shared/themes'
 import { dialog, type BrowserWindow } from 'electron'
 import { z } from 'zod'
@@ -12,7 +13,7 @@ export const id = z.string().min(1).max(2048)
 export const spokenTarget = z.discriminatedUnion('kind', [z.object({ kind: z.literal('audiobook'), serverId: id, bookId: id }).strict(), z.object({ kind: z.literal('podcast-episode'), serverId: id, showId: id, episodeId: id }).strict()])
 export const targetSchema = z.discriminatedUnion('kind', [...spokenTarget.options, z.object({ kind: z.literal('music-track'), serverId: id, trackId: id }).strict(), z.object({ kind: z.literal('local-file'), serverId: z.literal('local'), rootId: id, fileId: id }).strict(), z.object({ kind: z.literal('radio'), serverId: id, stationId: id }).strict()])
 export const queueItemSchema = z.object({ target: targetSchema, title: z.string().max(2000), subtitle: z.string().max(2000), cover: z.string().max(2048).optional(), context: z.string().max(2000).optional(), duration: z.number().finite().nonnegative().optional() }).strict()
-export const preferenceSchema = z.object({ replayGain: z.enum(['no', 'track', 'album']), preventClipping: z.boolean(), equalizer: z.array(z.number().finite().min(-12).max(12)).length(10), closeToTray: z.boolean(), theme: z.enum(themeIds), scrobble: z.boolean() }).strict()
+export const preferenceSchema = z.object({ replayGain: z.enum(['no', 'track', 'album']), preventClipping: z.boolean(), equalizer: z.array(z.number().finite().min(-12).max(12)).length(10), closeToTray: z.boolean(), theme: z.enum(themeIds), appearance: appearanceSchema.optional(), scrobble: z.boolean() }).strict()
 export type Handle = <T extends z.ZodTypeAny>(channel: string, schema: T, action: (input: z.infer<T>) => unknown) => void
 export function registerFeatures(handle: Handle, store: Store, player: Player, local: LocalFiles, provider: (id: string) => Navidrome | Audiobookshelf, window: () => BrowserWindow) {
   const inflight=new Map<string,Promise<unknown>>()

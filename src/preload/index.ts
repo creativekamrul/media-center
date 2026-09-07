@@ -3,6 +3,9 @@ import type { DesktopAPI, PlaybackState, UpdateState } from '../shared/types'
 
 const api: DesktopAPI = {
   lyrics: input=>ipcRenderer.invoke('lyrics:get',input),
+  searchLyrics: input=>ipcRenderer.invoke('lyrics:search',input),
+  bindLyrics: input=>ipcRenderer.invoke('lyrics:bind',input),
+  clearLyrics: input=>ipcRenderer.invoke('lyrics:clear',input),
   seekLyric: input=>ipcRenderer.invoke('lyrics:seek',input),
   correctDiscordArtwork: input => ipcRenderer.invoke('discord:artwork',input),
   offlineProgressPreview: id => ipcRenderer.invoke('offline:preview',id),
@@ -33,7 +36,7 @@ const api: DesktopAPI = {
   exportRecap: input => ipcRenderer.invoke('recap:export',input),
   miniState: () => ipcRenderer.invoke('mini:get'),
   onMiniState: listener => {const cb=(_e:unknown,state:{pinned:boolean})=>listener(state);ipcRenderer.on('mini:state',cb);return()=>ipcRenderer.removeListener('mini:state',cb)},
-  onTheme: listener => {const cb=(_e:unknown,theme:import('../shared/themes').ThemeId)=>listener(theme);ipcRenderer.on('theme:state',cb);return()=>ipcRenderer.removeListener('theme:state',cb)},
+  onTheme: listener => {const cb=(_e:unknown,theme:import('../shared/types').Preferences)=>listener(theme);ipcRenderer.on('theme:state',cb);return()=>ipcRenderer.removeListener('theme:state',cb)},
   listeningStats: () => ipcRenderer.invoke('stats:get'),
   exportBackup: () => ipcRenderer.invoke('backup:export'),
   previewBackup: () => ipcRenderer.invoke('backup:preview'),
