@@ -238,6 +238,12 @@ export class Player extends EventEmitter {
     if (this.state.status === 'playing') { await this.mpv.command(['set_property', 'pause', true]); this.state.status = 'paused' }
     await this.clearStaged(); await this.closeSession(); await this.mpv.command(['stop']); this.state.queueIndex = index; this.saveQueue(); await this.load(this.state.queue[index])
   }
+  seekTo(input:{key:string;queueIndex:number;time:number}) { return this.enqueue(async()=>{
+    const item=this.state.queue[this.state.queueIndex]
+    if(!item||progressKey(item.target)!==input.key||this.state.queueIndex!==input.queueIndex)throw new Error('The track changed. Seek again on the current track.')
+    if(!['playing','paused'].includes(this.state.status)||this.state.kind==='radio'||!this.state.duration)throw new Error('This audio is not ready to seek.')
+    await this.commandInner({action:'seek',value:input.time})
+  }) }
   command(command: PlayerCommand) { return this.enqueue(() => this.commandInner(command)).catch(error => { if (this.state.status === 'loading') this.fail(error instanceof Error ? error.message : 'Playback failed.'); throw error }) }
   private async commandInner(command: PlayerCommand) {
     switch (command.action) {

@@ -54,6 +54,9 @@ export interface DesktopAPI extends DailyAPI {
   cover(input: { serverId: string; itemId: string }): Promise<string | null>
   play(input: { queue: QueueItem[]; index: number; position?: number }): Promise<void>
   command(command: PlayerCommand): Promise<void>
+  seekPlayback(input: { key: string; queueIndex: number; time: number }): Promise<void>
+  playingScreenPreferences(): Promise<import('./playing-screen').PlayingScreenPreferences>
+  savePlayingScreenPreferences(input: import('./playing-screen').PlayingScreenPreferences): Promise<void>
   playback(): Promise<PlaybackState>
   onPlayback(listener: (state: PlaybackState) => void): () => void
   musicBrowse(input: MusicBrowseInput): Promise<MusicPage>

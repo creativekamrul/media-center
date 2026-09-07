@@ -62,3 +62,11 @@ The inbox indexes up to 100,000 episodes and displays refresh warnings rather th
 MPV is user-supplied. Hardware bit-perfect output and production server compatibility need testing on the actual device/server combination.
 
 Research references: [Feishin](https://github.com/jeffvli/feishin), [Navidrome 0.60.3](https://github.com/navidrome/navidrome/tree/v0.60.3), [Audiobookshelf 2.35.1](https://github.com/advplyr/audiobookshelf/tree/v2.35.1). Upstream code informed the contract/feature audit; Feishin application source and artwork were not copied. See [API contracts](API-CONTRACTS.md).
+
+## Immersive player (0.6.0)
+
+- Optional large-lyrics playing screen with artwork/transport at upper right and a paginated, playable current queue below; classic layout stays available.
+- Five background presets, adjustable lyric text, saved appearance, smooth following/background motion, and system reduced-motion support. No duplicate lyric panel.
+- Spoken media retains explicit audiobook chapter vs. podcast episode behavior; no spoken-media lyric lookups.
+- Main/mini scrubber supports first click, captured drag/release, keyboard changes, cancellation and track-change reset. Main-process seek guards include media identity and queue position.
+- Does not include user-uploaded/video backgrounds, custom fonts, or waveform visualization.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0
+
+- Add an optional immersive playing screen: large synchronized lyrics on the left, artwork and playback controls above the current queue on the right. Open it from Now playing > Immersive view; Classic view returns to the existing layout.
+- Add five background styles (Aurora, blurred artwork, Midnight glass, Sunset, Starlight), saved 24-64px lyric sizes, smooth lyric/background motion, and reduced-motion support. Books retain chapter navigation; podcasts and radio never request song lyrics.
+- Replace main and mini-player seek handling with captured pointer drags, first-click seeking, keyboard controls, cancelled-drag cleanup, and track-scoped preview state. Validate queued seek identity in the main process so an old drag cannot seek a different track or episode.
+- Include the Discord artwork improvements prepared for 0.5.1. Add native screen/seek checks and book/podcast seek regressions.
+
 ## 0.5.1
 
 - Add Last.fm track matching when an album lookup has no usable cover, including music without an album tag. Preserve explicit album corrections and reject placeholder/private artwork URLs.

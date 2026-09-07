@@ -5,6 +5,7 @@ import { Mpv } from '../src/main/mpv'
 import type { Store } from '../src/main/store'
 import { Audiobookshelf } from '../src/main/providers/audiobookshelf'
 import { Navidrome } from '../src/main/providers/navidrome'
+import { progressKey } from '../src/shared/timeline'
 
 describe('playback coordination', () => {
   let player: Player, mpv: Mpv, abs: Audiobookshelf, nav: Navidrome
@@ -40,6 +41,24 @@ describe('playback coordination', () => {
   it('preserves pause while seeking across files', async () => {
     await player.play(queue, 0); await player.command({ action: 'toggle' }); await player.command({ action: 'seek', value: 100 })
     expect(player.state.status).toBe('paused'); expect(mpv.command).toHaveBeenLastCalledWith(['set_property', 'pause', true])
+  })
+  it('guards a scrub by media identity and still seeks across book files',async()=>{
+    await player.play(queue,0);await player.command({action:'toggle'})
+    await player.seekTo({key:progressKey(queue[0].target),queueIndex:0,time:120})
+    expect(player.state.position).toBe(120);expect(player.state.status).toBe('paused')
+    expect(mpv.load).toHaveBeenLastCalledWith('https://test.invalid/a',expect.objectContaining({start:'120'}))
+    const next=player.play([{target:{kind:'music-track',serverId:'n',trackId:'song'},title:'Song',subtitle:''}],0)
+    const oldSeek=player.seekTo({key:progressKey(queue[0].target),queueIndex:0,time:850})
+    await next;await expect(oldSeek).rejects.toThrow('track changed');expect(player.state.position).toBe(0)
+  })
+  it('never applies one podcast episode scrub to another episode in the same show',async()=>{
+    const first={kind:'podcast-episode' as const,serverId:'s',showId:'show',episodeId:'one'},second={...first,episodeId:'two'}
+    vi.mocked(abs.detail).mockResolvedValue({kind:'podcast-show',id:'show',serverId:'s',libraryId:'p',title:'Show',subtitle:'Host',description:'',author:'Host',episodeCount:2,episodes:[{id:'one',title:'First',duration:1000},{id:'two',title:'Second',duration:1000}]} as Awaited<ReturnType<typeof abs.detail>>)
+    await player.play([{target:first,title:'First',subtitle:'Host'},{target:second,title:'Second',subtitle:'Host'}],0)
+    await player.seekTo({key:progressKey(first),queueIndex:0,time:75});expect(player.state.position).toBe(75)
+    await player.edit({action:'jump',index:1})
+    await expect(player.seekTo({key:progressKey(first),queueIndex:0,time:900})).rejects.toThrow('track changed')
+    await player.seekTo({key:progressKey(second),queueIndex:1,time:80});expect(player.state.position).toBe(80)
   })
   it('resets audiobook speed when switching to music and closes the old session', async () => {
     await player.play(queue, 0); await player.command({ action: 'speed', value: 1.75 })

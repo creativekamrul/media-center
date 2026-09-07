@@ -2,7 +2,7 @@
 
 A Windows desktop home for Navidrome music, Audiobookshelf books and podcasts, and local audio folders. Built with Electron, React, TypeScript, SQLite, and native MPV playback.
 
-**Version 0.5.1** improves Discord artwork matching, retry controls, and diagnostics. It also includes LRCLIB lyrics, Black Glass, and fixes for search-field styling and outer-window scrolling. It includes Home, a podcast inbox, original-quality offline downloads, an always-on-top mini-player, gapless music, saved queues, listening notes and statistics, local rule playlists, personal backups, and optional Discord/Last.fm artwork integration. Controls have a cleaner rounded appearance while retaining the existing themes and fonts. The long-term goal remains Feishin and Audiobookshelf client parity. See the [feature inventory](docs/FEATURES.md) for exact support and remaining work.
+**Version 0.6.0** adds an immersive playing screen and fixes seeking, alongside improved Discord artwork matching, retry controls, and diagnostics. It also includes LRCLIB lyrics, Black Glass, and fixes for search-field styling and outer-window scrolling. It includes Home, a podcast inbox, original-quality offline downloads, an always-on-top mini-player, gapless music, saved queues, listening notes and statistics, local rule playlists, personal backups, and optional Discord/Last.fm artwork integration. Controls have a cleaner rounded appearance while retaining the existing themes and fonts. The long-term goal remains Feishin and Audiobookshelf client parity. See the [feature inventory](docs/FEATURES.md) for exact support and remaining work.
 
 ## Install and connect
 
@@ -84,3 +84,11 @@ Lyrics support Navidrome music and local audio with title/artist tags, never aud
 The Discord heading uses the name of your application in the [Discord Developer Portal](https://discord.com/developers/applications). Select your application, open General Information, set Name to **Media Center**, and save. Save Discord preferences in Media Center to reconnect; Discord may cache the old name briefly. The desktop package name is not this Discord label.
 
 Music covers use [Last.fm album matching](https://www.last.fm/api/show/album.getInfo), then [track matching](https://www.last.fm/api/show/track.getInfo) if needed. In Settings, Connection and Artwork now show separate results. Use **Retry artwork** after a failed or missing match; transient errors back off for a minute. If Last.fm has no public cover, correct the album artist/title below. A correction deliberately selects that album and will not fall back to another release. Discord controls image rendering, so a successful match is not proof that its client has displayed the image. Private Navidrome artwork is never uploaded or exposed to Discord.
+
+### Immersive playing screen
+
+Click the playing cover to open Now playing, then choose **Immersive view**. Lyrics appear on the left; artwork, transport controls, and the current queue appear on the right. Choose a queued item to play it. **Classic view** returns to the original player; Escape leaves Now playing.
+
+Open **Appearance** for Aurora, blurred artwork, Midnight glass, Sunset, or Starlight backgrounds. Adjust lyric size from 24 to 64px and toggle smooth motion, then **Save appearance** to keep these settings on this computer. System reduced-motion settings disable animation. Music and tagged local audio use LRCLIB; audiobooks show chapter navigation, and podcasts/radio show their playing information. Missing or unsynchronized lyrics retain their existing honest fallback states.
+
+The shared main/mini-player seek bar previews a drag and seeks once on release, including release outside the bar. Clicking seeks immediately and arrow keys remain supported. Changing media or cancelling a drag clears its preview. The main process rejects a delayed seek belonging to a different queue item.

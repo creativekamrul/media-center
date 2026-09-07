@@ -85,6 +85,9 @@ const api: DesktopAPI = {
   cover: input => ipcRenderer.invoke('item:cover', input),
   play: input => ipcRenderer.invoke('player:play', input),
   command: command => ipcRenderer.invoke('player:command', command),
+  seekPlayback: (input) => ipcRenderer.invoke('player:seek', input),
+  playingScreenPreferences: () => ipcRenderer.invoke('playing-screen:get'),
+  savePlayingScreenPreferences: (input) => ipcRenderer.invoke('playing-screen:save', input),
   playback: () => ipcRenderer.invoke('player:get'),
   onPlayback: listener => { const callback = (_event: unknown, state: PlaybackState) => listener(state); ipcRenderer.on('player:state', callback); return () => ipcRenderer.removeListener('player:state', callback) }
 }

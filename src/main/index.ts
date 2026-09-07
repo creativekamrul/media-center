@@ -43,7 +43,7 @@ function provider(id: string) { const { config, secret } = store.connection(id);
 function handle<T extends z.ZodTypeAny>(channel: string, schema: T, action: (input: z.infer<T>) => unknown) {
   ipcMain.handle(channel, async (event, raw) => {
     const owner = [window, miniWindow].find(w => w && !w.isDestroyed() && event.sender === w.webContents && event.senderFrame === w.webContents.mainFrame)
-    if (!owner || (owner === miniWindow && !['player:get','player:command','item:cover','local:cover','preferences:get','mini:command','mini:get'].includes(channel))) throw new Error('Untrusted desktop request.')
+    if (!owner || (owner === miniWindow && !['player:get','player:command','player:seek','item:cover','local:cover','preferences:get','mini:command','mini:get'].includes(channel))) throw new Error('Untrusted desktop request.')
     const parsed = schema.safeParse(raw)
     if (!parsed.success) throw new Error('Invalid desktop request. Please check the entered values.')
     try { const result=await action(parsed.data);if(channel==='preferences:save')for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('theme:state',store.preferences().theme);return result }
@@ -161,6 +161,7 @@ else {
     handle('item:cover', z.object({ serverId: id, itemId: id }).strict(), input => downloads.cover(input.serverId,input.itemId) ?? provider(input.serverId).cover(input.itemId))
     handle('player:play', z.object({ queue: z.array(queueItemSchema).min(1).max(5000), index: z.number().int().min(0), position: z.number().finite().min(0).optional() }).strict(), async input => { if (input.index >= input.queue.length) throw new Error('Queue position is out of bounds.'); await player.play(input.queue, input.index, input.position) })
     handle('player:command', commandSchema, input => player.command(input))
+    handle('player:seek',z.object({key:z.string().max(10000),queueIndex:z.number().int().min(0).max(4999),time:z.number().finite().nonnegative()}).strict(), i=>player.seekTo(i))
     handle('player:get', z.undefined(), () => player.state)
     for (const [key, action] of [['MediaPlayPause', 'toggle'], ['MediaNextTrack', 'next'], ['MediaPreviousTrack', 'previous'], ['MediaStop', 'stop']] as const) globalShortcut.register(key, () => { void player.command({ action }).catch(() => {}) })
     createWindow()

@@ -1,3 +1,4 @@
+import {defaultPlayingScreen,playingScreenSchema} from '../shared/playing-screen'
 import { themeIds } from '../shared/themes'
 import { dialog, type BrowserWindow } from 'electron'
 import { z } from 'zod'
@@ -45,6 +46,8 @@ export function registerFeatures(handle: Handle, store: Store, player: Player, l
   handle('later:save', z.object({ item: queueItemSchema, due: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), note: z.string().max(5000), id: id.optional(), done: z.boolean().optional() }).strict(), i => store.laterSave(i))
   handle('later:delete', id, id => store.laterDelete(id))
   handle('history:list', z.undefined(), () => store.history())
+  handle('playing-screen:get', z.undefined(), () => playingScreenSchema.safeParse(store.get('playingScreen')).data ?? defaultPlayingScreen)
+  handle('playing-screen:save', playingScreenSchema, i => store.set('playingScreen',i))
   handle('preferences:get', z.undefined(), () => store.preferences())
   handle('preferences:save', preferenceSchema, async i => { if (player.state.status === 'playing' || player.state.status === 'paused') await player.audioPreferences(i); store.set('preferences', i) })
 }
