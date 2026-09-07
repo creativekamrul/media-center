@@ -10,4 +10,4 @@ Authenticated URLs remain in main and are sent to MPV over a unique local IPC en
 
 Selected local roots are canonicalized; every file access checks containment, including links/junctions. Media is read, never changed. Remote artwork is MIME/size restricted; descriptions render as plain text.
 
-No analytics or crash-upload backend exists. Network activity goes to configured media servers and radio/audio hosts. Builds are currently unsigned. Signing, automatic updates, a reporting channel and a complete security audit remain release-hardening work.
+No analytics or crash-upload backend exists. Network activity goes to configured media servers and radio/audio hosts, plus GitHub and its release CDN when the user checks for or downloads updates. The packaged update provider is fixed; only check/download/install operations cross validated IPC. No GitHub token is bundled. Downloaded installers are checked against release SHA-512 metadata; this is integrity verification, not publisher signature authentication. Builds are currently unsigned. Signing, a reporting channel and a complete security audit remain release-hardening work.

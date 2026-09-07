@@ -1,7 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { DesktopAPI, PlaybackState } from '../shared/types'
+import type { DesktopAPI, PlaybackState, UpdateState } from '../shared/types'
 
 const api: DesktopAPI = {
+  updateState: () => ipcRenderer.invoke('updates:get'),
+  checkForUpdates: () => ipcRenderer.invoke('updates:check'),
+  downloadUpdate: () => ipcRenderer.invoke('updates:download'),
+  installUpdate: () => ipcRenderer.invoke('updates:install'),
+  onUpdate: listener => { const callback = (_event: unknown, state: UpdateState) => listener(state); ipcRenderer.on('updates:state', callback); return () => ipcRenderer.removeListener('updates:state', callback) },
   musicBrowse: input => ipcRenderer.invoke('music:browse', input),
   musicDetail: input => ipcRenderer.invoke('music:detail', input),
   musicFavorite: input => ipcRenderer.invoke('music:favorite', input),

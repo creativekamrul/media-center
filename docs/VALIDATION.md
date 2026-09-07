@@ -1,11 +1,12 @@
-# Validation — 0.2.1
+# Validation — 0.2.2
 
 Validation date: 2026-09-07. Supported target: Windows x64.
 
 ## Automated checks
 
 - Strict TypeScript checking and the production Electron/Vite build pass.
-- 44 unit/regression tests cover domain separation, whole-book timelines, exact episode routes, provider transport, playlist duplicate ordering, catalog pagination, status filters, local metadata/path containment, queue edits, buffering-aware listening time, and MPV readiness.
+- 51 unit/regression tests cover domain separation, whole-book timelines, exact episode routes, provider transport, playlist duplicate ordering, catalog pagination, status filters, local metadata/path containment, queue edits, buffering-aware listening time, MPV readiness, update actions and installation preparation.
+- Real NSIS updater tests verify manual downloads, matching SHA-512 checksums, corrupt-file rejection, same/older version rejection, and disabled installation on quit. Downloads use inert fixture files and never execute an installer. See `artifacts/updater-smoke.json` after running `npm run test:updater`.
 - Source-build native desktop integration passes with no renderer exceptions. The test uses isolated Navidrome and Audiobookshelf fixture servers, encrypted SQLite connections, and muted real MPV.
 - The same suite supports packaged verification with `MEDIA_CENTER_EXECUTABLE`. Its definitive outcome is written to `artifacts/packaged-smoke.json`; source results are in `artifacts/desktop-smoke.json`.
 

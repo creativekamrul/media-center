@@ -2,11 +2,11 @@
 
 A Windows desktop home for Navidrome music, Audiobookshelf books and podcasts, and local audio folders. Built with Electron, React, TypeScript, SQLite, and native MPV playback.
 
-**Version 0.2.1** improves button visibility, episode layouts, keyboard focus, and navigation, and adds automated Windows releases. It builds on playlists, artists, favorites, episode statuses and sorting, Continue Listening, bookmarks, local files, expanded Now Playing, persistent queues, and personal listening plans. The long-term goal is Feishin and Audiobookshelf client parity, excluding lyrics. See the [feature inventory](docs/FEATURES.md) for remaining work.
+**Version 0.2.2** adds in-app GitHub updates. It also improves button visibility, episode layouts, keyboard focus, and navigation, and adds automated Windows releases. It builds on playlists, artists, favorites, episode statuses and sorting, Continue Listening, bookmarks, local files, expanded Now Playing, persistent queues, and personal listening plans. The long-term goal is Feishin and Audiobookshelf client parity, excluding lyrics. See the [feature inventory](docs/FEATURES.md) for remaining work.
 
 ## Install and connect
 
-1. Run `Media-Center-0.2.1-win-x64.exe` from the release package. Current builds are unsigned.
+1. Download and run the EXE from [GitHub Releases](https://github.com/creativekamrul/media-center/releases/latest). Current builds are unsigned.
 2. In Settings, select your existing `mpv.exe`. MPV is not bundled.
 3. Connect Navidrome using its base URL, username, and password.
 4. Connect Audiobookshelf using its base URL and API key/access token.
@@ -37,6 +37,7 @@ npm run dev
 ```powershell
 npm run typecheck
 npm test
+npm run test:updater
 npm run build
 npm run test:desktop
 npm run package:win
@@ -46,7 +47,7 @@ For muted native playback tests, set `MPV_TEST_PATH` to your MPV executable. For
 
 ## Release a version
 
-Update the package version and changelog, run checks, and commit on `main`. Run `npm run release -- -DryRun` to preview, then `npm run release` to push the version tag using your authenticated GitHub CLI. GitHub Actions builds and tests the Windows app before publishing its installer, corresponding source, and checksums. See [the release guide](docs/RELEASING.md) for setup and troubleshooting. In-app automatic updates are not implemented.
+Update the package version and changelog, run checks, and commit on `main`. Run `npm run release -- -DryRun` to preview, then `npm run release` to push the version tag using your authenticated GitHub CLI. GitHub Actions builds and tests the Windows app before publishing its installer, corresponding source, and checksums. See [the release guide](docs/RELEASING.md) for setup and troubleshooting. Installed versions from 0.2.2 onward can use **Settings → App updates → Check for updates → Download update → Restart and install**. Versions 0.2.1 and earlier need one manual upgrade. Updates use stable releases only; download and installation require your action.
 
 ## Playback and privacy
 

@@ -18,4 +18,4 @@ Read `AGENTS.md`. In particular:
 - Local folders are read-only and root-bounded after canonical path resolution.
 - Document incomplete features honestly. Lyrics are intentionally excluded.
 
-For releases, follow [Windows releases](docs/RELEASING.md). Update package/lockfile versions, changelog and validation; the interface and client identification read the package version automatically. The GitHub Actions workflow builds and tests each version tag, then publishes the installer, corresponding GPL source, and checksums. Signing and in-app automatic updates are not configured.
+For releases, follow [Windows releases](docs/RELEASING.md). Update package/lockfile versions, changelog and validation; the interface and client identification read the package version automatically. The GitHub Actions workflow builds and tests each version tag, then publishes the installer, corresponding GPL source, and checksums. Releases include updater metadata. Run `npm run test:updater` for updater changes, and keep download and installation explicit user actions. Signing is not configured.

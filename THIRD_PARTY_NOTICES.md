@@ -5,6 +5,7 @@ Media Center is GPL-3.0-only. Dependencies retain their own licenses; distribute
 | Component | Role | Upstream |
 |---|---|---|
 | Electron | Desktop runtime | MIT plus Chromium/bundled notices — https://github.com/electron/electron |
+| electron-updater | GitHub updates and NSIS installation | MIT — https://github.com/electron-userland/electron-builder |
 | React / React DOM | Interface | MIT — https://github.com/facebook/react |
 | Lucide | Icons | ISC — https://github.com/lucide-icons/lucide |
 | Zod | Validation | MIT — https://github.com/colinhacks/zod |

@@ -25,11 +25,23 @@ Alternatively, create an annotated `vX.Y.Z` tag on the reviewed commit and push 
 5. Runs the suite against the packaged executable.
 6. Archives corresponding tracked source from that same commit and calculates SHA-256 checksums.
 7. Uploads build artifacts and validation screenshots/reports.
-8. A separate publish job uses GitHub CLI to create the release and attach the tested assets.
+8. A separate publish job uses GitHub CLI to create a draft, attach the tested assets, then publish the complete release.
 
 Build jobs have read-only repository access. Only the publish job has `contents: write`, through the automatically provided `GITHUB_TOKEN`; no personal access token secret is required. Failed checks prevent publication. Existing releases are never overwritten. Versions containing a prerelease suffix are marked as prereleases.
 
 Assets are named `Media-Center-X.Y.Z-win-x64.exe`, its blockmap, `Media-Center-X.Y.Z-source.zip`, and `SHA256SUMS.txt`. Installers remain unsigned until a signing certificate is configured. GitHub tests do not claim native MPV hardware coverage; run locally with `MPV_TEST_PATH` for native streaming/audio checks.
+
+## Update metadata
+
+Stable releases must also include `latest.yml`; prereleases use their channel metadata file. The asset script verifies that metadata identifies the exact version and SHA-512 of the installer before publication. Do not omit metadata or edit its hashes by hand.
+
+## In-app updates
+
+The publish configuration points to the public `creativekamrul/media-center` GitHub repository. Electron-builder embeds `app-update.yml`; electron-updater uses it without exposing URLs or credentials to the renderer. Download and installation are separate user actions. Stable releases only, no downgrades, and no installation on normal quit. SHA-512 protects download integrity; unsigned releases do not have publisher signature authentication.
+
+Release 0.2.2 is the first updater-enabled version. Users of older builds must install it manually once. Forks must change `build.publish` and the displayed source before distributing their own updates. Never embed a GitHub token in the app.
+
+Run `npm run test:updater` for real NSIS updater metadata/download/checksum tests against inert local fixtures. No installer is executed by that test. Controller regression tests verify that installation waits for playback preparation. A full installed-version upgrade and Windows installer interaction still require a release-to-release manual check.
 
 ## Monitor or retry
 

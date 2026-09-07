@@ -46,6 +46,10 @@ History stores up to 500 recently played distinct items on this device. It is se
 
 ## Troubleshooting
 
+For updates, open **Settings → App updates**. Check for updates, download the offered stable version, and choose Restart and install when ready. Downloading can run while you listen. Installation stops playback and saves the queue and listening session. Normal exit never installs an update. Connections, local sources and listening plans stay in the existing app data directory. MPV is separate and is not updated.
+
+Versions 0.2.1 and earlier need one manual installation of 0.2.2 or newer. An integrity or network error prevents installation; check again to retry. If a release has just been published, allow time for its assets to become available. Development builds disable updates.
+
 - Cannot connect: check base URL, reverse-proxy path, network, credentials and permissions. Authenticated requests do not follow arbitrary redirects.
 - MPV unavailable: select a valid executable in Settings; the picker checks its control connection.
 - No sound: check app volume, Windows mixer, output device and exclusive-mode conflicts.

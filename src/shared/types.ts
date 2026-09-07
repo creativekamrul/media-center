@@ -30,7 +30,17 @@ export interface PlaybackState {
 export interface Settings { mpvPath: string; exclusive: boolean; audioDevice: string; connections: Connection[] }
 export type PlayerCommand = { action: 'toggle' | 'next' | 'previous' | 'stop' | 'shuffle' } | { action: 'seek' | 'speed' | 'volume' | 'sleep'; value: number } | { action: 'repeat'; value: 'off' | 'all' | 'one' }
 export interface AudioDevice { name: string; description: string }
+export interface UpdateState {
+  currentVersion: string
+  status: 'unavailable' | 'idle' | 'checking' | 'up-to-date' | 'available' | 'downloading' | 'ready' | 'installing' | 'error'
+  version?: string; percent?: number; transferred?: number; total?: number; checkedAt?: number; error?: string
+}
 export interface DesktopAPI {
+  updateState(): Promise<UpdateState>
+  checkForUpdates(): Promise<UpdateState>
+  downloadUpdate(): Promise<UpdateState>
+  installUpdate(): Promise<UpdateState>
+  onUpdate(listener: (state: UpdateState) => void): () => void
   settings(): Promise<Settings>
   saveConnection(input: ConnectionInput): Promise<Connection>
   removeConnection(id: string): Promise<void>

@@ -155,3 +155,12 @@ input[type=range]::-webkit-slider-thumb { opacity: 1; width: 12px; height: 12px;
   .expanded-art .collapse-player { top: 26px; right: 6px; }
 }
 @media(prefers-reduced-motion:reduce) { button { transition: none; } }
+
+.update-panel { margin: 24px 0; }
+.update-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.update-heading h2 { margin: 0 0 8px; }
+.update-heading p, .update-hint, .update-source { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.update-panel > p[role=status] { font-size: 15px; margin: 20px 0 14px; }
+.update-panel .listen-actions { margin: 14px 0; }
+.update-panel progress { display: block; width: 100%; height: 8px; accent-color: var(--accent); }
+.update-error { color: #ffbfb4; font-size: 14px; line-height: 1.6; }

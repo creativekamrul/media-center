@@ -122,6 +122,12 @@ async function main() {
     await page.getByRole('button', { name: 'Downloaded on server' }).click()
     assert.equal(await page.locator('.episode-row').count(), 3)
     await page.getByRole('button', { name: 'Connect a server', exact: true }).click()
+    await page.getByRole('heading', { name: 'App updates', exact: true }).waitFor()
+    const updateState = await page.evaluate(() => window.mediaCenter.updateState())
+    assert.equal(updateState.currentVersion, require('../package.json').version)
+    assert.equal(updateState.status, process.env.MEDIA_CENTER_EXECUTABLE ? 'idle' : 'unavailable')
+    assert.equal(await page.getByRole('button', { name: 'Check for updates', exact: true }).isDisabled(), !process.env.MEDIA_CENTER_EXECUTABLE)
+    await page.screenshot({ path: resolve(artifacts, 'app-updates.png') })
     await page.getByLabel('Connection name', { exact: true }).fill('Test Navidrome')
     await page.getByLabel('Server address', { exact: true }).fill(url)
     await page.getByLabel('Username', { exact: true }).fill('test-user')
@@ -265,6 +271,17 @@ async function main() {
     }
     writeFileSync(resolve(artifacts, process.env.MEDIA_CENTER_EXECUTABLE ? 'packaged-smoke.json' : 'desktop-smoke.json'), JSON.stringify({ passed: true, packagedExecutable: process.env.MEDIA_CENTER_EXECUTABLE || null, nativeMpvTested: !!mpvPath, nativeAudioRequests: audioRequests.length, checks: ['production Electron/preload/SQLite', 'sample music/books/podcasts', 'book chapters distinct from podcast episodes', 'episode availability filter', 'Navidrome authentication and album browsing', 'Audiobookshelf authentication and separate libraries', 'credentials excluded from renderer settings', 'missing MPV error', 'minimum window layout', 'readable aligned action buttons', 'navigation resets inherited scroll', 'grouped episode controls at 1024 and 1920 pixels', 'playlist creation and replacement with ordered duplicate tracks', 'episode status search and sorting', 'server completion mutation', ...(mpvPath ? ['real MPV 24-bit/96 kHz 300+ MB virtual WAV streaming', 'authenticated episode playback', 'resume second book file and seek backward to first while paused', 'server progress sync', 'raw Navidrome audio and music speed reset', 'editable queue and expanded player', 'SQLite listen-later save reschedule completion', 'local WAV metadata and native playback', 'live ReplayGain and equalizer', 'restart persistence without autoplay'] : [])], requestCount: requests.length, rendererErrors: errors }, null, 2))
     console.log('Desktop smoke passed: production Electron, 2 fixture servers, 3 media types, 0 renderer errors.')
-  } finally { if (desktop) await desktop.close(); server.closeAllConnections(); await new Promise(resolve => server.close(resolve)) }
+  } catch (error) {
+    console.error('Desktop check failed:', error)
+    if (desktop) { try { await desktop.firstWindow().then(page => page.screenshot({path:resolve(artifacts,'desktop-failure.png'), timeout:5000})) } catch {} }
+    throw error
+  } finally {
+    if (desktop) {
+      let timer
+      await Promise.race([desktop.close().catch(() => {}), new Promise(resolve => { timer = setTimeout(() => { desktop.process().kill(); resolve() }, 10000) })])
+      clearTimeout(timer)
+    }
+    server.closeAllConnections(); await new Promise(resolve => server.close(resolve))
+  }
 }
 main().catch(error => { console.error(error); process.exitCode = 1 })

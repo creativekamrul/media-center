@@ -36,6 +36,7 @@ jobs:
         run: node scripts/release-check.cjs --tag
       - run: npm ci
       - run: npm test
+      - run: npm run test:updater
       - run: npm run build
       - name: Exercise the desktop interface
         run: npm run test:desktop
@@ -53,11 +54,7 @@ jobs:
         with:
           name: windows-release
           if-no-files-found: error
-          path: |
-            release/Media-Center-*-win-x64.exe
-            release/Media-Center-*-win-x64.exe.blockmap
-            release/Media-Center-*-source.zip
-            release/SHA256SUMS.txt
+          path: release/publish-${{ env.RELEASE_TAG }}/*
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -91,6 +88,11 @@ jobs:
             echo 'A release already exists for this tag. Existing releases are not overwritten.'
             exit 1
           fi
-          args=(--verify-tag --generate-notes --title "Media Center $RELEASE_TAG")
+          args=(--draft --verify-tag --generate-notes --title "Media Center $RELEASE_TAG")
           if [[ "$RELEASE_TAG" == *-* ]]; then args+=(--prerelease); fi
           gh release create "$RELEASE_TAG" ./* "${args[@]}"
+          if [[ "$RELEASE_TAG" == *-* ]]; then
+            gh release edit "$RELEASE_TAG" --draft=false --prerelease
+          else
+            gh release edit "$RELEASE_TAG" --draft=false --latest
+          fi

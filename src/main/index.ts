@@ -10,6 +10,9 @@ import { Navidrome } from './providers/navidrome'
 import { serverUrl } from './providers/http'
 import { LocalFiles } from './local'
 import { registerFeatures, queueItemSchema } from './features'
+import { autoUpdater } from 'electron-updater'
+import { Updates } from './updates'
+import { APP_VERSION } from '../shared/version'
 
 let window: BrowserWindow | undefined
 let store: Store
@@ -59,6 +62,12 @@ else {
     const mpv = new Mpv(), local = new LocalFiles(store); player = new Player(mpv, store, provider, local)
     player.on('state', state => { if (window && !window.isDestroyed()) window.webContents.send('player:state', state) })
     registerFeatures(handle, store, player, local, provider, () => window!)
+    const updates = new Updates(autoUpdater, app.isPackaged ? app.getVersion() : APP_VERSION, app.isPackaged && process.platform === 'win32', async () => { await player.command({ action: 'stop' }) })
+    updates.on('state', state => { if (window && !window.isDestroyed()) window.webContents.send('updates:state', state) })
+    handle('updates:get', z.undefined(), () => updates.state)
+    handle('updates:check', z.undefined(), () => updates.check())
+    handle('updates:download', z.undefined(), () => updates.download())
+    handle('updates:install', z.undefined(), () => updates.install())
     handle('settings:get', z.undefined(), () => store.settings())
     handle('connections:save', connectionSchema, async input => {
       serverUrl(input.url, '')

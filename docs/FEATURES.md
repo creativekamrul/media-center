@@ -23,6 +23,7 @@ The target is a full desktop replacement for Feishin and Audiobookshelf's web cl
 | Audio | ReplayGain off/track/album; clipping prevention; ten-band EQ; per-book/episode speed; timed and chapter-end sleep |
 | Appearance | Forest/charcoal; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; minimum 1024 × 720 layout |
 | Open source | GPL-3.0-only; user/developer/security/API documentation; model, provider, local-file, playback and desktop tests |
+| Updates | Settings check/download/restart-to-install; stable GitHub releases; verified download integrity; explicit user actions |
 | Releases | Version-tagged GitHub Actions Windows builds; packaged integration checks; GitHub CLI publication; corresponding source and SHA-256 checksums |
 
 Audiobookshelf search follows its relevance-ranked endpoint, capped at 100 matches; clear search for full server-sorted pagination. Continue Listening requests up to 100 recent server items. Podcast statuses belong to episodes, never to a synthesized book-like show.
@@ -34,7 +35,7 @@ Audiobookshelf search follows its relevance-ranked endpoint, capped at 100 match
 - Native Navidrome smart-playlist rule editor, server music-folder tree, advanced native filters, artist biographies/similar artists, album ratings, playlist artwork/import/export, radio management, custom CSS.
 - Dedicated ABS author/series/collection pages and management, all personalized shelves/statistics, batch episode status changes, bookmark editing, cross-show latest/unplayed feed, podcast discovery/subscription/RSS import and download/retention management.
 - ABS metadata matching/editing, chapter/cover editors, supplementary files and ebook/PDF reading; library/user/server administration, scans, backups, logs, permissions and sharing.
-- Complete accessibility audit, localization, code signing, automatic updates, macOS/Linux testing and packaging.
+- Complete accessibility audit, localization, code signing, macOS/Linux testing and packaging.
 
 Lyrics are intentionally excluded. MPV is user-supplied. Hardware bit-perfect output and production server compatibility need testing on the actual device/server combination.
 

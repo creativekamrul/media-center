@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.2
+
+- Added Settings → App updates: check GitHub stable releases, download with progress, and restart to install.
+- Download and installation are explicit actions; ordinary exit never installs. Playback sessions and queues are saved before installation.
+- Added restricted update IPC, retryable errors, SHA-512 verification, corrupt-download and downgrade regression checks.
+- GitHub releases now include verified updater metadata and remain drafts until every asset has uploaded.
+- Version 0.2.1 and earlier need one manual installer upgrade to receive the in-app updater.
+
 ## 0.2.1
 
 - Improved control contrast, readable text, larger buttons and visible seek/volume handles.
