@@ -1,0 +1,242 @@
+import { EventEmitter } from 'node:events'
+import { emptyPlayback, defaultPreferences, type PlayTarget, type PlaybackState, type PlayerCommand, type QueueItem, type QueueEdit, type Preferences } from '../shared/types'
+import type { LocalFiles } from './local'
+import { locateTrack, progressKey } from '../shared/timeline'
+import { Audiobookshelf, type AbsSession } from './providers/audiobookshelf'
+import { Navidrome } from './providers/navidrome'
+import { Mpv } from './mpv'
+import { Store } from './store'
+
+export class Player extends EventEmitter {
+  state: PlaybackState = structuredClone(emptyPlayback)
+  private session?: { provider: Audiobookshelf; data: AbsSession }
+  private target?: PlayTarget
+  private fileIndex = 0
+  private serial: Promise<unknown> = Promise.resolve()
+  private listened = 0
+  private lastTick = Date.now()
+  private scrobbled = false
+  private switchingFile = false
+  private timer: NodeJS.Timeout
+  private saveTick = 0
+  private unshuffled: QueueItem[] | undefined
+  constructor(readonly mpv: Mpv, private store: Store, private provider: (id: string) => Audiobookshelf | Navidrome, private local?: LocalFiles) {
+    super()
+    const saved = store.get<{ queue: QueueItem[]; index: number }>('queue')
+    if (saved?.queue.length) { this.state.queue = saved.queue; this.state.queueIndex = Math.min(saved.index, saved.queue.length - 1); const current = this.state.queue[this.state.queueIndex]; this.state.title = current.title; this.state.subtitle = current.subtitle; this.state.kind = current.target.kind }
+    this.state.volume = store.get<number>('volume') ?? 80
+    mpv.on('event', event => {
+      if (event.event === 'property-change') {
+        if (event.name === 'time-pos' && typeof event.data === 'number' && this.state.status !== 'loading' && !this.switchingFile) {
+          const before = this.state.position
+          this.state.position = event.data + (this.session?.data.audioTracks[this.fileIndex]?.startOffset ?? 0)
+          if (this.state.status === 'playing' && this.state.sleepChapter && this.state.position - before < 5 * this.state.speed && this.state.chapters.some(c => c.end > before && c.end <= this.state.position)) { this.state.sleepChapter = false; void this.command({ action: 'toggle' }).catch(() => {}) }
+        }
+        if (event.name === 'audio-codec-name' && typeof event.data === 'string') this.state.codec = event.data
+        if (event.name === 'audio-params') this.state.sampleRate = event.data?.samplerate
+        if (event.name === 'paused-for-cache') this.state.buffering = !!event.data
+        this.publish()
+      }
+      if (event.event === 'end-file' && event.reason === 'eof') void this.enqueue(() => this.ended()).catch(error => this.fail(error instanceof Error ? error.message : 'Could not advance playback.'))
+      if (event.event === 'end-file' && event.reason === 'error') this.fail('MPV could not decode or read this audio stream. Check the connection and file format.')
+    })
+    mpv.on('failure', message => { if (this.state.status !== 'idle') this.fail(message) })
+    this.timer = setInterval(() => {
+      const now = Date.now(), elapsed = Math.min(2, (now - this.lastTick) / 1000); this.lastTick = now
+      if (this.state.status === 'playing' && !this.state.buffering) this.listened += elapsed
+      if (this.state.sleepAt && now >= this.state.sleepAt) { this.state.sleepAt = undefined; void this.enqueue(async () => { if (this.state.status === 'playing') await this.commandInner({ action: 'toggle' }) }).catch(() => {}) }
+      if (++this.saveTick % 5 === 0) this.saveResume()
+      if (this.saveTick % 15 === 0) void this.enqueue(() => this.sync()).catch(() => {})
+    }, 1000)
+  }
+  private publish() { this.emit('state', structuredClone(this.state)) }
+  private saveQueue() { this.store.set('queue', { queue: this.state.queue, index: this.state.queueIndex }) }
+  private fail(message: string) { this.state.status = 'error'; this.state.error = message; this.publish() }
+  enqueue<T>(work: () => Promise<T>): Promise<T> {
+    const next = this.serial.then(work); this.serial = next.catch(() => {})
+    return next
+  }
+  async play(queue: QueueItem[], index: number, position?: number) {
+    return this.enqueue(async () => {
+      try {
+        if (this.state.status === 'playing' || this.state.status === 'paused') { await this.mpv.command(['set_property', 'pause', true]); this.state.status = 'paused' }
+        await this.closeSession()
+        if (this.target) await this.mpv.command(['stop']).catch(() => {})
+        this.state.queue = structuredClone(queue); this.state.queueIndex = index; this.unshuffled = undefined; this.state.shuffle = false; this.saveQueue(); await this.load(this.state.queue[index], position)
+      }
+      catch (error) { this.fail(error instanceof Error ? error.message : 'Playback failed.'); throw error }
+    })
+  }
+  private async load(item: QueueItem, position?: number) {
+    this.state.status = 'loading'; this.state.error = undefined; this.state.syncError = undefined; this.state.codec = undefined; this.state.sampleRate = undefined; this.state.buffering = false
+    this.state.title = item.title; this.state.subtitle = item.subtitle; this.state.kind = item.target.kind; this.state.position = 0; this.state.duration = 0; this.state.chapters = []
+    this.target = item.target; this.listened = 0; this.scrobbled = false; this.publish()
+    const settings = this.store.settings()
+    await this.mpv.start(settings.mpvPath)
+    await this.mpv.command(['set_property', 'audio-exclusive', settings.exclusive])
+    await this.mpv.command(['set_property', 'audio-device', settings.audioDevice])
+    await this.mpv.command(['set_property', 'volume', this.state.volume])
+    const prefs = { ...defaultPreferences, ...this.store.get<Preferences>('preferences') }
+    await this.audioPreferences(prefs)
+    const provider = item.target.kind === 'local-file' ? undefined : this.provider(item.target.serverId)
+    this.state.speed = item.target.kind === 'audiobook' || item.target.kind === 'podcast-episode' ? this.store.get<number>(`speed:${progressKey(item.target)}`) ?? 1 : 1
+    await this.mpv.command(['set_property', 'speed', this.state.speed])
+    if (item.target.kind === 'local-file') {
+      if (!this.local) throw new Error('Local files are unavailable.')
+      const file = await this.local.metadata(item.target.rootId, item.target.fileId)
+      this.state.title = file.title; this.state.subtitle = file.artist || file.name; this.state.duration = file.duration
+      await this.mpv.load(await this.local.path(item.target.rootId, item.target.fileId), { start: String(position ?? 0) }); this.state.position = position ?? 0
+    } else if (item.target.kind === 'radio') {
+      if (!(provider instanceof Navidrome)) throw new Error('Radio requires a Navidrome server.')
+      await this.mpv.load(await provider.radioUrl(item.target.stationId), {})
+    } else if (item.target.kind === 'music-track') {
+      if (!(provider instanceof Navidrome)) throw new Error('A music track requires a Navidrome server.')
+      const track = await provider.track(item.target.trackId)
+      this.state.title = track.title; this.state.subtitle = track.artist; this.state.duration = track.duration
+      await this.mpv.load(provider.stream(track.id), { start: String(position ?? 0) })
+      this.state.position = position ?? 0
+      item.cover = track.cover; this.saveQueue()
+      if (prefs.scrobble) await provider.scrobble(track.id, false).catch(() => { this.state.syncError = 'Now-playing could not be sent to Navidrome.' })
+    } else {
+      if (!(provider instanceof Audiobookshelf)) throw new Error('Spoken audio requires an Audiobookshelf server.')
+      const detail = await provider.detail(item.target.kind === 'audiobook' ? item.target.bookId : item.target.showId)
+      if (item.target.kind === 'audiobook' && detail.kind !== 'audiobook') throw new Error('This item is a podcast show, not an audiobook.')
+      if (item.target.kind === 'podcast-episode' && (detail.kind !== 'podcast-show' || !detail.episodes.some(e => e.id === (item.target as { episodeId: string }).episodeId))) throw new Error('This episode does not belong to the selected podcast show.')
+      const data = await provider.start(item.target, this.store.get<string>('deviceId')!)
+      this.session = { provider, data }; this.state.duration = data.duration
+      this.state.chapters = detail.kind === 'audiobook' ? detail.chapters : []
+      const resume = Math.min(data.duration, Math.max(0, position ?? data.currentTime))
+      await this.loadAbsFile(resume)
+    }
+    await this.mpv.command(['set_property', 'pause', false])
+    this.state.status = 'playing'; this.publish()
+  }
+  async audioPreferences(prefs: Preferences) {
+    await this.mpv.command(['set_property', 'replaygain', prefs.replayGain])
+    await this.mpv.command(['set_property', 'replaygain-clip', !prefs.preventClipping])
+    const bands = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
+    const filters = prefs.equalizer.flatMap((gain, i) => gain ? [`equalizer=f=${bands[i]}:t=o:w=1:g=${gain}`] : [])
+    await this.mpv.command(['set_property', 'af', filters.length ? `lavfi=[${filters.join(',')}]` : ''])
+  }
+  private async loadAbsFile(position: number) {
+    if (!this.session) return
+    const { provider, data } = this.session
+    const located = locateTrack(data.audioTracks, position); this.fileIndex = located.index
+    const track = data.audioTracks[this.fileIndex]
+    this.switchingFile = true
+    try {
+      await this.mpv.load(provider.streamUrl(track.contentUrl), { start: String(located.offset), 'http-header-fields': `Authorization: ${provider.headers.Authorization}` })
+      this.state.position = position
+    } finally { this.switchingFile = false }
+  }
+  private saveResume() {
+    if (!this.target || this.state.status === 'loading' || this.state.status === 'idle') return
+    this.store.set(`resume:${progressKey(this.target)}`, { position: this.state.position, duration: this.state.duration, updatedAt: Date.now(), syncPending: !!this.state.syncError })
+    const item = this.state.queue[this.state.queueIndex]; if (item && this.state.position > 0) this.store.record?.(item, this.state.position, this.state.duration)
+  }
+  private async sync(close = false) {
+    this.saveResume()
+    if (this.session) {
+      const elapsed = this.listened
+      try {
+        await this.session.provider.sync(this.session.data.id, this.state.position, this.state.duration, elapsed, close)
+        this.listened = Math.max(0, this.listened - elapsed); this.state.syncError = undefined
+      } catch {
+        // Do not replay an uncertain listening-time delta: the server may have accepted it.
+        this.listened = Math.max(0, this.listened - elapsed)
+        this.state.syncError = 'Progress sync failed. Your position is saved on this device; the server may be behind.'
+      }
+      this.saveResume(); this.publish()
+    } else if (this.target?.kind === 'music-track' && (this.store.get<Preferences>('preferences')?.scrobble ?? true) && !this.scrobbled && this.listened >= Math.min(240, this.state.duration / 2) && this.state.duration > 0) {
+      try { const p = this.provider(this.target.serverId); if (p instanceof Navidrome) await p.scrobble(this.target.trackId, true); this.scrobbled = true }
+      catch { this.state.syncError = 'Listening history could not be sent to Navidrome.'; this.publish() }
+    }
+  }
+  private async closeSession() { await this.sync(true); this.session = undefined }
+  private async ended() {
+    if (this.state.status === 'idle' || this.state.status === 'loading') return
+    if (this.session && this.fileIndex + 1 < this.session.data.audioTracks.length) {
+      const next = this.session.data.audioTracks[this.fileIndex + 1]
+      await this.loadAbsFile(next.startOffset); return
+    }
+    this.state.position = this.state.duration; await this.closeSession()
+    if (this.state.repeat === 'one') { await this.load(this.state.queue[this.state.queueIndex], 0); return }
+    await this.advance(1, true)
+  }
+  private async advance(delta: number, ended = false) {
+    let index = this.state.queueIndex + delta
+    if (this.state.repeat === 'all') index = (index + this.state.queue.length) % this.state.queue.length
+    if (index < 0 || index >= this.state.queue.length) { if (ended) { await this.mpv.command(['stop']); this.state.status = 'idle'; this.publish() }; return }
+    if (this.state.status === 'playing') { await this.mpv.command(['set_property', 'pause', true]); this.state.status = 'paused' }
+    await this.closeSession(); await this.mpv.command(['stop']); this.state.queueIndex = index; this.saveQueue(); await this.load(this.state.queue[index])
+  }
+  command(command: PlayerCommand) { return this.enqueue(() => this.commandInner(command)).catch(error => { if (this.state.status === 'loading') this.fail(error instanceof Error ? error.message : 'Playback failed.'); throw error }) }
+  private async commandInner(command: PlayerCommand) {
+    switch (command.action) {
+      case 'toggle':
+        if (this.state.status === 'idle' && this.state.queue[this.state.queueIndex]) {
+          const item = this.state.queue[this.state.queueIndex], checkpoint = this.store.get<{position:number;duration:number}>(`resume:${progressKey(item.target)}`)
+          const resume = (item.target.kind === 'music-track' || item.target.kind === 'local-file') && checkpoint && checkpoint.position < checkpoint.duration - 2 ? checkpoint.position : undefined
+          await this.load(item, resume); break
+        }
+        if (!['playing', 'paused'].includes(this.state.status)) return
+        await this.mpv.command(['set_property', 'pause', this.state.status === 'playing'])
+        this.state.status = this.state.status === 'playing' ? 'paused' : 'playing'; await this.sync(); break
+      case 'stop': {
+        if (this.state.status === 'playing') { await this.mpv.command(['set_property', 'pause', true]).catch(() => {}); this.state.status = 'paused' }
+        await this.closeSession(); await this.mpv.stop(); this.target = undefined
+        const item = this.state.queue[this.state.queueIndex]
+        this.state = { ...structuredClone(emptyPlayback), title: item?.title ?? emptyPlayback.title, subtitle: item?.subtitle ?? emptyPlayback.subtitle, kind: item?.target.kind, volume: this.state.volume, queue: this.state.queue, queueIndex: this.state.queueIndex, repeat: this.state.repeat, shuffle: this.state.shuffle, syncError: this.state.syncError }; this.saveQueue(); break
+      }
+      case 'next': await this.advance(1); break
+      case 'previous': if (this.state.position > 3) await this.commandInner({ action: 'seek', value: 0 }); else await this.advance(-1); break
+      case 'seek': {
+        const time = Math.min(this.state.duration, Math.max(0, command.value))
+        const paused = this.state.status === 'paused'
+        if (this.session) {
+          const located = locateTrack(this.session.data.audioTracks, time)
+          if (located.index !== this.fileIndex) { await this.loadAbsFile(time); await this.mpv.command(['set_property', 'pause', paused]) }
+          else await this.mpv.command(['seek', located.offset, 'absolute+exact'])
+        } else await this.mpv.command(['seek', time, 'absolute+exact'])
+        this.state.position = time; await this.sync(); break
+      }
+      case 'speed': this.state.speed = command.value; await this.mpv.command(['set_property', 'speed', command.value]); if (this.target && this.target.kind !== 'music-track') this.store.set(`speed:${progressKey(this.target)}`, command.value); break
+      case 'volume': this.state.volume = command.value; this.store.set('volume', command.value); if (this.state.status !== 'idle') await this.mpv.command(['set_property', 'volume', command.value]); break
+      case 'sleep': this.state.sleepAt = command.value > 0 ? Date.now() + command.value * 60000 : undefined; break
+      case 'shuffle': {
+        this.state.shuffle = !this.state.shuffle
+        const upcoming = this.state.queue.slice(this.state.queueIndex + 1)
+        if (this.state.shuffle) {
+          this.unshuffled = [...upcoming]
+          for (let i = upcoming.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [upcoming[i], upcoming[j]] = [upcoming[j], upcoming[i]] }
+        } else if (this.unshuffled) upcoming.sort((a,b) => { const ai = this.unshuffled!.indexOf(a), bi = this.unshuffled!.indexOf(b); return (ai < 0 ? Infinity : ai) - (bi < 0 ? Infinity : bi) })
+        this.state.queue.splice(this.state.queueIndex + 1, upcoming.length, ...upcoming); this.saveQueue(); break
+      }
+      case 'repeat': this.state.repeat = command.value; break
+    }
+    this.publish()
+  }
+  edit(input: QueueEdit) { return this.enqueue(async () => {
+    const queue = this.state.queue, current = queue[this.state.queueIndex]
+    if (input.action === 'append' || input.action === 'next') {
+      if (queue.length + input.items.length > 5000) throw new Error('The queue can contain up to 5,000 items.')
+      queue.splice(input.action === 'next' ? this.state.queueIndex + 1 : queue.length, 0, ...input.items)
+    } else if (input.action === 'jump') {
+      if (!queue[input.index]) throw new Error('Queue position is out of bounds.')
+      if (this.state.status === 'playing') { await this.mpv.command(['set_property', 'pause', true]); this.state.status = 'paused' }
+      await this.closeSession(); if (this.target) await this.mpv.command(['stop']); this.state.queueIndex = input.index; await this.load(queue[input.index])
+    } else if (input.action === 'move') {
+      if (!queue[input.from] || !queue[input.to]) throw new Error('Queue position is out of bounds.')
+      queue.splice(input.to, 0, queue.splice(input.from, 1)[0]); this.state.queueIndex = current ? queue.indexOf(current) : 0
+    } else if (input.action === 'remove') {
+      if (!queue[input.index]) throw new Error('Queue position is out of bounds.')
+      if (input.index === this.state.queueIndex && this.target) throw new Error('Stop playback before removing the current item, or skip to another item.')
+      queue.splice(input.index, 1); this.state.queueIndex = current && queue.includes(current) ? queue.indexOf(current) : 0
+    } else if (input.action === 'clear') { await this.commandInner({ action: 'stop' }); this.state.queue = []; this.state.queueIndex = 0 }
+    else if (input.action === 'clear-upcoming') queue.splice(this.state.queueIndex + 1)
+    else if (input.action === 'restore') { const saved = this.store.get<{queue: QueueItem[]; index: number}>('queue'); if (saved && !this.target) { this.state.queue = saved.queue; this.state.queueIndex = saved.index } }
+    else if (input.action === 'sleep-chapter') this.state.sleepChapter = input.enabled
+    this.saveQueue(); this.publish()
+  }).catch(error => { if (this.state.status === 'loading') this.fail(error instanceof Error ? error.message : 'Playback failed.'); throw error }) }
+  async shutdown() { clearInterval(this.timer); await this.enqueue(async () => { if (this.state.status === 'playing') { await this.mpv.command(['set_property', 'pause', true]).catch(() => {}); this.state.status = 'paused' }; await this.closeSession(); this.saveQueue(); await this.mpv.stop() }) }
+}

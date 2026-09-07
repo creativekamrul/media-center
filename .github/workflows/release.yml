@@ -1,0 +1,96 @@
+name: Windows release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing version tag to build, for example v0.2.1'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+concurrency:
+  group: windows-release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify version and exact tagged commit
+        run: node scripts/release-check.cjs --tag
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Exercise the desktop interface
+        run: npm run test:desktop
+      - name: Build Windows installer without implicit publishing
+        run: npx electron-builder --win nsis --x64 --publish never
+      - name: Exercise the packaged app
+        shell: pwsh
+        run: |
+          $env:MEDIA_CENTER_EXECUTABLE = Join-Path $PWD 'release\win-unpacked\Media Center.exe'
+          npm run test:desktop
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Prepare corresponding source and checksums
+        run: node scripts/release-assets.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-release
+          if-no-files-found: error
+          path: |
+            release/Media-Center-*-win-x64.exe
+            release/Media-Center-*-win-x64.exe.blockmap
+            release/Media-Center-*-source.zip
+            release/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-validation
+          path: |
+            artifacts/*smoke.json
+            artifacts/*.png
+          if-no-files-found: ignore
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-release
+          path: release
+      - name: Publish tested assets with GitHub CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release
+          sha256sum --check SHA256SUMS.txt
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo 'A release already exists for this tag. Existing releases are not overwritten.'
+            exit 1
+          fi
+          args=(--verify-tag --generate-notes --title "Media Center $RELEASE_TAG")
+          if [[ "$RELEASE_TAG" == *-* ]]; then args+=(--prerelease); fi
+          gh release create "$RELEASE_TAG" ./* "${args[@]}"

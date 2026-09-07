@@ -1,0 +1,69 @@
+# Architecture decision: Windows desktop with MPV
+
+Accepted stack: Electron + React + TypeScript; SQLite for local persistent state; external MPV controlled over a local named pipe. No hosted frontend, browser audio player, or additional server is required.
+
+## Boundaries
+
+`src/renderer` owns presentation and interaction. It calls an explicit `DesktopAPI` through the sandboxed preload. Node integration is disabled, context isolation is enabled, permissions are denied by default, and navigation/new windows are blocked.
+
+`src/main` owns credentials, network calls, SQLite, native dialogs, MPV lifecycle, playback coordination, and server synchronization. Each IPC handler validates its sender and input schema. The renderer cannot run arbitrary shell/MPV commands, read arbitrary files, or supply playback URLs.
+
+`src/main/providers` translates each server's responses into domain entities. Runtime schemas validate discriminator fields. Unknown media types fail explicitly; they are never treated as books by default.
+
+`src/shared` contains domain types and timeline calculations. No credential or stream URL belongs in these public types.
+
+## Three distinct domains
+
+```text
+Navidrome connection
+  Music library
+    Album
+      Music track (playable)
+
+Audiobookshelf connection
+  Book library (mediaType: book)
+    Audiobook (playable)
+      Chapter (whole-book start/end markers)
+      Audio file (physical file, start offset, duration)
+
+  Podcast library (mediaType: podcast)
+    Podcast show (container, not playable)
+      Podcast episode (playable, independent ID and progress)
+```
+
+A chapter can span multiple physical files. A file can contain multiple chapters. The application must never pair chapters and files by array index. A minified podcast show may omit its episodes; this does not change its media kind. Fetch expanded item detail before showing episodes.
+
+Episode playback requires both show ID and episode ID. Book playback uses the item ID alone. No generic `playItem(id)` interface is permitted.
+
+## Playback and persistence
+
+The app holds one persistent MPV process. It starts with its own configuration, no terminal/video window, bounded read-ahead, and a unique local pipe. MPV replies are correlated by request ID; timeouts and process exit reject pending requests. Authenticated URLs are passed through IPC rather than process arguments.
+
+Playback actions are serialized so track switches, seeks, and progress flushes cannot concurrently replace sessions. Audiobookshelf session positions are converted between whole-book seconds and MPV file-relative seconds. Books and podcast episodes use different endpoint constructors and progress keys.
+
+Progress is checkpointed locally every five seconds and synchronized every fifteen seconds, on pause/seek, before replacement, and on clean exit. Failed syncs remain visible. Listening duration uses wall-clock time while playing, not media-position deltas; seeks do not count as listening. Uncertain listening-time deltas are not blindly retried. Offline reconciliation remains a separate feature.
+
+Music speed resets to 1.0 when switching from spoken audio. Spoken speed is stored per book/episode. One mixed active queue is persisted and restored without autoplay. Queue edits preserve the current item and session. Shuffle changes the visible upcoming order rather than choosing a random next item repeatedly. Separate saved music/spoken queues remain planned.
+
+## Local files and personal storage
+
+`src/main/local.ts` records native-picker-approved roots in SQLite. Every path is resolved and checked for containment, including canonical symlink/junction targets. Browsing is nonrecursive and read-only. Audio metadata is parsed with bounded concurrency and cached by root/relative path plus modification time and size. Embedded artwork is loaded separately; no complete high-resolution audio buffer is sent to the renderer.
+
+`PlayTarget` also discriminates local files (root ID plus relative file ID) and radio (server plus station ID). `SpokenTarget` positively selects only books and episodes; never infer spoken audio by excluding music.
+
+SQLite stores versioned feature state in the existing key/value table: local roots, metadata cache, queue, listening plans, recent history, audio preferences, resume checkpoints, and device identity. Additive storage preserves existing encrypted connections. Plans do not modify server completion flags or create background notifications.
+
+`features.ts` owns validated feature IPC registration; the provider adapters own server contracts. Dedicated MusicBrowser, SpokenBrowser, and ListeningSpace components keep those UI domains separate. Audiobook progress is mapped by item ID; episode progress includes both parent and episode IDs. Manual active-item status writes stop and close its session before updating the server.
+
+Audio preferences are applied through a fixed MPV command list. EQ frequencies are fixed and gain values validated. There is no arbitrary command/filter input. Optional processing defaults off. Listening-time accumulation excludes MPV cache buffering. Native tray controls use the same serialized player methods as the UI.
+
+## Compatibility evidence
+
+- [Navidrome Subsonic compatibility](https://www.navidrome.org/docs/developers/subsonic-api/)
+- [OpenSubsonic original stream contract](https://opensubsonic.netlify.app/docs/endpoints/stream/)
+- [Audiobookshelf 2.35.1 item controller](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/controllers/LibraryItemController.js)
+- [Audiobookshelf 2.35.1 API router](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/routers/ApiRouter.js)
+- [MPV command and IPC manual](https://mpv.io/manual/stable/)
+- [Electron security recommendations](https://www.electronjs.org/docs/latest/tutorial/security)
+
+The old Audiobookshelf API reference is explicitly unmaintained. Version-tagged server code takes precedence when it disagrees with the reference. Regression fixtures are handwritten representative payloads; capture redacted real-server fixtures before claiming live compatibility.
