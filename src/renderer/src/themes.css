@@ -33,3 +33,21 @@ button.theme-swatch{border:2px solid transparent;border-radius:14px;text-align:l
 [data-theme] .main-play{background:var(--accent);color:#17191e}[data-theme] .main-play:disabled{background:var(--control-hover);color:var(--muted)}
 [data-theme] .now-art{background:var(--panel);border-color:var(--line);color:var(--accent)}[data-theme] .now-playing small,[data-theme] .now-quality,[data-theme] .seek-row,[data-theme] .player-extras{color:var(--muted)}
 [data-theme] .seek-row input{background:linear-gradient(to right,var(--accent) var(--progress),var(--line) var(--progress))}[data-theme] input[type=range]::-webkit-slider-thumb{background:var(--accent)}
+
+/* The window stays fixed; content panes own their scrollbars. */
+html,body,#root{width:100%;height:100%;margin:0;overflow:hidden}
+.app-shell{height:100%;min-height:0;grid-template-rows:minmax(0,1fr) var(--player)}
+.workspace{min-height:0;overscroll-behavior:contain}.player-bar{min-height:0}
+[data-theme] .search input{background:transparent;border:0;border-radius:0;box-shadow:none;min-width:0;flex:1;width:100%;color:var(--text);font:inherit}
+[data-theme] .search:focus-within{border-color:var(--accent)}
+[data-theme=black-glass]{--bg:#000;--panel:#101010;--accent:#eee;--text:#f2f2f2;--muted:#b8b8b8;--line:#ffffff24;--control:#171717;--control-text:#f2f2f2;--control-border:#555;--control-hover:#ffffff12}
+[data-theme=black-glass] .app-shell,[data-theme=black-glass] .mini-player{background:radial-gradient(ellipse at 8% 0%,#242424 0,transparent 52%),radial-gradient(ellipse at 95% 90%,#191919 0,transparent 50%),#000}
+[data-theme=black-glass] .workspace{background:transparent}
+[data-theme=black-glass] .sidebar,[data-theme=black-glass] .player-bar,[data-theme=black-glass] .topbar,[data-theme=black-glass] .daily-card,[data-theme=black-glass] .episode-card,[data-theme=black-glass] .detail-hero,[data-theme=black-glass] .plan-card,[data-theme=black-glass] .engine-card{background:#080808a8;backdrop-filter:blur(24px);border-color:#ffffff20;box-shadow:inset 0 1px #ffffff08}
+[data-theme=black-glass] .daily-meter>span,[data-theme=black-glass] progress::-webkit-progress-value{background:#ccc}
+[data-theme=black-glass] .progress-badge,[data-theme=black-glass] .daily-status{background:#ffffff12;color:#ccc!important}
+
+[data-theme] .now-tabs .secondary[aria-pressed=true]{background:var(--accent);color:#17191e}
+[data-theme=black-glass] .nav-item:hover{background:#ffffff0d;color:#eee}
+[data-theme=black-glass] .avatar,[data-theme=black-glass] .idle-art{background:#181818;color:#ccc}
+[data-theme=black-glass] .text-button{color:#ccc}[data-theme=black-glass] .text-button:hover{background:#ffffff10;color:#fff}

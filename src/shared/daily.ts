@@ -15,6 +15,8 @@ export interface BackupPreview { token: string; queues: number; notes: number; p
 export interface DiscordSettings { enabled: boolean; applicationId: string; music: boolean; books: boolean; podcasts: boolean; local: boolean; showPaused: boolean; hasLastfmKey: boolean }
 export interface DiscordStatus { connected: boolean; message: string; artwork: boolean }
 export interface DailyAPI {
+  lyrics(input:{refresh?:boolean}):Promise<import('./lyrics').LyricsResult>
+  seekLyric(input:{key:string;time:number}):Promise<void>
   dailySettings(): Promise<DailySettings>
   saveDailySettings(input: DailySettings): Promise<void>
   home(refresh?: boolean): Promise<HomeData>

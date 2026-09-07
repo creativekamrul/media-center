@@ -4,7 +4,7 @@
 
 - Build an installable Windows desktop application using Electron, React, TypeScript, and MPV. Windows is the first target.
 - The full product target is Feishin music feature parity plus Audiobookshelf web feature parity, including audiobooks, podcasts, and management features. Track incomplete work honestly in `docs/FEATURES.md`.
-- Lyrics are explicitly excluded by the user. The project license is GPL-3.0-only.
+- Lyrics are now requested by the user; use LRCLIB from the main process for music and tagged local files. Never treat audiobook or podcast text as song lyrics. The project license is GPL-3.0-only.
 - User's current servers: Navidrome 0.60.3 (34c6f12a), Audiobookshelf 2.35.1. Check version-tagged source/API behavior before adding integration features; the old Audiobookshelf API reference is unmaintained.
 
 ## Non-negotiable media distinctions

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0
+
+- Fix nested search-field backgrounds and constrain window scrolling to the content pane, keeping the player anchored at the bottom.
+- Add Black Glass: black/grey blurred panels and neutral accents, bringing the theme count to 13.
+- Add on-demand LRCLIB lyrics in the expanded player: synced lines, click-to-seek, follow playback, plain text, instrumental and missing-match states. Music and tagged local files are supported; spoken media and radio are excluded.
+- Keep lyric requests in the main process with bounded responses, exact metadata/duration lookup, caching, request deduplication/spacing and Retry-After handling. Add LRC, response, privacy and native seek regressions.
+- Update the former no-lyrics requirement following the user’s explicit request.
+
 ## 0.4.0
 
 - Add ten themes: Glass, Midnight, Ocean, Rose, Lavender, Ember, Coffee, Nord, Monochrome, and Aubergine. A visual palette picker preserves Forest and Charcoal; saved themes update both player windows.

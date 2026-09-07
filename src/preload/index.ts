@@ -2,6 +2,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopAPI, PlaybackState, UpdateState } from '../shared/types'
 
 const api: DesktopAPI = {
+  lyrics: input=>ipcRenderer.invoke('lyrics:get',input),
+  seekLyric: input=>ipcRenderer.invoke('lyrics:seek',input),
   correctDiscordArtwork: input => ipcRenderer.invoke('discord:artwork',input),
   offlineProgressPreview: id => ipcRenderer.invoke('offline:preview',id),
   offlineProgressSync: token => ipcRenderer.invoke('offline:sync',token),

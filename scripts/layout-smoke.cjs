@@ -15,6 +15,10 @@ module.exports = async function layoutSmoke(page, artifacts) {
         overflow:el.scrollWidth > el.clientWidth,
         buttons:[...el.querySelectorAll('button')].filter(b=>b.getClientRects().length).map(b => { const r=b.getBoundingClientRect(); return {height:r.height,width:r.width,y:r.y} })}
     }))
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),'The outer window must not scroll beyond the player')
+    await page.evaluate(()=>window.scrollTo(0,100000))
+    assert.equal(await page.evaluate(()=>window.scrollY),0)
+    const playerBounds=await page.locator('.player-bar').boundingBox();assert.ok(Math.abs(playerBounds.y+playerBounds.height-940)<2,'Player stays at the window bottom')
     await page.screenshot({path:resolve(artifacts, `home-compact-${width}.png`)})
     assert.ok(cards.length >= 3, 'Check populated albums and spoken progress')
     for (const card of cards) {

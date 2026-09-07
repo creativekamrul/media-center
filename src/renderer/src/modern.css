@@ -132,3 +132,11 @@ button.card-play{position:absolute;right:9px;top:9px;color:var(--text,#edf0e7);z
   .episode-card .listen-actions button.primary,.episode-card .listen-actions button.secondary{padding-inline:12px;font-size:13px;min-height:40px}
   .episode-card>progress{grid-column:1/-1;margin:16px 0 0}
 }
+
+.now-content{min-width:0}.now-tabs{display:flex;gap:8px;margin-bottom:24px}.now-tabs [aria-pressed=true]{background:var(--accent);color:#17191e}
+.lyrics-panel{min-width:0}.lyrics-panel .section-title{margin:0 0 12px}.lyrics-caption{font-size:14px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
+.lyrics-scroll{position:relative;max-height:55vh;min-height:180px;overflow:auto;overscroll-behavior:contain;padding:20px 12px;scrollbar-width:thin;border:1px solid var(--line);border-radius:16px;background:var(--control-hover)}
+button.lyric-line{display:block;text-align:left;width:100%;padding:14px 10px;font-size:22px;line-height:1.6;font-weight:550;color:var(--muted);border-radius:10px;overflow-wrap:anywhere}
+button.lyric-line.current{color:var(--accent);background:var(--control-hover)}button.lyric-line:hover{color:var(--text)}button.lyric-line:disabled{opacity:.7}
+.lyrics-plain>p:not(.muted){white-space:pre-wrap;line-height:1.9;font-size:19px;overflow-wrap:anywhere;margin-top:18px}
+.lyrics-message{padding:35px 0;color:var(--muted);line-height:1.7}.lyrics-credit{font-size:12px;line-height:1.7;color:var(--muted);margin-top:18px}

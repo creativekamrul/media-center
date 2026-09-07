@@ -2,7 +2,7 @@
 
 A Windows desktop home for Navidrome music, Audiobookshelf books and podcasts, and local audio folders. Built with Electron, React, TypeScript, SQLite, and native MPV playback.
 
-**Version 0.3.5** fixes the listening chart, adds download selection and bulk controls, and simplifies cards and history rows. It includes Home, a podcast inbox, original-quality offline downloads, an always-on-top mini-player, gapless music, saved queues, listening notes and statistics, local rule playlists, personal backups, and optional Discord/Last.fm artwork integration. Controls have a cleaner rounded appearance while retaining the existing themes and fonts. The long-term goal remains Feishin and Audiobookshelf client parity, excluding lyrics. See the [feature inventory](docs/FEATURES.md) for exact support and remaining work.
+**Version 0.5.0** adds LRCLIB lyrics, Black Glass, and fixes search-field styling and outer-window scrolling. It includes Home, a podcast inbox, original-quality offline downloads, an always-on-top mini-player, gapless music, saved queues, listening notes and statistics, local rule playlists, personal backups, and optional Discord/Last.fm artwork integration. Controls have a cleaner rounded appearance while retaining the existing themes and fonts. The long-term goal remains Feishin and Audiobookshelf client parity. See the [feature inventory](docs/FEATURES.md) for exact support and remaining work.
 
 ## Install and connect
 
@@ -65,8 +65,16 @@ Licensed **GPL-3.0-only**. See [LICENSE](LICENSE), [CONTRIBUTING.md](CONTRIBUTIN
 
 ### Themes and listening recaps
 
-Settings includes a visual picker for 12 themes. Choose a palette and **Save audio preferences** to apply it to both windows. Glass uses translucent panels over an aurora background inside the app; it does not reveal other desktop windows.
+Settings includes a visual picker for 13 themes. Choose a palette and **Save audio preferences** to apply it to both windows. Glass uses translucent panels over an aurora background inside the app; it does not reveal other desktop windows.
 
 Open **Listening stats → Your listening, wrapped**, choose start/end dates and a picture style, then **Create my recap**. **Save PNG image** opens the native save dialog. Posters are 1080 × 1440 pixels and use activity recorded on this computer, with both dates included. Music, books, podcast episodes, local files, and radio stay separate. Paused/buffering time is excluded; no older server history is imported. Empty ranges cannot produce a poster. The date range is limited to ten years. Exported images include media titles/creators but no credentials or server addresses.
 
 The mini-player pin button reads the actual native window state and remembers your choice when reopened. Pinning keeps it above ordinary application windows; Windows secure desktop and exclusive fullscreen applications are outside that guarantee.
+
+### Lyrics
+
+Play music, click its artwork to open **Now playing**, then choose **Lyrics**. The app looks up the exact track metadata through [LRCLIB](https://lrclib.net/docs) only while the panel is open. Synced lines follow MPV; click a line to seek. Manual scrolling turns off Follow playback so you can browse freely. Plain lyrics, instrumental tracks, missing matches, and request errors have separate states. No API key is needed. Refresh retries the lookup subject to LRCLIB's rate limit.
+
+Lyrics support Navidrome music and local audio with title/artist tags, never audiobook chapters, podcast episodes, or radio. Main-process requests send title, artist, album and supported duration, never server credentials, file paths or audio. Matching results are cached for seven days, missing results for one hour; the client spaces requests and honours Retry-After. Cached metadata permits repeat Navidrome lookups when the server is unavailable. Word-by-word karaoke, manual result search and embedded lyrics are not implemented.
+
+**Black Glass** uses black and neutral-grey translucent panels with blur. All normal window scrolling stays within the content pane so the player remains at the bottom.

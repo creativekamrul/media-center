@@ -1,6 +1,6 @@
-# Feature inventory — 0.4
+# Feature inventory — 0.5
 
-The target is a full desktop replacement for Feishin and Audiobookshelf's web client, with lyrics deliberately excluded. **0.4 adds themes and date-range listening recaps; it does not claim full parity.** This inventory distinguishes working behavior from remaining work.
+The target is a full desktop replacement for Feishin and Audiobookshelf's web client. **0.5 adds LRCLIB lyrics and Black Glass; it does not claim full parity.** This inventory distinguishes working behavior from remaining work.
 
 ## Available
 
@@ -21,8 +21,9 @@ The target is a full desktop replacement for Feishin and Audiobookshelf's web cl
 | Player/queue | Cover opens expanded player and queue; seek/volume/speed/repeat/shuffle; insert/append/move/remove/jump/clear; restore queue after restart without autoplay |
 | Personal | SQLite Listen Later dates, notes, rescheduling, completion/reopening/removal; recent device listening history |
 | Audio | ReplayGain off/track/album; clipping prevention; ten-band EQ; per-book/episode speed; timed and chapter-end sleep |
-| Appearance | 12 palettes including translucent Glass; visual theme picker; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; minimum 1024 × 720 layout |
+| Appearance | 13 palettes including translucent Glass and Black Glass; visual theme picker; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; minimum 1024 × 720 layout |
 | Open source | GPL-3.0-only; user/developer/security/API documentation; model, provider, local-file, playback and desktop tests |
+| Lyrics | On-demand LRCLIB for music/tagged local files; synced-line highlighting and seeking; plain/instrumental/missing states; cache and rate-limit handling. No word karaoke, embedded lyrics or manual match search yet. |
 | Updates | Settings check/download/restart-to-install; stable GitHub releases; verified download integrity; explicit user actions |
 | Releases | Version-tagged GitHub Actions Windows builds; packaged integration checks; GitHub CLI publication; corresponding source and SHA-256 checksums |
 
@@ -58,6 +59,6 @@ The inbox indexes up to 100,000 episodes and displays refresh warnings rather th
 - ABS metadata matching/editing, chapter/cover editors, supplementary files and ebook/PDF reading; library/user/server administration, scans, backups, logs, permissions and sharing.
 - Complete accessibility audit, localization, code signing, macOS/Linux testing and packaging.
 
-Lyrics are intentionally excluded. MPV is user-supplied. Hardware bit-perfect output and production server compatibility need testing on the actual device/server combination.
+MPV is user-supplied. Hardware bit-perfect output and production server compatibility need testing on the actual device/server combination.
 
 Research references: [Feishin](https://github.com/jeffvli/feishin), [Navidrome 0.60.3](https://github.com/navidrome/navidrome/tree/v0.60.3), [Audiobookshelf 2.35.1](https://github.com/advplyr/audiobookshelf/tree/v2.35.1). Upstream code informed the contract/feature audit; Feishin application source and artwork were not copied. See [API contracts](API-CONTRACTS.md).
