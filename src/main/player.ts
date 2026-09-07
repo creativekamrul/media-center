@@ -6,11 +6,22 @@ import { Audiobookshelf, type AbsSession } from './providers/audiobookshelf'
 import { Navidrome } from './providers/navidrome'
 import { Mpv } from './mpv'
 import { Store } from './store'
+import { Downloads, type OfflineMedia } from './downloads'
+import { defaultDailySettings, type DailySettings } from '../shared/daily'
+export function rewindPosition(position: number, elapsed: number, settings: DailySettings): number { return Math.max(0, position - (!settings.smartRewind || elapsed < 10000 ? 0 : elapsed >= 300000 ? settings.longRewind : settings.shortRewind)) }
 
 export class Player extends EventEmitter {
   state: PlaybackState = structuredClone(emptyPlayback)
   private session?: { provider: Audiobookshelf; data: AbsSession }
   private target?: PlayTarget
+  private staged?: {item:QueueItem;index:number;duration:number;url:string;offline?:OfflineMedia;entryId?:number;started:boolean;loaded:boolean}
+  private gaplessTransition = false
+  private reachedEnd = false
+  private lastStartedEntry?: number
+  private lastLoadedEntry?: number
+  private offline?: OfflineMedia
+  private pausedAt = 0
+  private statsSeconds = 0
   private fileIndex = 0
   private serial: Promise<unknown> = Promise.resolve()
   private listened = 0
@@ -20,16 +31,22 @@ export class Player extends EventEmitter {
   private timer: NodeJS.Timeout
   private saveTick = 0
   private unshuffled: QueueItem[] | undefined
-  constructor(readonly mpv: Mpv, private store: Store, private provider: (id: string) => Audiobookshelf | Navidrome, private local?: LocalFiles) {
+  constructor(readonly mpv: Mpv, private store: Store, private provider: (id: string) => Audiobookshelf | Navidrome, private local?: LocalFiles, private downloads?: Downloads) {
     super()
     const saved = store.get<{ queue: QueueItem[]; index: number }>('queue')
     if (saved?.queue.length) { this.state.queue = saved.queue; this.state.queueIndex = Math.min(saved.index, saved.queue.length - 1); const current = this.state.queue[this.state.queueIndex]; this.state.title = current.title; this.state.subtitle = current.subtitle; this.state.kind = current.target.kind }
     this.state.volume = store.get<number>('volume') ?? 80
     mpv.on('event', event => {
+      if(event.event==='start-file')this.lastStartedEntry=event.playlist_entry_id
+      if(event.event==='file-loaded')this.lastLoadedEntry=this.lastStartedEntry
+      if(event.event==='end-file' && event.reason==='eof')this.reachedEnd=true
+      if(event.event==='start-file' && this.staged && event.playlist_entry_id===this.staged.entryId) this.staged.started=true
+      if(event.event==='file-loaded' && this.staged?.started) {this.staged.loaded=true;this.emit('gapless-loaded')}
+      if(event.event==='end-file' && event.reason==='eof' && this.staged) this.gaplessTransition=true
       if (event.event === 'property-change') {
-        if (event.name === 'time-pos' && typeof event.data === 'number' && this.state.status !== 'loading' && !this.switchingFile) {
+        if (event.name === 'time-pos' && typeof event.data === 'number' && this.state.status !== 'loading' && !this.switchingFile && !this.gaplessTransition) {
           const before = this.state.position
-          this.state.position = event.data + (this.session?.data.audioTracks[this.fileIndex]?.startOffset ?? 0)
+          this.state.position = event.data + (this.offline?.files[this.fileIndex]?.startOffset ?? this.session?.data.audioTracks[this.fileIndex]?.startOffset ?? 0)
           if (this.state.status === 'playing' && this.state.sleepChapter && this.state.position - before < 5 * this.state.speed && this.state.chapters.some(c => c.end > before && c.end <= this.state.position)) { this.state.sleepChapter = false; void this.command({ action: 'toggle' }).catch(() => {}) }
         }
         if (event.name === 'audio-codec-name' && typeof event.data === 'string') this.state.codec = event.data
@@ -43,7 +60,7 @@ export class Player extends EventEmitter {
     mpv.on('failure', message => { if (this.state.status !== 'idle') this.fail(message) })
     this.timer = setInterval(() => {
       const now = Date.now(), elapsed = Math.min(2, (now - this.lastTick) / 1000); this.lastTick = now
-      if (this.state.status === 'playing' && !this.state.buffering) this.listened += elapsed
+      if (this.state.status === 'playing' && !this.state.buffering) { this.listened += elapsed; this.statsSeconds += elapsed }
       if (this.state.sleepAt && now >= this.state.sleepAt) { this.state.sleepAt = undefined; void this.enqueue(async () => { if (this.state.status === 'playing') await this.commandInner({ action: 'toggle' }) }).catch(() => {}) }
       if (++this.saveTick % 5 === 0) this.saveResume()
       if (this.saveTick % 15 === 0) void this.enqueue(() => this.sync()).catch(() => {})
@@ -60,7 +77,7 @@ export class Player extends EventEmitter {
     return this.enqueue(async () => {
       try {
         if (this.state.status === 'playing' || this.state.status === 'paused') { await this.mpv.command(['set_property', 'pause', true]); this.state.status = 'paused' }
-        await this.closeSession()
+        await this.clearStaged(); await this.closeSession()
         if (this.target) await this.mpv.command(['stop']).catch(() => {})
         this.state.queue = structuredClone(queue); this.state.queueIndex = index; this.unshuffled = undefined; this.state.shuffle = false; this.saveQueue(); await this.load(this.state.queue[index], position)
       }
@@ -70,7 +87,7 @@ export class Player extends EventEmitter {
   private async load(item: QueueItem, position?: number) {
     this.state.status = 'loading'; this.state.error = undefined; this.state.syncError = undefined; this.state.codec = undefined; this.state.sampleRate = undefined; this.state.buffering = false
     this.state.title = item.title; this.state.subtitle = item.subtitle; this.state.kind = item.target.kind; this.state.position = 0; this.state.duration = 0; this.state.chapters = []
-    this.target = item.target; this.listened = 0; this.scrobbled = false; this.publish()
+    this.reachedEnd=false; this.target = item.target; this.offline = undefined; this.fileIndex = 0; this.listened = 0; this.scrobbled = false; this.publish()
     const settings = this.store.settings()
     await this.mpv.start(settings.mpvPath)
     await this.mpv.command(['set_property', 'audio-exclusive', settings.exclusive])
@@ -78,10 +95,20 @@ export class Player extends EventEmitter {
     await this.mpv.command(['set_property', 'volume', this.state.volume])
     const prefs = { ...defaultPreferences, ...this.store.get<Preferences>('preferences') }
     await this.audioPreferences(prefs)
-    const provider = item.target.kind === 'local-file' ? undefined : this.provider(item.target.serverId)
+    this.offline = await this.downloads?.ready(item.target)
+    const provider = item.target.kind === 'local-file' || this.offline ? undefined : this.provider(item.target.serverId)
     this.state.speed = item.target.kind === 'audiobook' || item.target.kind === 'podcast-episode' ? this.store.get<number>(`speed:${progressKey(item.target)}`) ?? 1 : 1
     await this.mpv.command(['set_property', 'speed', this.state.speed])
-    if (item.target.kind === 'local-file') {
+    if (this.offline) {
+      this.state.duration = this.offline.entry.duration; this.state.chapters = this.offline.entry.chapters
+      const checkpoint = this.store.get<{position:number;updatedAt:number}>(`offlineResume:${progressKey(item.target)}`) ?? this.store.get<{position:number;updatedAt:number}>(`resume:${progressKey(item.target)}`)
+      let resume = position ?? checkpoint?.position ?? 0
+      if (item.target.kind === 'audiobook' || item.target.kind === 'podcast-episode') {
+        this.state.syncError = 'Playing downloaded audio. Progress is saved on this device; server sync is pending.'
+        if (position === undefined) resume = rewindPosition(resume, checkpoint ? Date.now()-checkpoint.updatedAt : 0, this.daily())
+      }
+      await this.loadAbsFile(Math.min(resume,this.state.duration))
+    } else if (item.target.kind === 'local-file') {
       if (!this.local) throw new Error('Local files are unavailable.')
       const file = await this.local.metadata(item.target.rootId, item.target.fileId)
       this.state.title = file.title; this.state.subtitle = file.artist || file.name; this.state.duration = file.duration
@@ -105,11 +132,45 @@ export class Player extends EventEmitter {
       const data = await provider.start(item.target, this.store.get<string>('deviceId')!)
       this.session = { provider, data }; this.state.duration = data.duration
       this.state.chapters = detail.kind === 'audiobook' ? detail.chapters : []
-      const resume = Math.min(data.duration, Math.max(0, position ?? data.currentTime))
+      const checkpoint = this.store.get<{updatedAt:number;syncPending?:boolean;position:number}>(`resume:${progressKey(item.target)}`)
+      if (checkpoint?.syncPending && Math.abs(checkpoint.position-data.currentTime)>2) this.state.syncError = 'Server resume position is being used. Your offline position remains available in Downloads.'
+      const resume = Math.min(data.duration, Math.max(0, position ?? rewindPosition(data.currentTime,checkpoint ? Date.now()-checkpoint.updatedAt : 0,this.daily())))
       await this.loadAbsFile(resume)
     }
     await this.mpv.command(['set_property', 'pause', false])
-    this.state.status = 'playing'; this.publish()
+    this.state.status = 'playing'; this.publish(); await this.stageNext()
+  }
+  private async clearStaged() { this.staged=undefined;this.gaplessTransition=false;await this.mpv.command(['playlist-clear']).catch(()=>{}) }
+  private async stageNext() {
+    if(this.staged || this.reachedEnd)return
+    if (!this.daily().gapless || !['music-track','local-file'].includes(this.target?.kind??'') || this.state.repeat==='one') return
+    let index=this.state.queueIndex+1;if(index>=this.state.queue.length && this.state.repeat==='all')index=0
+    const item=this.state.queue[index];if(!item || !['music-track','local-file'].includes(item.target.kind))return
+    try {
+      const offline=await this.downloads?.ready(item.target);let url:string,duration:number
+      if(offline){url=offline.files[0].path;duration=offline.entry.duration}
+      else if(item.target.kind==='local-file' && this.local){url=await this.local.path(item.target.rootId,item.target.fileId);duration=(await this.local.metadata(item.target.rootId,item.target.fileId)).duration}
+      else if(item.target.kind==='music-track'){const p=this.provider(item.target.serverId);if(!(p instanceof Navidrome))return;const track=await p.track(item.target.trackId);url=p.stream(item.target.trackId);duration=track.duration;item.cover=track.cover}
+      else return
+      if(this.reachedEnd)return
+      await this.mpv.command(['set_property','gapless-audio','weak'])
+      await this.mpv.command(['set_property','prefetch-playlist',true])
+      const staged={item,index,duration,url,offline,started:false,loaded:false,entryId:undefined as number|undefined};this.staged=staged
+      await this.mpv.command(['loadfile',url,'append',-1,{'start':'0'}])
+      const playlist=await this.mpv.command(['get_property','playlist']) as {id:number;current?:boolean}[]|undefined
+      staged.entryId=playlist?.filter(p=>!p.current).at(-1)?.id
+      staged.started=staged.entryId!==undefined && staged.entryId===this.lastStartedEntry;staged.loaded=staged.entryId!==undefined && staged.entryId===this.lastLoadedEntry
+      if(staged.entryId===undefined)await this.clearStaged()
+    } catch { await this.clearStaged() /* Normal playback remains available when preparation fails. */ }
+  }
+  private async continueGapless() {
+    const staged=this.staged;if(!staged)return false
+    this.state.position=this.state.duration;this.flushStats(true);await this.closeSession()
+    if(!staged.loaded) await new Promise<void>((resolve,reject)=>{const timer=setTimeout(()=>{cleanup();reject(new Error('MPV did not load the next track.'))},20000);const ready=()=>{if(staged.loaded){cleanup();resolve()}};const cleanup=()=>{clearTimeout(timer);this.off('gapless-loaded',ready)};this.on('gapless-loaded',ready);ready()})
+    this.staged=undefined;this.reachedEnd=false;this.gaplessTransition=false;this.offline=staged.offline;this.fileIndex=0;this.target=staged.item.target;this.listened=0;this.scrobbled=false
+    this.state.queueIndex=staged.index;this.state.title=staged.item.title;this.state.subtitle=staged.item.subtitle;this.state.kind=staged.item.target.kind;this.state.position=0;this.state.duration=staged.duration;this.state.chapters=[];this.state.syncError=undefined;this.state.status='playing';this.saveQueue();this.publish()
+    if(this.target.kind==='music-track' && (this.store.get<Preferences>('preferences')?.scrobble??true))try{const p=this.provider(this.target.serverId);if(p instanceof Navidrome)await p.scrobble(this.target.trackId,false)}catch{this.state.syncError='Now-playing could not be sent to Navidrome.'}
+    await this.mpv.command(['playlist-clear']);await this.stageNext();return true
   }
   async audioPreferences(prefs: Preferences) {
     await this.mpv.command(['set_property', 'replaygain', prefs.replayGain])
@@ -118,7 +179,9 @@ export class Player extends EventEmitter {
     const filters = prefs.equalizer.flatMap((gain, i) => gain ? [`equalizer=f=${bands[i]}:t=o:w=1:g=${gain}`] : [])
     await this.mpv.command(['set_property', 'af', filters.length ? `lavfi=[${filters.join(',')}]` : ''])
   }
+  private daily() { return { ...defaultDailySettings, ...this.store.get<DailySettings>('dailySettings') } }
   private async loadAbsFile(position: number) {
+    if (this.offline) { const located=locateTrack(this.offline.files,position); this.fileIndex=located.index; this.switchingFile=true; try { await this.mpv.load(this.offline.files[located.index].path,{start:String(located.offset)});this.state.position=position } finally {this.switchingFile=false}; return }
     if (!this.session) return
     const { provider, data } = this.session
     const located = locateTrack(data.audioTracks, position); this.fileIndex = located.index
@@ -131,9 +194,12 @@ export class Player extends EventEmitter {
   }
   private saveResume() {
     if (!this.target || this.state.status === 'loading' || this.state.status === 'idle') return
+    this.flushStats()
     this.store.set(`resume:${progressKey(this.target)}`, { position: this.state.position, duration: this.state.duration, updatedAt: Date.now(), syncPending: !!this.state.syncError })
+    if(this.offline && (this.target.kind==='audiobook'||this.target.kind==='podcast-episode'))this.store.set(`offlineResume:${progressKey(this.target)}`,{position:this.state.position,duration:this.state.duration,updatedAt:Date.now(),syncPending:true})
     const item = this.state.queue[this.state.queueIndex]; if (item && this.state.position > 0) this.store.record?.(item, this.state.position, this.state.duration)
   }
+  private flushStats(finished=false) { const item=this.state.queue[this.state.queueIndex]; if(item && (this.statsSeconds>0 || finished)) this.store.recordListening?.(item,this.statsSeconds,finished); this.statsSeconds=0 }
   private async sync(close = false) {
     this.saveResume()
     if (this.session) {
@@ -155,11 +221,13 @@ export class Player extends EventEmitter {
   private async closeSession() { await this.sync(true); this.session = undefined }
   private async ended() {
     if (this.state.status === 'idle' || this.state.status === 'loading') return
-    if (this.session && this.fileIndex + 1 < this.session.data.audioTracks.length) {
+    if(await this.continueGapless())return
+    if (this.offline && this.fileIndex+1<this.offline.files.length) { await this.loadAbsFile(this.offline.files[this.fileIndex+1].startOffset);return }
+    if (this.session && !this.offline && this.fileIndex + 1 < this.session.data.audioTracks.length) {
       const next = this.session.data.audioTracks[this.fileIndex + 1]
       await this.loadAbsFile(next.startOffset); return
     }
-    this.state.position = this.state.duration; await this.closeSession()
+    this.state.position = this.state.duration; this.flushStats(true); await this.closeSession()
     if (this.state.repeat === 'one') { await this.load(this.state.queue[this.state.queueIndex], 0); return }
     await this.advance(1, true)
   }
@@ -168,7 +236,7 @@ export class Player extends EventEmitter {
     if (this.state.repeat === 'all') index = (index + this.state.queue.length) % this.state.queue.length
     if (index < 0 || index >= this.state.queue.length) { if (ended) { await this.mpv.command(['stop']); this.state.status = 'idle'; this.publish() }; return }
     if (this.state.status === 'playing') { await this.mpv.command(['set_property', 'pause', true]); this.state.status = 'paused' }
-    await this.closeSession(); await this.mpv.command(['stop']); this.state.queueIndex = index; this.saveQueue(); await this.load(this.state.queue[index])
+    await this.clearStaged(); await this.closeSession(); await this.mpv.command(['stop']); this.state.queueIndex = index; this.saveQueue(); await this.load(this.state.queue[index])
   }
   command(command: PlayerCommand) { return this.enqueue(() => this.commandInner(command)).catch(error => { if (this.state.status === 'loading') this.fail(error instanceof Error ? error.message : 'Playback failed.'); throw error }) }
   private async commandInner(command: PlayerCommand) {
@@ -180,21 +248,24 @@ export class Player extends EventEmitter {
           await this.load(item, resume); break
         }
         if (!['playing', 'paused'].includes(this.state.status)) return
+        if(this.state.status==='paused' && (this.target?.kind==='audiobook'||this.target?.kind==='podcast-episode')) { const resume=rewindPosition(this.state.position,Date.now()-this.pausedAt,this.daily()); if(resume!==this.state.position) await this.commandInner({action:'seek',value:resume}) }
+        if(this.state.status==='playing') this.pausedAt=Date.now()
         await this.mpv.command(['set_property', 'pause', this.state.status === 'playing'])
         this.state.status = this.state.status === 'playing' ? 'paused' : 'playing'; await this.sync(); break
       case 'stop': {
+        const offlineSpoken=this.offline && (this.target?.kind==='audiobook'||this.target?.kind==='podcast-episode')
         if (this.state.status === 'playing') { await this.mpv.command(['set_property', 'pause', true]).catch(() => {}); this.state.status = 'paused' }
-        await this.closeSession(); await this.mpv.stop(); this.target = undefined
+        await this.clearStaged(); await this.closeSession(); await this.mpv.stop(); this.target = undefined; this.offline = undefined
         const item = this.state.queue[this.state.queueIndex]
-        this.state = { ...structuredClone(emptyPlayback), title: item?.title ?? emptyPlayback.title, subtitle: item?.subtitle ?? emptyPlayback.subtitle, kind: item?.target.kind, volume: this.state.volume, queue: this.state.queue, queueIndex: this.state.queueIndex, repeat: this.state.repeat, shuffle: this.state.shuffle, syncError: this.state.syncError }; this.saveQueue(); break
+        this.state = { ...structuredClone(emptyPlayback), title: item?.title ?? emptyPlayback.title, subtitle: item?.subtitle ?? emptyPlayback.subtitle, kind: item?.target.kind, volume: this.state.volume, queue: this.state.queue, queueIndex: this.state.queueIndex, repeat: this.state.repeat, shuffle: this.state.shuffle, syncError: offlineSpoken?'Offline position saved. Sync it from Downloads when online.':this.state.syncError }; this.saveQueue(); break
       }
       case 'next': await this.advance(1); break
       case 'previous': if (this.state.position > 3) await this.commandInner({ action: 'seek', value: 0 }); else await this.advance(-1); break
       case 'seek': {
         const time = Math.min(this.state.duration, Math.max(0, command.value))
         const paused = this.state.status === 'paused'
-        if (this.session) {
-          const located = locateTrack(this.session.data.audioTracks, time)
+        if (this.session || this.offline) {
+          const located = locateTrack(this.offline?.files ?? this.session!.data.audioTracks, time)
           if (located.index !== this.fileIndex) { await this.loadAbsFile(time); await this.mpv.command(['set_property', 'pause', paused]) }
           else await this.mpv.command(['seek', located.offset, 'absolute+exact'])
         } else await this.mpv.command(['seek', time, 'absolute+exact'])
@@ -204,19 +275,21 @@ export class Player extends EventEmitter {
       case 'volume': this.state.volume = command.value; this.store.set('volume', command.value); if (this.state.status !== 'idle') await this.mpv.command(['set_property', 'volume', command.value]); break
       case 'sleep': this.state.sleepAt = command.value > 0 ? Date.now() + command.value * 60000 : undefined; break
       case 'shuffle': {
+        await this.clearStaged()
         this.state.shuffle = !this.state.shuffle
         const upcoming = this.state.queue.slice(this.state.queueIndex + 1)
         if (this.state.shuffle) {
           this.unshuffled = [...upcoming]
           for (let i = upcoming.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [upcoming[i], upcoming[j]] = [upcoming[j], upcoming[i]] }
         } else if (this.unshuffled) upcoming.sort((a,b) => { const ai = this.unshuffled!.indexOf(a), bi = this.unshuffled!.indexOf(b); return (ai < 0 ? Infinity : ai) - (bi < 0 ? Infinity : bi) })
-        this.state.queue.splice(this.state.queueIndex + 1, upcoming.length, ...upcoming); this.saveQueue(); break
+        this.state.queue.splice(this.state.queueIndex + 1, upcoming.length, ...upcoming); this.saveQueue(); await this.stageNext(); break
       }
-      case 'repeat': this.state.repeat = command.value; break
+      case 'repeat': await this.clearStaged(); this.state.repeat = command.value; await this.stageNext(); break
     }
     this.publish()
   }
   edit(input: QueueEdit) { return this.enqueue(async () => {
+    await this.clearStaged()
     const queue = this.state.queue, current = queue[this.state.queueIndex]
     if (input.action === 'append' || input.action === 'next') {
       if (queue.length + input.items.length > 5000) throw new Error('The queue can contain up to 5,000 items.')
@@ -236,7 +309,9 @@ export class Player extends EventEmitter {
     else if (input.action === 'clear-upcoming') queue.splice(this.state.queueIndex + 1)
     else if (input.action === 'restore') { const saved = this.store.get<{queue: QueueItem[]; index: number}>('queue'); if (saved && !this.target) { this.state.queue = saved.queue; this.state.queueIndex = saved.index } }
     else if (input.action === 'sleep-chapter') this.state.sleepChapter = input.enabled
-    this.saveQueue(); this.publish()
+    this.saveQueue(); this.publish(); if(this.state.status==='playing'||this.state.status==='paused')await this.stageNext()
   }).catch(error => { if (this.state.status === 'loading') this.fail(error instanceof Error ? error.message : 'Playback failed.'); throw error }) }
-  async shutdown() { clearInterval(this.timer); await this.enqueue(async () => { if (this.state.status === 'playing') { await this.mpv.command(['set_property', 'pause', true]).catch(() => {}); this.state.status = 'paused' }; await this.closeSession(); this.saveQueue(); await this.mpv.stop() }) }
+  acknowledgeOffline(target: PlayTarget) {const current=this.state.queue[this.state.queueIndex];if(current&&progressKey(current.target)===progressKey(target)&&this.state.status==='idle'){this.state.syncError=undefined;this.publish()}}
+  async restoreQueue(items: QueueItem[], index: number) { await this.command({action:'stop'}); await this.enqueue(async()=>{ this.state.queue=structuredClone(items);this.state.queueIndex=index;const item=items[index];this.state.title=item.title;this.state.subtitle=item.subtitle;this.state.kind=item.target.kind;this.saveQueue();this.publish() }) }
+  async shutdown() { clearInterval(this.timer); await this.enqueue(async () => { if (this.state.status === 'playing') { await this.mpv.command(['set_property', 'pause', true]).catch(() => {}); this.state.status = 'paused' }; await this.clearStaged(); await this.closeSession(); this.saveQueue(); await this.mpv.stop() }) }
 }

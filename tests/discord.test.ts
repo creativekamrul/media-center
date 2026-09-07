@@ -1,0 +1,27 @@
+import {describe,it,expect,vi} from 'vitest'
+vi.mock('../src/main/store',()=>({Store:class{}}))
+import {presence,discordDefaults,discordSchema,publicArtwork,rpcFrame} from '../src/main/discord'
+import {emptyPlayback} from '../src/shared/types'
+describe('Discord presence privacy and artwork',()=>{
+  const playing={...emptyPlayback,status:'playing' as const,kind:'music-track' as const,title:'Track',subtitle:'Artist',position:30,duration:300,speed:1.5}
+  const settings={...discordDefaults,enabled:true,applicationId:'123456789012345678'}
+  it('requires opt-in for each media kind and hides idle and disabled activity',()=>{
+    expect(presence(playing,discordDefaults)).toBeNull();expect(presence({...playing,kind:'audiobook'},settings)).toBeNull();expect(presence({...playing,kind:'podcast-episode'},settings)).toBeNull();expect(presence({...playing,kind:'local-file'},settings)).toBeNull();expect(presence({...playing,status:'idle'},settings)).toBeNull();expect(presence({...playing,status:'paused'},{...settings,showPaused:false})).toBeNull()
+  })
+  it('includes speed-adjusted timestamps while playing and omits them when paused or buffering',()=>{
+    expect(presence(playing,settings,undefined,1000000)?.timestamps).toEqual({start:980,end:1180})
+    expect(presence({...playing,status:'paused'},settings)?.timestamps).toBeUndefined();expect(presence({...playing,buffering:true},settings)?.timestamps).toBeUndefined()
+  })
+  it('only sends public Last.fm CDN artwork, never credentials or arbitrary server URLs',()=>{
+    const art='https://lastfm.freetls.fastly.net/i/u/300x300/cover.png'
+    expect(publicArtwork(art)).toBe(art);expect(presence(playing,settings,art)?.assets?.large_image).toBe(art)
+    for(const url of ['https://private.test/cover?token=secret','file:///C:/music/cover.jpg','http://lastfm.freetls.fastly.net/image','https://lastfm.freetls.fastly.net/image?token=secret','https://user:pass@lastfm.freetls.fastly.net/image','https://lastfm.freetls.fastly.net.attacker.test/image']){expect(publicArtwork(url)).toBeUndefined();expect(presence(playing,settings,url)?.assets).toBeUndefined()}
+  })
+  it('validates configuration without accepting a bot token',()=>{
+    const {hasLastfmKey:_,...base}=discordDefaults
+    expect(discordSchema.safeParse(base).success).toBe(true);expect(discordSchema.safeParse({...base,enabled:true}).success).toBe(false);expect(discordSchema.safeParse({...base,applicationId:'abc'}).success).toBe(false);expect(discordSchema.safeParse({...base,botToken:'no'}).success).toBe(false)
+  })
+  it('encodes little-endian IPC frames using byte length for Unicode titles',()=>{
+    const value={title:'音楽'},frame=rpcFrame(1,value);expect(frame.readUInt32LE(0)).toBe(1);expect(frame.readUInt32LE(4)).toBe(Buffer.byteLength(JSON.stringify(value)));expect(JSON.parse(frame.subarray(8).toString())).toEqual(value)
+  })
+})

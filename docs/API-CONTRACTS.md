@@ -35,3 +35,15 @@ Direct sessions require playMethod=0. Physical track startOffset converts MPV fi
 Sources: [MeController](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/controllers/MeController.js), [User](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/models/User.js), [library sorts](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/client/components/controls/LibrarySortSelect.vue), [episode table](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/client/components/tables/podcast/LazyEpisodesTable.vue), [book filters](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/utils/queries/libraryItemsBookFilters.js).
 
 The old ABS API reference is unmaintained; version-tagged code takes precedence. Fixtures are representative synthetic payloads, not private exports. Fixture success is not proof of production compatibility.
+
+## Original downloads and the cross-show inbox
+
+Verified against Audiobookshelf **v2.35.1**: expanded book `media.tracks` contains ordered included physical files with `ino`, duration and startOffset. Episode audio is `media.episodes[].audioFile`, selected by exact episode ID. Downloads use `/api/items/:id/file/:fileid/download` so the server's download permission check applies; the item file route without `/download` is not substituted. The download worker never creates a listening session merely to download a file.
+
+The v2.35.1 `/api/libraries/:id/recent-episodes` endpoint excludes finished episodes. It cannot implement an All/Finished inbox. Media Center instead pages explicit podcast libraries, fetches expanded shows, and maps `/api/me` progress by `[libraryItemId, episodeId]`. This avoids silently losing finished episodes or conflating minified shows with books.
+
+Navidrome **0.60.3** downloads use the Subsonic `download` endpoint. Network playback retains `stream` with raw format and zero requested bitrate. JSON playlist exports contain IDs and descriptive metadata, not authenticated playback links.
+
+Offline spoken checkpoint writes use the same exact book/episode progress endpoint as status writes, with `currentTime`, `duration`, `progress` and `isFinished`. They follow an explicit preview and second server-state check. They do not synthesize listening sessions or historical listening-time deltas.
+
+Sources: [ABS 2.35.1 API router](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/routers/ApiRouter.js), [Book model](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/models/Book.js), [podcast query helpers](https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/utils/queries/libraryItemsPodcastFilters.js).

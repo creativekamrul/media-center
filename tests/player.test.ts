@@ -64,6 +64,18 @@ describe('playback coordination', () => {
     await player.edit({ action:'next',items:[music[2]] }); expect(player.state.queue.map(q=>q.title)).toEqual(['a','c','b'])
     expect(mpv.load).toHaveBeenCalledTimes(calls)
   })
+  it('advances preloaded music only after file-loaded, without stopping or replacing the stream',async()=>{
+    vi.mocked(mpv.command).mockImplementation(async command=>command[0]==='get_property'&&command[1]==='playlist'?[{id:10,current:true},{id:11}]:undefined)
+    const items=['first','second'].map(id=>({target:{kind:'music-track' as const,serverId:'n',trackId:id},title:id,subtitle:'Artist'}))
+    await player.play(items,0)
+    expect(mpv.command).toHaveBeenCalledWith(['loadfile',expect.any(String),'append',-1,{start:'0'}])
+    vi.mocked(mpv.command).mockClear();vi.mocked(mpv.load).mockClear()
+    mpv.emit('event',{event:'end-file',reason:'eof'});await Promise.resolve()
+    expect(player.state.queueIndex).toBe(0)
+    mpv.emit('event',{event:'start-file',playlist_entry_id:11});mpv.emit('event',{event:'file-loaded'})
+    await player.enqueue(async()=>{})
+    expect(player.state.queueIndex).toBe(1);expect(player.state.status).toBe('playing');expect(mpv.load).not.toHaveBeenCalled();expect(mpv.command).not.toHaveBeenCalledWith(['stop'])
+  })
   it('retains the queue when stopped and restores it without autoplay', async () => {
     await player.play(queue,0); await player.command({action:'stop'}); expect(player.state.queue).toHaveLength(1); expect(player.state.status).toBe('idle')
     await player.edit({action:'clear'}); expect(player.state.queue).toHaveLength(0)

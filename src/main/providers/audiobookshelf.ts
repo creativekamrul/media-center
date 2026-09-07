@@ -76,6 +76,12 @@ export class Audiobookshelf {
       return [{ libraryId: item.libraryId, progress: p, item: { target: item.kind === 'audiobook' ? { kind: 'audiobook' as const, serverId: item.serverId, bookId: item.id } : { kind: 'podcast-episode' as const, serverId: item.serverId, showId: item.id, episodeId: ep!.id }, title: item.kind === 'audiobook' ? item.title : ep!.title, subtitle: item.kind === 'audiobook' ? item.subtitle : item.title, cover: item.id, duration: p.duration } }]
     })
   }
+  async saveCheckpoint(target: SpokenTarget, position: number, duration: number) {
+    const itemId=target.kind==='audiobook'?target.bookId:target.showId
+    const item=parseAbsItem(await this.get(`api/items/${encodeURIComponent(itemId)}?expanded=1`),this.connection.id)
+    if(target.kind==='audiobook'?item.kind!=='audiobook':item.kind!=='podcast-show'||!item.episodes.some(e=>e.id===target.episodeId))throw new Error('Progress target does not match this media item.')
+    await request(serverUrl(this.connection.url,`api/me/progress/${encodeURIComponent(itemId)}${target.kind==='podcast-episode'?`/${encodeURIComponent(target.episodeId)}`:''}`),{method:'PATCH',headers:{...this.headers,'Content-Type':'application/json'},body:JSON.stringify({currentTime:position,duration,progress:duration?Math.min(1,position/duration):0,isFinished:duration>0&&position>=duration})})
+  }
   async bookmarks(bookId: string): Promise<Bookmark[]> {
     const me = z.object({ bookmarks: z.array(z.object({ libraryItemId: z.string(), time: z.number(), title: z.string(), createdAt: z.number().optional() })).default([]) }).parse(await this.get('api/me'))
     return me.bookmarks.filter(b => b.libraryItemId === bookId).map(({ time, title, createdAt }) => ({ time, title, createdAt }))

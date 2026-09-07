@@ -9,7 +9,7 @@ export function progressKey(target: PlayTarget): string {
     case 'radio': return JSON.stringify([target.serverId, 'radio', target.stationId])
   }
 }
-export function locateTrack(tracks: AudioTrack[], position: number): { index: number; offset: number } {
+export function locateTrack(tracks: Pick<AudioTrack, 'startOffset' | 'duration'>[], position: number): { index: number; offset: number } {
   if (!tracks.length) throw new Error('This item has no playable audio files.')
   const ordered = [...tracks].sort((a, b) => a.startOffset - b.startOffset)
   const time = Math.max(0, position)

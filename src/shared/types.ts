@@ -1,3 +1,4 @@
+import type { DailyAPI } from './daily'
 export type Provider = 'navidrome' | 'audiobookshelf'
 export type Section = 'music' | 'audiobooks' | 'podcasts'
 export interface Connection {
@@ -35,7 +36,7 @@ export interface UpdateState {
   status: 'unavailable' | 'idle' | 'checking' | 'up-to-date' | 'available' | 'downloading' | 'ready' | 'installing' | 'error'
   version?: string; percent?: number; transferred?: number; total?: number; checkedAt?: number; error?: string
 }
-export interface DesktopAPI {
+export interface DesktopAPI extends DailyAPI {
   updateState(): Promise<UpdateState>
   checkForUpdates(): Promise<UpdateState>
   downloadUpdate(): Promise<UpdateState>

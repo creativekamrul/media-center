@@ -13,8 +13,14 @@ import { registerFeatures, queueItemSchema } from './features'
 import { autoUpdater } from 'electron-updater'
 import { Updates } from './updates'
 import { APP_VERSION } from '../shared/version'
+import { Downloads } from './downloads'
+import { registerDaily } from './daily'
+import { DiscordPresence, registerDiscord } from './discord'
 
 let window: BrowserWindow | undefined
+let miniWindow: BrowserWindow | undefined
+let downloads: Downloads
+let discord: DiscordPresence
 let store: Store
 let player: Player
 let quitting = false
@@ -33,7 +39,8 @@ const commandSchema = z.union([
 function provider(id: string) { const { config, secret } = store.connection(id); return config.provider === 'navidrome' ? new Navidrome(config, secret) : new Audiobookshelf(config, secret) }
 function handle<T extends z.ZodTypeAny>(channel: string, schema: T, action: (input: z.infer<T>) => unknown) {
   ipcMain.handle(channel, async (event, raw) => {
-    if (!window || event.sender !== window.webContents || event.senderFrame !== window.webContents.mainFrame) throw new Error('Untrusted desktop request.')
+    const owner = [window, miniWindow].find(w => w && !w.isDestroyed() && event.sender === w.webContents && event.senderFrame === w.webContents.mainFrame)
+    if (!owner || (owner === miniWindow && !['player:get','player:command','item:cover','local:cover','preferences:get','mini:command'].includes(channel))) throw new Error('Untrusted desktop request.')
     const parsed = schema.safeParse(raw)
     if (!parsed.success) throw new Error('Invalid desktop request. Please check the entered values.')
     try { return await action(parsed.data) }
@@ -52,16 +59,26 @@ function createWindow() {
   window.on('closed', () => { window = undefined })
   window.on('close', event => { if (!quitting && store.preferences().closeToTray && tray) { event.preventDefault(); window?.hide() } })
 }
+function createMini() {
+  if (miniWindow && !miniWindow.isDestroyed()) { miniWindow.show();return }
+  miniWindow = new BrowserWindow({width:440,height:200,minWidth:360,minHeight:190,maxHeight:260,frame:false,alwaysOnTop:true,backgroundColor:'#121416',title:'Media Center mini player',autoHideMenuBar:true,webPreferences:{preload:join(__dirname,'../preload/index.js'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}})
+  miniWindow.webContents.setWindowOpenHandler(()=>({action:'deny'}));miniWindow.webContents.on('will-navigate',e=>e.preventDefault());miniWindow.on('closed',()=>{miniWindow=undefined})
+  if(!app.isPackaged && process.env.ELECTRON_RENDERER_URL) {const url=new URL(process.env.ELECTRON_RENDERER_URL);url.searchParams.set('mini','1');void miniWindow.loadURL(url.href)} else void miniWindow.loadFile(join(__dirname,'../renderer/index.html'),{query:{mini:'1'}})
+}
 if (!app.requestSingleInstanceLock()) app.quit()
 else {
-  app.on('second-instance', () => { if (window?.isMinimized()) window.restore(); window?.show(); window?.focus() })
+  app.on('second-instance', () => { void app.whenReady().then(()=>{if(!window)createWindow();if (window?.isMinimized()) window.restore(); window?.show(); window?.focus()}) })
   void app.whenReady().then(() => {
     session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false))
     session.defaultSession.setPermissionCheckHandler(() => false)
     store = new Store(join(app.getPath('userData'), 'media-center.sqlite'))
-    const mpv = new Mpv(), local = new LocalFiles(store); player = new Player(mpv, store, provider, local)
-    player.on('state', state => { if (window && !window.isDestroyed()) window.webContents.send('player:state', state) })
+    const mpv = new Mpv(), local = new LocalFiles(store); downloads = new Downloads(join(app.getPath('userData'),'downloads'),store,provider); player = new Player(mpv, store, provider, local, downloads)
+    player.on('state', state => { for(const w of [window,miniWindow]) if(w && !w.isDestroyed()) w.webContents.send('player:state',state) })
+    downloads.on('state',state=>{if(window && !window.isDestroyed()) window.webContents.send('downloads:state',state)})
     registerFeatures(handle, store, player, local, provider, () => window!)
+    registerDaily(handle,store,player,downloads,provider,()=>window!)
+    discord=new DiscordPresence(store,player,provider,local);registerDiscord(handle,discord)
+    handle('mini:command',z.object({action:z.enum(['open','close','main','pin']),pinned:z.boolean().optional()}).strict(),i=>{if(i.action==='open')createMini();else if(i.action==='close')miniWindow?.close();else if(i.action==='pin')miniWindow?.setAlwaysOnTop(i.pinned??true);else {if(!window)createWindow();window?.show();window?.focus()}})
     const updates = new Updates(autoUpdater, app.isPackaged ? app.getVersion() : APP_VERSION, app.isPackaged && process.platform === 'win32', async () => { await player.command({ action: 'stop' }) })
     updates.on('state', state => { if (window && !window.isDestroyed()) window.webContents.send('updates:state', state) })
     handle('updates:get', z.undefined(), () => updates.state)
@@ -88,6 +105,7 @@ else {
     handle('settings:audio', z.object({ exclusive: z.boolean(), audioDevice: z.string().min(1).max(1024) }).strict(), input => { store.set('exclusive', input.exclusive); store.set('audioDevice', input.audioDevice) })
     handle('audio:devices', z.undefined(), async () => { await mpv.start(store.settings().mpvPath); return z.array(z.object({ name: z.string(), description: z.string() })).parse(await mpv.command(['get_property', 'audio-device-list'])) })
     handle('libraries:list', z.undefined(), async () => {
+      store.cacheClear()
       const connections = store.connections()
       const results = await Promise.allSettled(connections.map(c => provider(c.id).libraries()))
       return { libraries: results.flatMap(r => r.status === 'fulfilled' ? r.value : []), errors: results.flatMap((r, i) => r.status === 'rejected' ? [`${connections[i].name}: Could not load libraries. Check the server connection and permissions.`] : []) }
@@ -98,7 +116,7 @@ else {
       if (p instanceof Navidrome) return p.detail(input.itemId)
       const item = await p.detail(input.itemId); return item.kind === 'audiobook' ? { kind: 'audiobook', item } : { kind: 'podcast-show', item }
     })
-    handle('item:cover', z.object({ serverId: id, itemId: id }).strict(), input => provider(input.serverId).cover(input.itemId))
+    handle('item:cover', z.object({ serverId: id, itemId: id }).strict(), input => downloads.cover(input.serverId,input.itemId) ?? provider(input.serverId).cover(input.itemId))
     handle('player:play', z.object({ queue: z.array(queueItemSchema).min(1).max(5000), index: z.number().int().min(0), position: z.number().finite().min(0).optional() }).strict(), async input => { if (input.index >= input.queue.length) throw new Error('Queue position is out of bounds.'); await player.play(input.queue, input.index, input.position) })
     handle('player:command', commandSchema, input => player.command(input))
     handle('player:get', z.undefined(), () => player.state)
@@ -116,7 +134,7 @@ else {
   app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
   app.on('before-quit', event => {
     if (quitting || !player) return
-    event.preventDefault(); quitting = true; globalShortcut.unregisterAll(); tray?.destroy(); tray = undefined
-    void player.shutdown().catch(() => {}).finally(() => { store.close(); app.quit() })
+    event.preventDefault(); quitting = true; discord?.stop(); globalShortcut.unregisterAll(); tray?.destroy(); tray = undefined
+    void Promise.allSettled([player.shutdown(),downloads.stop()]).finally(() => { store.close(); app.quit() })
   })
 }

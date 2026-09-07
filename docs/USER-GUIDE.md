@@ -2,7 +2,7 @@
 
 ## Music and playlists
 
-Choose a music library and view: Albums, Recently added, Recently played, Most played, Songs, Artists, Playlists, Favorites, Genres, Radio, or Rediscover. Server pagination supports large catalogs. Track selections apply to the tracks currently shown, as stated in the selection bar.
+Choose a music library and view: Albums, Recently added, Recently played, Most played, Songs, Artists, Playlists, Favorites, Genres, Radio, or Rediscover. Server pagination supports large catalogs. Catalog selections apply to the loaded catalog page. Inside an album or playlist, Select all tracks selects the entire collection, including other track pages.
 
 Open an artist to browse their albums. Open an album to play or select its tracks. Heart buttons update favorites; song star selectors update ratings. Search returns the entity types appropriate to the view.
 
@@ -20,7 +20,7 @@ Status filters include Not started, In progress, Unfinished and Finished. Mark f
 
 Audiobookshelf library search is relevance-ranked, capped at 100 matches. Clear it to use full-library server sorting and pagination. Continue Listening shows recent book and episode progress; use Refresh progress to obtain changes from other devices.
 
-Book bookmarks are saved on Audiobookshelf. Add a title and position; the default is the active book's playhead or saved book progress. Bookmarks can be played or deleted. Use Listen later for a future date.
+Book bookmarks are saved on Audiobookshelf. Add a title and position; the default is the active book's playhead or saved book progress. Bookmarks can be played, renamed with Edit, or deleted. Editing keeps the original timestamp. Use Listen later for a future date.
 
 ## Player and queue
 
@@ -44,6 +44,52 @@ Listen later defaults to tomorrow and accepts a note. Reschedule, complete, reop
 
 History stores up to 500 recently played distinct items on this device. It is separate from server listening statistics. Replaying a spoken item uses its current server position.
 
+## Home and podcast inbox
+
+Home brings together Continue Listening, recent music albums, the latest unfinished indexed episodes, and your upcoming plans. Refresh Home requests current server data. The first podcast index fetches expanded shows; large libraries may take a while. Partial refresh failures are displayed.
+
+Podcast inbox combines episodes across connected podcast libraries. Search by episode or show, choose a status, and order by newest, oldest, or show title. Select this page selects only its 60 entries. Mark selected finished/unfinished writes each exact episode separately and reports failures. Cached inbox data refreshes in the background after five minutes; use Refresh episodes for an explicit refresh.
+
+## Downloads and offline progress
+
+Use Download beside an album/playlist selection, book, or episode. The original files are streamed to this computer in a single-worker queue. Downloads shows progress, quota, pause/retry, and removal. The default quota is 20 GB; change it in Settings. A retry restarts a partial download. An interrupted app exit leaves unfinished downloads paused. Removing a download deletes only this app's cached copy. Stop that item before removing it.
+
+Ready downloads are preferred automatically for playback. Up to 32 recent cover images (at most 1 MB each) are cached separately from the audio quota; older offline items may show generated artwork. Books retain physical-file offsets and whole-book chapters; podcasts download only the chosen episode. Offline book/episode positions are checkpointed separately. The app does not replay uncertain listening-time deltas or automatically overwrite server progress.
+
+When online, choose **Downloads → Sync saved position**. Playback of that item stops and you see this device's position beside the server's. Choose **Use this device's position** only when that is the position you want on other clients. The server is checked again before writing; if it changed after the preview, preview again. This writes the absolute position and completion state, not historical listening-time totals.
+
+## Mini-player, gapless playback and saved queues
+
+The small window icon at the right of the player opens the mini-player. Drag its header to move it. It starts always on top; the pin toggles that behavior. Controls share the same MPV player and queue as the main window. Closing the mini-player does not stop playback. Expand returns to the main window.
+
+Gapless playback prepares the next music/local track in MPV. It works best for compatible adjacent formats; a device format change or slow network can still cause a gap. Crossfade is not included, and no resampling is forced to hide format changes. Gapless preference changes apply when preparing the next playback. Smart rewind backs up five seconds after a break of at least ten seconds and fifteen seconds after five minutes, by default. Change both amounts or disable rewind in Settings. Explicit seeks, chapters, and note positions remain exact.
+
+Open Saved queues on the Play queue page. Give the current queue a name, then save it. Resume starts at its saved index and position; Load queue restores it without autoplay. Replace with current updates an existing saved session. Drag rows to reorder within a displayed queue page, or use the arrow controls to move across page boundaries. Long queues and track collections render 100 rows per page.
+
+## Notes, rule playlists and listening habits
+
+Listening notes → Note this moment saves the active item and current timestamp. Add a title and text, search your notes, edit them, or Play from here. Notes remain on this computer; use personal backup to move them. Audiobookshelf's server bookmarks remain a separate book-only feature.
+
+Rule playlists evaluate your Navidrome library when you choose Play or Queue. Combine favorite status, minimum rating, genre, artist, unplayed status, and year range. Choose title, artist, or random order and a result limit. They do not change Navidrome's native smart-playlist definitions.
+
+Music → Playlists supports Media Center JSON export/import. Exported files contain track identifiers and descriptive metadata, never stream credentials. Import into the same Navidrome server to create a private playlist; track order and duplicates are retained. M3U/XSPF and cross-server matching are not yet implemented.
+
+Listening stats counts time actually spent playing on this device, excluding pause and buffering. It shows daily totals, media categories, top listens and completion counts. Set a daily minute goal in Settings; zero disables the goal. Existing server statistics are not imported.
+
+## Personal backups
+
+Settings → Export personal backup saves preferences, named queues, listening notes, Listen Later plans, local rule playlists, and source references. It excludes passwords, Last.fm keys, Discord configuration, MPV paths, downloaded audio, listening statistics, and server progress.
+
+Preview a backup before restoring. Connect matching servers with the same base URL and username, and choose the original local roots through the native folder picker. No arbitrary folder or executable is imported from a backup. Restore replaces the listed personal collections and preferences in one database transaction. Export your current data first if you want to retain it.
+
+## Discord and Last.fm
+
+Discord integration is optional and off initially. Create an application in the [Discord Developer Portal](https://discord.com/developers/applications), name it Media Center, and copy the numeric Application ID from General Information. No bot token or client secret is needed. Keep the Discord desktop app open, enable activity sharing in Discord, and save the Application ID in this app's Settings before enabling presence.
+
+Choose which media types to share. Music is selected initially; books, podcasts, and local files are private unless enabled. Pause handling is configurable. Disconnects are retried automatically. Media Center only updates your activity; it does not send Discord chat messages.
+
+Enter your own Last.fm API key privately in Settings for album artwork. It is encrypted using Windows protection. Album artist/title metadata goes to Last.fm and only a public Last.fm CDN image URL goes to Discord. No private cover URLs or server authentication are shared. Correct the current track's album artist/title in the artwork correction section when needed. Books and podcasts currently show text without uploaded private covers. Live profile verification requires your Application ID and running Discord client.
+
 ## Troubleshooting
 
 For updates, open **Settings → App updates**. Check for updates, download the offered stable version, and choose Restart and install when ready. Downloading can run while you listen. Installation stops playback and saves the queue and listening session. Normal exit never installs an update. Connections, local sources and listening plans stay in the existing app data directory. MPV is separate and is not updated.
@@ -53,7 +99,7 @@ Versions 0.2.1 and earlier need one manual installation of 0.2.2 or newer. An in
 - Cannot connect: check base URL, reverse-proxy path, network, credentials and permissions. Authenticated requests do not follow arbitrary redirects.
 - MPV unavailable: select a valid executable in Settings; the picker checks its control connection.
 - No sound: check app volume, Windows mixer, output device and exclusive-mode conflicts.
-- Sync failed: playback can continue and the checkpoint remains on this device. Another client may be behind. Automatic offline reconciliation is not implemented.
+- Sync failed: playback can continue and the checkpoint remains on this device. Another client may be behind. For downloaded spoken audio, use the explicit position preview/sync in Downloads; automatic reconciliation is not implemented.
 - Tags unavailable: unsupported metadata does not necessarily mean unsupported audio.
 - Playlist rejected: it may be smart, read-only or owned by another user; the server controls permissions.
 

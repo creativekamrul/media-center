@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0
+
+- Added Home with Continue Listening, recent albums, fresh episodes, and upcoming listening plans.
+- Added a cross-show podcast inbox with search, ordering, status filters, pagination, and bulk completion updates.
+- Added original-audio downloads with queue status, a configurable disk quota, interruption/retry handling, and native offline playback. Multi-file book timelines remain separate from chapter markers and episode identities.
+- Added offline position previews and explicit server updates with a second conflict check. Offline listening-time deltas are never replayed.
+- Added an always-on-top mini-player with pinning, seeking, and shared playback controls, plus a restricted IPC allowlist for that window.
+- Added MPV gapless preparation for adjacent music/local tracks, smart spoken rewind, named saved queues, and queue drag-and-drop.
+- Added timestamped listening notes, book bookmark title editing, device listening statistics and daily goals.
+- Added local rule playlists and credential-free Media Center JSON playlist import/export for the same Navidrome server.
+- Added personal backup preview/restore with source matching, schema validation and transactional writes; no credential or media import.
+- Added optional Discord presence with per-media privacy switches, reconnect, speed-aware progress and pause handling. Last.fm keys are encrypted; public album artwork is cached and can be corrected per track. Application setup remains optional.
+- Refreshed icon controls and main buttons, preserved themes/fonts and focus visibility, bounded long queue/track/episode rendering, and added a short-lived catalog cache.
+- Added offline/timeline/privacy/backup regressions and a native daily-use Electron smoke suite. Full Feishin/ABS parity, crossfade, automatic offline conflict resolution, M3U interoperability, and public book/podcast artwork remain future work.
+
 ## 0.2.3
 
 - Added a dedicated `npm run release:preview` command so npm on Windows cannot swallow the preview flag and publish a version accidentally.
