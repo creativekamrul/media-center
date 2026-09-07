@@ -51,11 +51,17 @@ export class LastfmArtwork {
     const url=new URL('https://ws.audioscrobbler.com/2.0/')
     url.search=new URLSearchParams({method,...params,api_key:apiKey,autocorrect:'1',format:'json'}).toString()
     const response=await this.fetcher(url,{signal:AbortSignal.timeout(8000),redirect:'error'})
-    if(!response.ok){await response.body?.cancel();throw new Error(response.status===429?'Last.fm is rate limiting requests. Try again in a minute.':`Last.fm request failed (HTTP ${response.status}). Try again shortly.`)}
+    const httpError=()=>new Error(`Last.fm request failed (HTTP ${response.status}). The service did not return a usable lookup result. Try again later.`)
+    if(response.status===429){await response.body?.cancel();throw new Error('Last.fm is rate limiting requests. Try again in a minute.')}
+    // Last.fm can attach API errors to non-2xx responses. Read those before
+    // deciding whether a missing album should fall back to the track lookup.
+    if(!response.ok&&![400,403,404].includes(response.status)){await response.body?.cancel();throw httpError()}
     const reader=response.body?.getReader();if(!reader)throw new Error('Last.fm returned an empty response.')
     const chunks:Uint8Array[]=[];let length=0
     while(true){const {value,done}=await reader.read();if(done)break;length+=value.length;if(length>524288){await reader.cancel();throw new Error('Last.fm returned an oversized response.')}chunks.push(value)}
-    const data=schema.parse(JSON.parse(Buffer.concat(chunks).toString('utf8')))
+    let data:z.infer<typeof schema>
+    try{data=schema.parse(JSON.parse(Buffer.concat(chunks).toString('utf8')))}catch(e){if(!response.ok)throw httpError();throw e}
+    if(!response.ok&&!data.error)throw httpError()
     if(data.error===6||data.error===7)return undefined
     if(data.error===10||data.error===26)throw new Error('Last.fm rejected the API key. Replace it in Settings and save.')
     if(data.error===29)throw new Error('Last.fm is rate limiting requests. Try again in a minute.')

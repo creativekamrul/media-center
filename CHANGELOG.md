@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1
+
+- Read structured Last.fm API errors on HTTP 400/403/404 responses. A missing-album API error can now continue to track matching instead of stopping with a generic HTTP 404 error.
+- Keep invalid-key, rate-limit, malformed/proxy response, and server failures distinct; never cache those failures as missing artwork.
+- Remove the speculative rate-limit message from the artwork refresh acknowledgement. Add four regressions covering non-2xx Last.fm responses.
+
 ## 0.6.0
 
 - Add an optional immersive playing screen: large synchronized lyrics on the left, artwork and playback controls above the current queue on the right. Open it from Now playing > Immersive view; Classic view returns to the existing layout.
