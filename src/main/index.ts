@@ -62,6 +62,8 @@ function createWindow() {
 function createMini() {
   if (miniWindow && !miniWindow.isDestroyed()) { miniWindow.show();return }
   miniWindow = new BrowserWindow({width:440,height:200,minWidth:360,minHeight:190,maxHeight:260,frame:false,alwaysOnTop:true,backgroundColor:'#121416',title:'Media Center mini player',autoHideMenuBar:true,webPreferences:{preload:join(__dirname,'../preload/index.js'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}})
+  // Explicit Windows level avoids the floating level's taskbar repositioning clearing topmost.
+  miniWindow.setAlwaysOnTop(true,process.platform==='win32'?'normal':'floating')
   miniWindow.webContents.setWindowOpenHandler(()=>({action:'deny'}));miniWindow.webContents.on('will-navigate',e=>e.preventDefault());miniWindow.on('closed',()=>{miniWindow=undefined})
   if(!app.isPackaged && process.env.ELECTRON_RENDERER_URL) {const url=new URL(process.env.ELECTRON_RENDERER_URL);url.searchParams.set('mini','1');void miniWindow.loadURL(url.href)} else void miniWindow.loadFile(join(__dirname,'../renderer/index.html'),{query:{mini:'1'}})
 }
@@ -78,7 +80,7 @@ else {
     registerFeatures(handle, store, player, local, provider, () => window!)
     registerDaily(handle,store,player,downloads,provider,()=>window!)
     discord=new DiscordPresence(store,player,provider,local);registerDiscord(handle,discord)
-    handle('mini:command',z.object({action:z.enum(['open','close','main','pin']),pinned:z.boolean().optional()}).strict(),i=>{if(i.action==='open')createMini();else if(i.action==='close')miniWindow?.close();else if(i.action==='pin')miniWindow?.setAlwaysOnTop(i.pinned??true);else {if(!window)createWindow();window?.show();window?.focus()}})
+    handle('mini:command',z.object({action:z.enum(['open','close','main','pin']),pinned:z.boolean().optional()}).strict(),i=>{if(i.action==='open')createMini();else if(i.action==='close')miniWindow?.close();else if(i.action==='pin')miniWindow?.setAlwaysOnTop(i.pinned??true,process.platform==='win32'?'normal':'floating');else {if(!window)createWindow();window?.show();window?.focus()}})
     const updates = new Updates(autoUpdater, app.isPackaged ? app.getVersion() : APP_VERSION, app.isPackaged && process.platform === 'win32', async () => { await player.command({ action: 'stop' }) })
     updates.on('state', state => { if (window && !window.isDestroyed()) window.webContents.send('updates:state', state) })
     handle('updates:get', z.undefined(), () => updates.state)

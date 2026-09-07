@@ -37,6 +37,8 @@ async function main() {
   const podcast = { id: 'show-one', libraryId: 'podcasts', mediaType: 'podcast', media: { metadata: { title: 'The Test Podcast', author: 'Test Host' }, numEpisodes: 2, episodes: [{ id: 'episode-one', title: 'First independent episode', publishedAt: 1700000000000, audioFile: { duration: 1200 } }, { id: 'episode-two', title: 'Second independent episode', publishedAt: 1700100000000, audioFile: { duration: 800 } }] } }
   const fixtureSong = { id: 'song', title: 'Original Audio', artist: 'Test Artist', album: 'The Test Album', duration: 600, suffix: 'wav', samplingRate: 96000, bitDepth: 24 }
   let playlists = [], progress = [{ libraryItemId: 'book-one', currentTime: 450, duration: 1000, progress: .45 }, { libraryItemId: 'show-one', episodeId: 'episode-one', currentTime: 20, duration: 1200, progress: 20/1200 }, { libraryItemId: 'show-one', episodeId: 'episode-two', currentTime: 800, duration: 800, progress: 1, isFinished: true }], bookmarks = []
+  const resumeBooks = Array.from({length:10},(_,i)=>({...book,id:`resume-book-${i}`,media:{...book.media,metadata:{...book.media.metadata,title:i%2?'A longer listening title with several parts and a subtitle':'Short story '+i}}}))
+  progress.push(...resumeBooks.map((b,i)=>({libraryItemId:b.id,currentTime:30+i,duration:1000,progress:(30+i)/1000})))
   const mutations = []
   const server = createServer(async (req, res) => {
     requests.push(req.url)
@@ -76,7 +78,7 @@ async function main() {
     if (url.pathname === '/api/items/book-one/play') return res.end(JSON.stringify({ id: 'book-session', duration: 1000, currentTime: 450, playMethod: 0, audioTracks: [{ index: 1, title: 'A', startOffset: 0, duration: 400, contentUrl: '/audio/a.wav' }, { index: 2, title: 'B', startOffset: 400, duration: 600, contentUrl: '/audio/b.wav' }] }))
     if (url.pathname === '/api/items/show-one/play/episode-one') return res.end(JSON.stringify({ id: 'episode-session', duration: 1200, currentTime: 20, playMethod: 0, audioTracks: [{ index: 1, title: 'Episode', startOffset: 0, duration: 1200, contentUrl: '/audio/episode.wav' }] }))
     if (/^\/api\/session\/[^/]+\/(sync|close)$/.test(url.pathname)) { let body = ''; req.on('data', chunk => { body += chunk }); req.on('end', () => { syncRequests.push({ path: url.pathname, ...JSON.parse(body) }); res.end('{}') }); return }
-    if (url.pathname === '/api/me/items-in-progress') return res.end(JSON.stringify({ libraryItems: [{...book,media:{...book.media,metadata:{...book.media.metadata,title:'A long audiobook title: collected stories and adventures from another world'}}}, { ...podcast, recentEpisode: podcast.media.episodes[0] }] }))
+    if (url.pathname === '/api/me/items-in-progress') return res.end(JSON.stringify({ libraryItems: [...resumeBooks, {...book,media:{...book.media,metadata:{...book.media.metadata,title:'A long audiobook title: collected stories and adventures from another world'}}}, { ...podcast, recentEpisode: podcast.media.episodes[0] }] }))
     if (url.pathname === '/api/me') return res.end(JSON.stringify({ id: 'test-user', mediaProgress: progress, bookmarks }))
     if (url.pathname.startsWith('/api/me/progress/') && req.method === 'PATCH') { let body = ''; for await (const chunk of req) body += chunk; const payload = JSON.parse(body), parts = url.pathname.split('/'), itemId = parts[4], episodeId = parts[5]; let p = progress.find(p => p.libraryItemId === itemId && p.episodeId === episodeId); if (!p) { p = { libraryItemId: itemId, episodeId }; progress.push(p) }; Object.assign(p, payload); mutations.push({ path: url.pathname, payload }); return res.end('OK') }
     if (url.pathname.includes('/bookmark')) { let body = ''; for await (const chunk of req) body += chunk; if (req.method === 'POST' || req.method === 'PATCH') bookmarks.push({ libraryItemId: 'book-one', ...JSON.parse(body) }); if (req.method === 'DELETE') bookmarks = bookmarks.filter(b => b.time !== Number(url.pathname.split('/').at(-1))); return res.end('OK') }
@@ -198,11 +200,14 @@ async function main() {
     await page.getByLabel('Episode sort', { exact: true }).selectOption('title')
     const statusStyle = await page.locator('.episode-card .status-control button').first().evaluate(b=>({height:b.getBoundingClientRect().height,font:parseFloat(getComputedStyle(b).fontSize)}))
     assert.ok(statusStyle.height>=36 && statusStyle.font>=13, 'Episode status controls need visible button targets')
-    for (const width of [1024,1920]) {
+    for (const width of [1024,1440,1920]) {
       await page.setViewportSize({width,height:900})
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Episode screen must fit the viewport')
       const actions=await page.locator('.episode-card').first().evaluate(el=>{const status=el.querySelector('.status-control').getBoundingClientRect(),actions=el.querySelector('.listen-actions').getBoundingClientRect();return Math.abs(status.left-actions.left)})
       assert.ok(actions<4,'Episode status and playback actions should stay grouped')
+      const layout=await page.locator('.episode-card').first().evaluate(el=>{const copy=el.querySelector('.episode-copy').getBoundingClientRect(),controls=el.querySelector('.episode-bottom').getBoundingClientRect(),card=el.getBoundingClientRect();return{copyRight:copy.right,copyBottom:copy.bottom,controlsLeft:controls.left,controlsTop:controls.top,controlsRight:controls.right,cardRight:card.right}})
+      if(width>=1250){assert.ok(layout.controlsLeft>=layout.copyRight+15,'Wide episodes put controls beside the description');assert.ok(layout.cardRight-layout.controlsRight<30,'Episode controls use the right edge')}
+      else assert.ok(layout.controlsTop>=layout.copyBottom,'Narrow episodes stack without overlap')
       await page.locator('.episode-card').first().evaluate(el=>el.scrollIntoView({block:'start'}))
       await page.screenshot({path:resolve(artifacts,'episodes-v021-'+width+'.png')})
     }

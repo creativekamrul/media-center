@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.6
+
+- Apply an explicit Windows mini-player pin level so taskbar repositioning does not clear always-on-top; verify pin, unpin, and re-pin in the native desktop suite.
+
+- Replace the plain daily listening list with a readable table, recent active days first, media totals, weekday labels, and an optional quiet-day view.
+- Fill the Continue Listening grid with evenly sized responsive cards, removing the unused right-hand gutter on full rows.
+- Move episode status and playback controls into a dedicated right-hand column on wide windows; keep the stacked layout on smaller windows.
+- Add desktop layout coverage for a populated Home grid, daily table filtering, and episode controls at three window widths.
+
 ## 0.3.5
 
 - Resolve the configured download storage root before checking child paths, allowing valid Windows short paths and folder aliases without allowing redirected download directories.
