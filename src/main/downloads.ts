@@ -51,7 +51,9 @@ export async function downloadSource(item: QueueItem, provider: Navidrome | Audi
 
 export class Downloads extends EventEmitter {
   private entries: RecordEntry[]
-  private running?: { id: string; controller: AbortController }
+  private running?: { id: string; controller: AbortController; done: Promise<void>; remove: boolean }
+  private actionTail: Promise<unknown> = Promise.resolve()
+  private editing = false
   private stopped = false
   constructor(private root: string, private store: Store, private provider: (id: string) => Navidrome | Audiobookshelf) {
     super(); this.entries = store.get<RecordEntry[]>('downloads') ?? []
@@ -79,21 +81,44 @@ export class Downloads extends EventEmitter {
     await rm(dir, { recursive: true, force: true })
   }
   async action(id: string, action: 'pause' | 'retry' | 'remove') {
+    const result = await this.batch([id], action)
+    if (result.failed.length) throw new Error('Could not change this download. Stop playback and check that its files are not in use.')
+  }
+  batch(ids: string[], action: 'pause' | 'retry' | 'remove'): Promise<{ completed: number; failed: string[] }> {
+    const operation = this.actionTail.then(async () => {
+      this.editing = true
+      const result = { completed: 0, failed: [] as string[] }
+      try {
+        // Hold the worker while changing the whole selection, so Pause all cannot start another item.
+        for (const id of new Set(ids)) try { await this.change(id, action); result.completed++ } catch { result.failed.push(id) }
+        return result
+      } finally { this.editing = false; this.persist(); void this.pump() }
+    })
+    this.actionTail = operation.catch(() => {})
+    return operation
+  }
+  private async change(id: string, action: 'pause' | 'retry' | 'remove') {
     const entry = this.entries.find(e => e.id === id); if (!entry) return
     if (this.running?.id === id) {
-      entry.status = 'paused'; this.running.controller.abort()
-      if (action === 'remove') entry.error = 'remove'
-      this.persist(); return
+      const running = this.running
+      if (action === 'remove') running.remove = true
+      entry.status = 'paused'; running.controller.abort()
+      this.persist(); await running.done
+      if (action === 'remove' && this.entries.some(e => e.id === id)) throw new Error('Download files could not be removed.')
+      if (action !== 'retry') return
     }
     if (action === 'remove') { await this.clearFiles(id); this.store.set(`download-cover:${id}`,null); this.entries = this.entries.filter(e => e.id !== id) }
     else if (action === 'retry' && entry.status !== 'ready') { entry.status = 'queued'; entry.error = undefined }
     else if (action === 'pause' && entry.status === 'queued') entry.status = 'paused'
-    this.persist(); void this.pump()
+    this.persist()
   }
   private async pump() {
-    if (this.running || this.stopped) return
+    if (this.running || this.stopped || this.editing) return
     const entry = this.entries.find(e => e.status === 'queued'); if (!entry) return
-    const controller = new AbortController(); this.running = { id: entry.id, controller }
+    const controller = new AbortController()
+    let finish!: () => void
+    const running = { id: entry.id, controller, done: new Promise<void>(resolve => { finish = resolve }), remove: false }
+    this.running = running
     entry.status = 'downloading'; entry.bytes = 0; entry.files = []; entry.error = undefined; this.persist()
     try {
       await this.clearFiles(entry.id); await mkdir(this.folder(entry.id), { recursive: true })
@@ -128,11 +153,13 @@ export class Downloads extends EventEmitter {
       if(cover && cover.length<=1024*1024){this.store.set(`download-cover:${entry.id}`,cover);entry.cover='cached';for(const old of this.entries.filter(e=>e.cover&&e.id!==entry.id).sort((a,b)=>b.createdAt-a.createdAt).slice(31)){this.store.set(`download-cover:${old.id}`,null);old.cover=undefined}}
       controller.signal.throwIfAborted(); entry.status = 'ready'; entry.total = entry.bytes
     } catch (error) {
-      await this.clearFiles(entry.id).catch(() => {})
-      entry.bytes = 0; entry.files = []
-      if (entry.error === 'remove') {this.store.set(`download-cover:${entry.id}`,null);this.entries = this.entries.filter(e => e.id !== entry.id)}
+      let cleanupFailed = false
+      await this.clearFiles(entry.id).catch(() => { cleanupFailed = true })
+      if (!cleanupFailed) { entry.bytes = 0; entry.files = [] }
+      if (cleanupFailed) { entry.status = 'error'; entry.error = 'Download files are in use. Close other players and remove this download again.' }
+      else if (running.remove) {this.store.set(`download-cover:${entry.id}`,null);this.entries = this.entries.filter(e => e.id !== entry.id)}
       else { entry.status = controller.signal.aborted ? 'paused' : 'error'; entry.error = controller.signal.aborted ? 'Paused. Retry restarts this download.' : error instanceof Error && /Download|download|original audio|episode|audiobook|podcast/.test(error.message) ? error.message : 'Download failed. Check the server connection and available disk space.' }
-    } finally { this.running = undefined; this.persist(); if (!this.stopped) void this.pump() }
+    } finally { this.running = undefined; this.persist(); finish(); if (!this.stopped) void this.pump() }
   }
   async ready(target: PlayTarget): Promise<OfflineMedia | undefined> {
     const e = this.entries.find(e => e.status === 'ready' && progressKey(e.item.target) === progressKey(target)); if (!e) return
@@ -143,5 +170,5 @@ export class Downloads extends EventEmitter {
   }
   cover(serverId: string, id: string) { const e=this.entries.find(e => e.status === 'ready' && e.item.target.serverId === serverId && (e.item.cover === id || (e.item.target.kind === 'audiobook' ? e.item.target.bookId === id : e.item.target.kind === 'podcast-episode' ? e.item.target.showId === id : e.item.target.kind === 'music-track' && e.item.target.trackId === id)));return e?.cover==='cached'?this.store.get<string>(`download-cover:${e.id}`):e?.cover }
 
-  async stop() { this.stopped = true; this.running?.controller.abort(); while(this.running) await new Promise(resolve=>setTimeout(resolve,50)) }
+  async stop() { this.stopped = true; this.running?.controller.abort(); await this.actionTail; await this.running?.done }
 }

@@ -33,6 +33,11 @@ export function registerDaily(handle: Handle, store: Store, player: Player, down
   handle('daily:get', z.undefined(), () => ({ ...defaultDailySettings, ...store.get('dailySettings') as object }))
   handle('daily:save', dailySchema, i => store.set('dailySettings', i))
   handle('downloads:list', z.undefined(), () => downloads.snapshot())
+  handle('downloads:batch', z.object({ ids: z.array(z.string().uuid()).min(1).max(1000), action: z.enum(['pause','retry','remove']) }).strict(), async i => {
+    const current = player.state.queue[player.state.queueIndex]
+    if (i.action === 'remove' && current && player.state.status !== 'idle' && downloads.snapshot().entries.some(e => i.ids.includes(e.id) && progressKey(e.item.target) === progressKey(current.target))) throw new Error('Stop playback before removing the selected download that is playing.')
+    return downloads.batch(i.ids, i.action)
+  })
   handle('downloads:add', z.array(queueItemSchema).min(1).max(1000), i => downloads.add(i))
   handle('downloads:action', z.object({ id, action: z.enum(['pause','retry','remove']) }).strict(), async i => {
     const entry = downloads.snapshot().entries.find(e => e.id === i.id), current = player.state.queue[player.state.queueIndex]

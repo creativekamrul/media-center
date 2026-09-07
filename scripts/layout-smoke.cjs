@@ -13,7 +13,7 @@ module.exports = async function layoutSmoke(page, artifacts) {
       const r = el.getBoundingClientRect()
       return {album:el.classList.contains('home-album-card'), width:r.width, height:r.height,
         overflow:el.scrollWidth > el.clientWidth,
-        buttons:[...el.querySelectorAll('button')].map(b => { const r=b.getBoundingClientRect(); return {height:r.height,width:r.width,y:r.y} })}
+        buttons:[...el.querySelectorAll('button')].filter(b=>b.getClientRects().length).map(b => { const r=b.getBoundingClientRect(); return {height:r.height,width:r.width,y:r.y} })}
     }))
     await page.screenshot({path:resolve(artifacts, `home-compact-${width}.png`)})
     assert.ok(cards.length >= 3, 'Check populated albums and spoken progress')
@@ -22,9 +22,18 @@ module.exports = async function layoutSmoke(page, artifacts) {
       assert.ok(card.height <= (card.album ? 310 : 205), `Long titles must not create oversized cards: ${JSON.stringify(card)}`)
       assert.equal(card.overflow, false, 'Card content must fit its container')
       assert.ok(card.buttons.every(b => b.height >= 36 && b.width >= 36), 'Compact controls keep usable hit targets')
-      if (!card.album) assert.ok(card.buttons.every(b => Math.abs(b.y-card.buttons[0].y)<2), 'Resume actions fit in one row')
+      assert.equal(card.buttons.length,1,'Simple cards expose one Play icon, with secondary actions in the menu')
     }
     assert.equal(await page.locator('.workspace').evaluate(el => el.scrollWidth > el.clientWidth), false)
+    const more=page.locator('.home-continue-grid .card-more').first()
+    await more.locator('summary').click()
+    await more.getByRole('button',{name:'Play next',exact:true}).waitFor()
+    await more.locator('summary').click()
+    await page.getByRole('button',{name:'Listening stats',exact:true}).click()
+    await page.getByRole('img',{name:'Listening time over the last 30 days'}).waitFor()
+    assert.equal(await page.locator('.listening-bar').count(),30)
+    assert.equal(await page.locator('.listening-bar').evaluateAll(bs=>bs.some(b=>Number(b.getAttribute('height'))>0)),false,'Empty stats must not invent activity')
+    if(width===1440)await page.screenshot({path:resolve(artifacts,'stats-empty.png')})
     await page.getByRole('button', {name:'Listening notes', exact:true}).click()
     const search = page.getByRole('textbox', {name:'Search listening notes'})
     await search.waitFor()

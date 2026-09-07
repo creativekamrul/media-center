@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.3
+
+- Fix the listening graph with 30 calendar-day slots, zero-activity days, date and time labels, hover values, and an empty state. One listening day is now one narrow bar.
+- Add download checkboxes, Select all with partial-selection state, confirmed bulk removal, Pause all, Resume all, and clearly labeled individual pause/resume controls. Resume restarts the item from the beginning.
+- Serialize download controls, await active cancellation before removal/resume, and hold the worker during bulk changes. Failed removals retain their entries; playing downloads are protected.
+- Simplify Home and library resume cards with a top-right Play icon and a More actions menu. Album Play moves onto the artwork; title and creator rows stay aligned.
+- Reduce listening-history row height and balance Home navigation spacing.
+- Add regression coverage for chart calendars, active/queued book and episode downloads, selection/removal, and simple card layouts.
+
 ## 0.3.2
 
 - Shrink Home album cards to a bounded 180-pixel width and keep long titles and fallback artwork compact. Sparse sections no longer expand their cards to fill the window.

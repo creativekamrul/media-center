@@ -1,3 +1,4 @@
+import { listeningDays } from '../shared/listening-days'
 import { DatabaseSync } from 'node:sqlite'
 import { safeStorage } from 'electron'
 import { randomUUID } from 'node:crypto'
@@ -28,7 +29,7 @@ export class Store {
     const rows = this.db.prepare("SELECT day,SUM(seconds) seconds,SUM(CASE WHEN kind='music-track' THEN seconds ELSE 0 END) music,SUM(CASE WHEN kind='audiobook' THEN seconds ELSE 0 END) books,SUM(CASE WHEN kind='podcast-episode' THEN seconds ELSE 0 END) podcasts,SUM(CASE WHEN kind='local-file' THEN seconds ELSE 0 END) local FROM listening WHERE day >= date('now','localtime','-29 days') GROUP BY day ORDER BY day").all() as unknown as ListeningStats['days']
     const counts = this.db.prepare("SELECT COUNT(DISTINCT CASE WHEN kind='audiobook' AND finished=1 THEN target END) books,COUNT(DISTINCT CASE WHEN kind='podcast-episode' AND finished=1 THEN target END) episodes FROM listening").get()!
     const top = this.db.prepare('SELECT title,subtitle,SUM(seconds) seconds FROM listening GROUP BY target ORDER BY seconds DESC LIMIT 12').all() as unknown as ListeningStats['top']
-    return { days: rows, totalSeconds: rows.reduce((n,r) => n+r.seconds,0), finishedBooks: Number(counts.books), finishedEpisodes: Number(counts.episodes), top }
+    return { days: listeningDays(rows), totalSeconds: rows.reduce((n,r) => n+r.seconds,0), finishedBooks: Number(counts.books), finishedEpisodes: Number(counts.episodes), top }
   }
   preferences(): Preferences { return { ...defaultPreferences, ...this.get<Preferences>('preferences') } }
   laterList(): ListenLater[] { return (this.get<ListenLater[]>('listenLater') ?? []).sort((a, b) => Number(a.done) - Number(b.done) || a.due.localeCompare(b.due)) }

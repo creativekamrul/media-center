@@ -63,3 +63,40 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .collection-management:empty{display:none}
 .collection-management button.secondary{min-height:36px;padding:7px 13px;font-size:13px}
 @media(max-width:1150px){.detail-hero{gap:18px;padding:18px}.detail-hero>.art{width:112px}.detail-hero .listen-actions{gap:6px}}
+
+.sidebar .brand{margin-bottom:18px}.sidebar-scroll>.nav-item:first-child{margin-bottom:18px}
+.resume-card,.home-album-card{position:relative}
+.resume-card h3,.home-album-card h3{height:42px;flex-shrink:0}
+.resume-card h3{padding-right:28px}
+.resume-card .daily-status,.resume-card .progress-badge{max-width:calc(100% - 36px);margin-bottom:8px}
+.resume-card .daily-meter,.resume-card>progress{margin-bottom:0;width:calc(100% - 34px)}
+button.card-play{position:absolute;right:9px;top:9px;color:var(--text,#edf0e7);z-index:1}
+.home-album-card button.card-play{background:#121716dc;color:#fff;box-shadow:0 1px 5px #0005}
+.card-more{position:absolute;right:8px;bottom:5px;z-index:2}
+.card-more[open]{z-index:5}
+.card-more summary{list-style:none;display:grid;place-items:center;cursor:pointer;width:36px;height:36px;border-radius:50%;color:var(--text,#edf0e7)}
+.card-more summary::-webkit-details-marker{display:none}.card-more summary:hover{background:var(--control-hover)}
+.card-more>.listen-actions{position:absolute;right:0;top:36px;width:180px;display:flex;flex-direction:column;align-items:stretch;gap:4px;margin:0;padding:8px;border:1px solid #637469;border-radius:12px;background:var(--bg,#121716);box-shadow:0 8px 24px #0008}
+.card-more .listen-actions button.secondary{justify-content:flex-start;min-height:36px;font-size:13px;padding:8px 10px}
+.card-more .action-notice{white-space:normal}
+.card-more:not([open])>.listen-actions{display:none}
+.card-more .listen-actions button[aria-label="Download selection"]{width:auto;justify-content:flex-start}
+.card-more .listen-actions button[aria-label="Download selection"] .action-label{display:inline}
+.home-album-card p{margin-bottom:2px}
+.plan-card.history-card{padding:12px 16px;margin-bottom:8px;gap:16px;min-height:0}
+.history-card h3{font-size:15px;line-height:1.4;margin:0 0 3px}
+.history-card p{margin:0 0 3px;font-size:13px}.history-card small{font-size:12px}
+.history-card>div:first-child{min-width:0}.history-card h3,.history-card p{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.history-card .listen-actions{flex-shrink:0}
+.listening-chart{margin:0;padding:16px 12px 12px;border:1px solid #63746955;border-radius:14px;background:#b6cdb607}
+.listening-chart svg{display:block;width:100%;max-height:250px;overflow:visible}
+.listening-chart line{stroke:#8a9d9038;stroke-width:1}
+.listening-chart text{fill:var(--muted,#b0bbb5);font-size:12px;font-family:inherit}
+.listening-chart .listening-bar{fill:var(--accent,#b5d1b9)}
+.listening-chart .listening-bar:hover{filter:brightness(1.25)}
+.listening-chart figcaption{font-size:13px;color:var(--muted,#b0bbb5);margin:8px 10px 0}
+.download-row>.download-copy{flex:1;min-width:0}.download-row h3{font-size:16px}
+.download-row>.listen-actions{justify-content:flex-end;flex-shrink:0}
+.download-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:20px 0 8px}
+.download-toolbar .check-field{margin-right:auto}
+@media(max-width:1150px){.download-row{flex-wrap:wrap}.download-row>.download-copy{flex-basis:70%}.download-row>.listen-actions{width:100%;margin:0;padding-left:34px;justify-content:flex-start}}

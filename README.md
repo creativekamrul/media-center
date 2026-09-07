@@ -2,7 +2,7 @@
 
 A Windows desktop home for Navidrome music, Audiobookshelf books and podcasts, and local audio folders. Built with Electron, React, TypeScript, SQLite, and native MPV playback.
 
-**Version 0.3.2** makes Home cards and collection headers more compact and fixes search-field layout. It includes Home, a podcast inbox, original-quality offline downloads, an always-on-top mini-player, gapless music, saved queues, listening notes and statistics, local rule playlists, personal backups, and optional Discord/Last.fm artwork integration. Controls have a cleaner rounded appearance while retaining the existing themes and fonts. The long-term goal remains Feishin and Audiobookshelf client parity, excluding lyrics. See the [feature inventory](docs/FEATURES.md) for exact support and remaining work.
+**Version 0.3.3** fixes the listening chart, adds download selection and bulk controls, and simplifies cards and history rows. It includes Home, a podcast inbox, original-quality offline downloads, an always-on-top mini-player, gapless music, saved queues, listening notes and statistics, local rule playlists, personal backups, and optional Discord/Last.fm artwork integration. Controls have a cleaner rounded appearance while retaining the existing themes and fonts. The long-term goal remains Feishin and Audiobookshelf client parity, excluding lyrics. See the [feature inventory](docs/FEATURES.md) for exact support and remaining work.
 
 ## Install and connect
 

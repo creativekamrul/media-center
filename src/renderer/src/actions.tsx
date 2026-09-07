@@ -13,11 +13,11 @@ export function Modal({ title, close, children }: { title: string; close: () => 
   }}><div className="section-title"><h2>{title}</h2><button className="icon-button" aria-label="Close dialog" onClick={close}><X size={19}/></button></div>{children}</section></div>
 }
 export function tomorrow() { const d = new Date(); d.setDate(d.getDate() + 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
-export function ListenActions({ items, error, compact = false, disabled = false }: { items: QueueItem[]; error: (s: string) => void; compact?: boolean; disabled?: boolean }) {
+export function ListenActions({ items, error, compact = false, disabled = false, hidePlay = false }: { items: QueueItem[]; error: (s: string) => void; compact?: boolean; disabled?: boolean; hidePlay?: boolean }) {
   const [plan, setPlan] = useState(false), [due, setDue] = useState(tomorrow), [note, setNote] = useState(''), [notice, setNotice] = useState(''), [busy, setBusy] = useState(false)
   async function run(work: () => Promise<unknown>, text: string) { setBusy(true); try { await work(); setNotice(text) } catch (e) { error(message(e)) } finally { setBusy(false) } }
   return <><div className={`listen-actions ${compact ? 'compact' : ''}`}>
-    <button title="Play" aria-label="Play selection" className={compact ? 'icon-button' : 'primary'} disabled={disabled || busy || !items.length} onClick={() => void run(() => api.play({ queue: items, index: 0 }), '')}><Play size={15}/>{!compact && 'Play'}</button>
+    {!hidePlay && <button title="Play" aria-label="Play selection" className={compact ? 'icon-button' : 'primary'} disabled={disabled || busy || !items.length} onClick={() => void run(() => api.play({ queue: items, index: 0 }), '')}><Play size={15}/>{!compact && 'Play'}</button>}
     <button title="Play next" aria-label="Play next" className={compact ? 'icon-button' : 'secondary'} disabled={disabled || busy || !items.length} onClick={() => void run(() => api.queueEdit({ action: 'next', items }), 'Added next')}><Plus size={15}/>{!compact && 'Play next'}</button>
     <button title="Add to queue" aria-label="Add to queue" className={compact ? 'icon-button' : 'secondary'} disabled={disabled || busy || !items.length} onClick={() => void run(() => api.queueEdit({ action: 'append', items }), 'Added to queue')}><ListPlus size={15}/>{!compact && 'Queue'}</button>
     <button title="Listen later" aria-label="Listen later" className={compact ? 'icon-button' : 'secondary'} disabled={disabled || busy || !items.length} onClick={() => setPlan(true)}><CalendarPlus size={15}/>{!compact && 'Listen later'}</button>

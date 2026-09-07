@@ -35,7 +35,7 @@ Audiobookshelf search follows its relevance-ranked endpoint, capped at 100 match
 | 1 — Discord Rich Presence | Optional own Application ID; local Windows IPC, reconnect, music/book/episode/local privacy switches, pause and speed-adjusted timestamps. Requires live Discord setup to verify a real profile. |
 | 2 — Last.fm artwork | Encrypted user key; album lookup; seven-day positive and one-hour negative cache; per-track artist/album correction; only public Last.fm CDN URLs. Books/podcasts use text-only presence. |
 | 3 — Home | Server Continue Listening, recent albums, newest unfinished indexed episodes, Listen Later plans. |
-| 4 — Offline audio | Original music/book/episode files, sequential download queue, quota, pause/retry/remove, cached covers, offline MPV, retained checkpoints, explicit conflict-checked position sync. Retries restart partial downloads. |
+| 4 — Offline audio | Original music/book/episode files, sequential download queue, quota, pause/resume, bulk pause/resume, item/all selection and confirmed removal, cached covers, offline MPV, retained checkpoints, explicit conflict-checked position sync. Retries restart partial downloads. |
 | 6 — Gapless | Prepares the next music/local track in MPV's internal playlist; waits for its file-loaded event; format changes may reopen the device. Crossfade is not included. |
 | 7 — Smart rewind | Configurable short/long rewind after 10 seconds / 5 minutes away; explicit chapter/seek positions remain exact. |
 | 9 — Podcast inbox | Expanded show indexing, independent progress, title/show search, newest/oldest/show sorting, all/unfinished/in-progress/finished, bulk status writes and partial failure reporting. |
@@ -44,7 +44,7 @@ Audiobookshelf search follows its relevance-ranked endpoint, capped at 100 match
 | 15 — Playlists | Local favorite/rating/genre/artist/year/unplayed rules; ordered results; same-server JSON import/export preserving duplicates. Navidrome smart playlists remain server managed. |
 | 16 — Large collections | 30-second music-page cache, request deduplication, 100-row queue/track pages, 60-row episode pages, bounded show expansion, cached inbox with background refresh. |
 | 17 — Notes/bookmarks | Timestamped searchable local notes for playable media; exact-position playback; note editing/deletion; server book bookmark title editing. |
-| 18 — Listening habits | Device listening time by day/media kind, top listens, completion counts, configurable daily goal. No imported server history. |
+| 18 — Listening habits | Device listening time on a fixed 30-day chart with date labels and zero-day slots, by day/media kind, top listens, completion counts, configurable daily goal. No imported server history. |
 | 20 — Personal backups | Native file export/preview, server/root matching, transactional replacement of preferences/queues/notes/plans/rules, strict validation; credentials, downloads, statistics and server progress excluded. |
 
 The inbox indexes up to 100,000 episodes and displays refresh warnings rather than pretending a partial index is complete. Rule evaluation is capped at 100,000 tracks and 5,000 selected results. Downloads are capped at 1,000 entries, named queues at 100, and notes at 10,000. Initial inbox indexing requires expanded show requests and may take time.

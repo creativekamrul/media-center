@@ -46,13 +46,13 @@ History stores up to 500 recently played distinct items on this device. It is se
 
 ## Home and podcast inbox
 
-Home brings together Continue Listening, recent music albums, the latest unfinished indexed episodes, and your upcoming plans. Refresh Home requests current server data. The first podcast index fetches expanded shows; large libraries may take a while. Partial refresh failures are displayed.
+Home brings together Continue Listening, recent music albums, the latest unfinished indexed episodes, and your upcoming plans. Use the top-right Play icon on a card; the ellipsis opens queue, Listen later, and download actions for books and episodes. Refresh Home requests current server data. The first podcast index fetches expanded shows; large libraries may take a while. Partial refresh failures are displayed.
 
 Podcast inbox combines episodes across connected podcast libraries. Search by episode or show, choose a status, and order by newest, oldest, or show title. Select this page selects only its 60 entries. Mark selected finished/unfinished writes each exact episode separately and reports failures. Cached inbox data refreshes in the background after five minutes; use Refresh episodes for an explicit refresh.
 
 ## Downloads and offline progress
 
-Use Download beside an album/playlist selection, book, or episode. The original files are streamed to this computer in a single-worker queue. Downloads shows progress, quota, pause/retry, and removal. The default quota is 20 GB; change it in Settings. A retry restarts a partial download. An interrupted app exit leaves unfinished downloads paused. Removing a download deletes only this app's cached copy. Stop that item before removing it.
+Use Download beside an album/playlist selection, book, or episode. The original files are streamed to this computer in a single-worker queue. Downloads shows progress, quota, individual Pause/Resume, and Pause all/Resume all. Check individual downloads or Select all, then Remove selected and confirm. Partial selection is shown on the Select all checkbox. The default quota is 20 GB; change it in Settings. Resume restarts that item’s download from the beginning; byte-range continuation is not yet implemented. An interrupted app exit leaves unfinished downloads paused. Removing a download deletes only this app's cached copy. Stop that item before removing it.
 
 Ready downloads are preferred automatically for playback. Up to 32 recent cover images (at most 1 MB each) are cached separately from the audio quota; older offline items may show generated artwork. Books retain physical-file offsets and whole-book chapters; podcasts download only the chosen episode. Offline book/episode positions are checkpointed separately. The app does not replay uncertain listening-time deltas or automatically overwrite server progress.
 
@@ -74,7 +74,7 @@ Rule playlists evaluate your Navidrome library when you choose Play or Queue. Co
 
 Music → Playlists supports Media Center JSON export/import. Exported files contain track identifiers and descriptive metadata, never stream credentials. Import into the same Navidrome server to create a private playlist; track order and duplicates are retained. M3U/XSPF and cross-server matching are not yet implemented.
 
-Listening stats counts time actually spent playing on this device, excluding pause and buffering. It shows daily totals, media categories, top listens and completion counts. Set a daily minute goal in Settings; zero disables the goal. Existing server statistics are not imported.
+Listening stats counts time actually spent playing on this device, excluding pause and buffering. It shows a 30-day bar chart including days without activity, daily totals, media categories, top listens and completion counts. Hover over a bar for its date and listening time; the daily breakdown lists the same data in text. Set a daily minute goal in Settings; zero disables the goal. Existing server statistics are not imported.
 
 ## Personal backups
 

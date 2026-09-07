@@ -23,6 +23,7 @@ export interface DailyAPI {
   downloadList(): Promise<DownloadState>
   downloadAdd(items: QueueItem[]): Promise<void>
   downloadAction(input: { id: string; action: 'pause' | 'retry' | 'remove' }): Promise<void>
+  downloadBatch(input: { ids: string[]; action: 'pause' | 'retry' | 'remove' }): Promise<{ completed: number; failed: string[] }>
   offlineProgressPreview(id: string): Promise<{ token: string; localPosition: number; serverPosition: number; serverUpdatedAt?: number }>
   offlineProgressSync(token: string): Promise<void>
   onDownloads(listener: (state: DownloadState) => void): () => void

@@ -13,6 +13,7 @@ const api: DesktopAPI = {
   downloadList: () => ipcRenderer.invoke('downloads:list'),
   downloadAdd: input => ipcRenderer.invoke('downloads:add', input),
   downloadAction: input => ipcRenderer.invoke('downloads:action', input),
+  downloadBatch: input => ipcRenderer.invoke('downloads:batch', input),
   savedQueues: () => ipcRenderer.invoke('saved-queues:list'),
   saveQueue: input => ipcRenderer.invoke('saved-queues:save', input),
   loadQueue: input => ipcRenderer.invoke('saved-queues:load', input),
