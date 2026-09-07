@@ -66,7 +66,7 @@ export function App() {
   const SectionIcon = icons[section]
   const items = reverse ? [...result.items].reverse() : result.items
   const connected = settings.connections.length > 0
-  useEffect(() => { void api.preferences().then(p => { document.documentElement.dataset.theme = p.theme }).catch(() => {}) }, [])
+  useEffect(() => { void api.preferences().then(p => { document.documentElement.dataset.theme = p.theme }).catch(() => {}); return api.onTheme(t=>{document.documentElement.dataset.theme=t}) }, [])
   useEffect(() => { const key = (e: KeyboardEvent) => { if ((e.target as HTMLElement).matches('input, textarea, select') || (e.target as HTMLElement).isContentEditable) return; if (e.code === 'Space' && !(e.target as HTMLElement).closest('button,a,summary,[role=button]')) { e.preventDefault(); command({ action: 'toggle' }) }; if (e.code === 'Escape' && view === 'now') setView('library'); if (e.ctrlKey && e.code === 'ArrowRight') { e.preventDefault(); command({ action: 'next' }) }; if (e.ctrlKey && e.code === 'ArrowLeft') { e.preventDefault(); command({ action: 'previous' }) } }; window.addEventListener('keydown', key); return () => window.removeEventListener('keydown', key) }, [view])
   return <div className="app-shell">
     <aside className="sidebar">

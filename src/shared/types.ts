@@ -101,5 +101,5 @@ export interface LocalFile { id: string; name: string; title: string; artist: st
 export interface LocalFolder { rootId: string; folder: string; folders: { id: string; name: string }[]; files: LocalFile[]; warnings: string[] }
 export interface ListenLater { id: string; item: QueueItem; due: string; note: string; done: boolean; createdAt: number }
 export interface HistoryItem { id: string; item: QueueItem; position: number; duration: number; playedAt: number }
-export interface Preferences { replayGain: 'no' | 'track' | 'album'; preventClipping: boolean; equalizer: number[]; closeToTray: boolean; theme: 'forest' | 'charcoal'; scrobble: boolean }
+export interface Preferences { replayGain: 'no' | 'track' | 'album'; preventClipping: boolean; equalizer: number[]; closeToTray: boolean; theme: import('./themes').ThemeId; scrobble: boolean }
 export const defaultPreferences: Preferences = { replayGain: 'no', preventClipping: true, equalizer: [0,0,0,0,0,0,0,0,0,0], closeToTray: false, theme: 'forest', scrobble: true }

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0
+
+- Add ten themes: Glass, Midnight, Ocean, Rose, Lavender, Ember, Coffee, Nord, Monochrome, and Aubergine. A visual palette picker preserves Forest and Charcoal; saved themes update both player windows.
+- Add a date-range listening recap with three poster styles, a preview, and native PNG export at 1080 × 1440. Totals, top listens, unique items, active days, media mix, and completions use locally recorded listening within the inclusive date range.
+- Read the actual mini-player pin state, persist pin choice across reopenings, synchronize native state changes, and surface pin failures. Add focus/reopen regression checks.
+- Add calendar validation, book/episode aggregation tests, theme persistence checks, and real PNG export coverage.
+
 ## 0.3.6
 
 - Apply an explicit Windows mini-player pin level so taskbar repositioning does not clear always-on-top; verify pin, unpin, and re-pin in the native desktop suite.

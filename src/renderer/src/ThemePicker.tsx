@@ -1,0 +1,4 @@
+import { themes, type ThemeId } from '../../shared/themes'
+export function ThemePicker({value,onChange}:{value:ThemeId;onChange:(theme:ThemeId)=>void}) {
+  return <fieldset className="theme-picker"><legend>Appearance</legend><p className="muted">Choose a palette, then save your preferences. Glass adds translucent layers and a soft aurora background.</p><div className="theme-grid">{themes.map(t=><button type="button" key={t.id} className="theme-swatch" aria-pressed={value===t.id} onClick={()=>onChange(t.id)} style={{background:t.background,color:t.accent,borderColor:value===t.id?t.accent:undefined}}><span className="theme-sample" style={{background:t.surface}}><i style={{background:t.accent}}/><i style={{background:t.accent}}/></span><strong>{t.name}</strong>{value===t.id&&<span aria-hidden="true"> ✓</span>}</button>)}</div></fieldset>
+}

@@ -40,10 +40,10 @@ function provider(id: string) { const { config, secret } = store.connection(id);
 function handle<T extends z.ZodTypeAny>(channel: string, schema: T, action: (input: z.infer<T>) => unknown) {
   ipcMain.handle(channel, async (event, raw) => {
     const owner = [window, miniWindow].find(w => w && !w.isDestroyed() && event.sender === w.webContents && event.senderFrame === w.webContents.mainFrame)
-    if (!owner || (owner === miniWindow && !['player:get','player:command','item:cover','local:cover','preferences:get','mini:command'].includes(channel))) throw new Error('Untrusted desktop request.')
+    if (!owner || (owner === miniWindow && !['player:get','player:command','item:cover','local:cover','preferences:get','mini:command','mini:get'].includes(channel))) throw new Error('Untrusted desktop request.')
     const parsed = schema.safeParse(raw)
     if (!parsed.success) throw new Error('Invalid desktop request. Please check the entered values.')
-    try { return await action(parsed.data) }
+    try { const result=await action(parsed.data);if(channel==='preferences:save')for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('theme:state',store.preferences().theme);return result }
     catch (error) {
       if (error instanceof z.ZodError) throw new Error('The server response does not match the supported API format. Check the server version and selected library.')
       throw error instanceof Error ? error : new Error('The operation failed.')
@@ -63,7 +63,9 @@ function createMini() {
   if (miniWindow && !miniWindow.isDestroyed()) { miniWindow.show();return }
   miniWindow = new BrowserWindow({width:440,height:200,minWidth:360,minHeight:190,maxHeight:260,frame:false,alwaysOnTop:true,backgroundColor:'#121416',title:'Media Center mini player',autoHideMenuBar:true,webPreferences:{preload:join(__dirname,'../preload/index.js'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}})
   // Explicit Windows level avoids the floating level's taskbar repositioning clearing topmost.
-  miniWindow.setAlwaysOnTop(true,process.platform==='win32'?'normal':'floating')
+  miniWindow.setAlwaysOnTop(store.get<boolean>('miniPinned')??true,process.platform==='win32'?'normal':'floating')
+  miniWindow.on('always-on-top-changed',()=>{if(miniWindow&&!miniWindow.isDestroyed())miniWindow.webContents.send('mini:state',{pinned:miniWindow.isAlwaysOnTop()})})
+  miniWindow.on('show',()=>miniWindow?.setAlwaysOnTop(store.get<boolean>('miniPinned')??true,process.platform==='win32'?'normal':'floating'))
   miniWindow.webContents.setWindowOpenHandler(()=>({action:'deny'}));miniWindow.webContents.on('will-navigate',e=>e.preventDefault());miniWindow.on('closed',()=>{miniWindow=undefined})
   if(!app.isPackaged && process.env.ELECTRON_RENDERER_URL) {const url=new URL(process.env.ELECTRON_RENDERER_URL);url.searchParams.set('mini','1');void miniWindow.loadURL(url.href)} else void miniWindow.loadFile(join(__dirname,'../renderer/index.html'),{query:{mini:'1'}})
 }
@@ -80,7 +82,19 @@ else {
     registerFeatures(handle, store, player, local, provider, () => window!)
     registerDaily(handle,store,player,downloads,provider,()=>window!)
     discord=new DiscordPresence(store,player,provider,local);registerDiscord(handle,discord)
-    handle('mini:command',z.object({action:z.enum(['open','close','main','pin']),pinned:z.boolean().optional()}).strict(),i=>{if(i.action==='open')createMini();else if(i.action==='close')miniWindow?.close();else if(i.action==='pin')miniWindow?.setAlwaysOnTop(i.pinned??true,process.platform==='win32'?'normal':'floating');else {if(!window)createWindow();window?.show();window?.focus()}})
+    handle('mini:get',z.undefined(),()=>({pinned:miniWindow?.isAlwaysOnTop()??false}))
+    handle('mini:command',z.object({action:z.enum(['open','close','main','pin']),pinned:z.boolean().optional()}).strict(),i=>{
+      if(i.action==='open')createMini()
+      else if(i.action==='close')miniWindow?.close()
+      else if(i.action==='pin'){
+        if(!miniWindow||miniWindow.isDestroyed())throw new Error('Open the mini player first.')
+        const pinned=i.pinned??true
+        miniWindow.setAlwaysOnTop(pinned,process.platform==='win32'?'normal':'floating')
+        if(miniWindow.isAlwaysOnTop()!==pinned)throw new Error('Windows could not change the pin state. Try again.')
+        store.set('miniPinned',pinned)
+      }else {if(!window)createWindow();window?.show();window?.focus()}
+      return {pinned:miniWindow?.isAlwaysOnTop()??false}
+    })
     const updates = new Updates(autoUpdater, app.isPackaged ? app.getVersion() : APP_VERSION, app.isPackaged && process.platform === 'win32', async () => { await player.command({ action: 'stop' }) })
     updates.on('state', state => { if (window && !window.isDestroyed()) window.webContents.send('updates:state', state) })
     handle('updates:get', z.undefined(), () => updates.state)

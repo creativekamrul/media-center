@@ -40,11 +40,16 @@ export interface DailyAPI {
   deleteSmartPlaylist(id: string): Promise<void>
   exportPlaylist(input: { serverId: string; id: string }): Promise<boolean>
   importPlaylist(input: { serverId: string }): Promise<{ name: string; count: number } | null>
+  listeningRecap(range: import('./recap').RecapRange): Promise<import('./recap').ListeningRecap>
+  exportRecap(input: {range: import('./recap').RecapRange;png:string}): Promise<boolean>
+  miniState(): Promise<{pinned:boolean}>
+  onMiniState(listener:(state:{pinned:boolean})=>void):()=>void
+  onTheme(listener:(theme:import('./themes').ThemeId)=>void):()=>void
   listeningStats(): Promise<ListeningStats>
   exportBackup(): Promise<boolean>
   previewBackup(): Promise<BackupPreview | null>
   restoreBackup(token: string): Promise<void>
-  miniPlayer(input: { action: 'open' | 'close' | 'main' | 'pin'; pinned?: boolean }): Promise<void>
+  miniPlayer(input: { action: 'open' | 'close' | 'main' | 'pin'; pinned?: boolean }): Promise<{pinned:boolean}>
   discordSettings(): Promise<DiscordSettings>
   saveDiscordSettings(input: Omit<DiscordSettings, 'hasLastfmKey'> & { lastfmKey?: string }): Promise<void>
   discordStatus(): Promise<DiscordStatus>

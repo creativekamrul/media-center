@@ -1,4 +1,5 @@
-import { dialog, type BrowserWindow } from 'electron'
+import { recapRangeSchema } from '../shared/recap'
+import { dialog, nativeImage, type BrowserWindow } from 'electron'
 import { randomUUID } from 'node:crypto'
 import { readFile, writeFile, stat } from 'node:fs/promises'
 import { z } from 'zod'
@@ -77,6 +78,17 @@ export function registerDaily(handle: Handle, store: Store, player: Player, down
     if (r.order === 'random') for (let i=selected.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [selected[i],selected[j]]=[selected[j],selected[i]] }
     else selected.sort((a,b) => (r.order === 'artist' ? a.artist.localeCompare(b.artist) : 0) || a.title.localeCompare(b.title))
     return selected.slice(0,r.limit).map(trackQueue)
+  })
+  handle('recap:get',recapRangeSchema,i=>store.listeningRecap(i))
+  handle('recap:export',z.object({range:recapRangeSchema,png:z.string().max(16000000).startsWith('data:image/png;base64,')}).strict(),async i=>{
+    const bytes=Buffer.from(i.png.slice('data:image/png;base64,'.length),'base64')
+    if(bytes.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')throw new Error('Invalid recap image.')
+    // Check dimensions before asking Electron to decode untrusted image bytes.
+    if(bytes.length<24||bytes.readUInt32BE(16)!==1080||bytes.readUInt32BE(20)!==1440)throw new Error('Invalid recap image dimensions.')
+    const picture=nativeImage.createFromBuffer(bytes);if(picture.isEmpty())throw new Error('Could not read the recap image.')
+    const result=await dialog.showSaveDialog(window(),{title:'Save your listening recap',defaultPath:`Media-Center-recap-${i.range.start}-to-${i.range.end}.png`,filters:[{name:'PNG image',extensions:['png']}]})
+    if(result.canceled||!result.filePath)return false
+    await writeFile(result.filePath,picture.toPNG());return true
   })
   handle('stats:get', z.undefined(), () => store.listeningStats())
 

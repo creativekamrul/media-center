@@ -62,3 +62,11 @@ Server progress is authoritative on resume. Sync failures are visible and checkp
 Licensed **GPL-3.0-only**. See [LICENSE](LICENSE), [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and [third-party notices](THIRD_PARTY_NOTICES.md). Distributed modified binaries require corresponding source under the GPL.
 
 [Architecture](docs/ARCHITECTURE.md) · [API contracts](docs/API-CONTRACTS.md) · [Validation](docs/VALIDATION.md) · [Changelog](CHANGELOG.md)
+
+### Themes and listening recaps
+
+Settings includes a visual picker for 12 themes. Choose a palette and **Save audio preferences** to apply it to both windows. Glass uses translucent panels over an aurora background inside the app; it does not reveal other desktop windows.
+
+Open **Listening stats → Your listening, wrapped**, choose start/end dates and a picture style, then **Create my recap**. **Save PNG image** opens the native save dialog. Posters are 1080 × 1440 pixels and use activity recorded on this computer, with both dates included. Music, books, podcast episodes, local files, and radio stay separate. Paused/buffering time is excluded; no older server history is imported. Empty ranges cannot produce a poster. The date range is limited to ten years. Exported images include media titles/creators but no credentials or server addresses.
+
+The mini-player pin button reads the actual native window state and remembers your choice when reopened. Pinning keeps it above ordinary application windows; Windows secure desktop and exclusive fullscreen applications are outside that guarantee.

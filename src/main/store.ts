@@ -1,3 +1,4 @@
+import { recapRangeSchema, type ListeningRecap, type RecapRange } from '../shared/recap'
 import { listeningDays } from '../shared/listening-days'
 import { DatabaseSync } from 'node:sqlite'
 import { safeStorage } from 'electron'
@@ -30,6 +31,14 @@ export class Store {
     const counts = this.db.prepare("SELECT COUNT(DISTINCT CASE WHEN kind='audiobook' AND finished=1 THEN target END) books,COUNT(DISTINCT CASE WHEN kind='podcast-episode' AND finished=1 THEN target END) episodes FROM listening").get()!
     const top = this.db.prepare('SELECT title,subtitle,SUM(seconds) seconds FROM listening GROUP BY target ORDER BY seconds DESC LIMIT 12').all() as unknown as ListeningStats['top']
     return { days: listeningDays(rows), totalSeconds: rows.reduce((n,r) => n+r.seconds,0), finishedBooks: Number(counts.books), finishedEpisodes: Number(counts.episodes), top }
+  }
+  listeningRecap(input: RecapRange): ListeningRecap {
+    const {start,end}=recapRangeSchema.parse(input), params=[start,end]
+    const totals=this.db.prepare("SELECT COALESCE(SUM(seconds),0) seconds,COUNT(DISTINCT CASE WHEN seconds>0 THEN day END) days,COUNT(DISTINCT CASE WHEN seconds>0 THEN target END) items,COUNT(DISTINCT CASE WHEN kind='audiobook' AND finished=1 THEN target END) books,COUNT(DISTINCT CASE WHEN kind='podcast-episode' AND finished=1 THEN target END) episodes FROM listening WHERE day BETWEEN ? AND ?").get(...params)!
+    const kinds=this.db.prepare('SELECT kind,SUM(seconds) seconds FROM listening WHERE day BETWEEN ? AND ? GROUP BY kind HAVING SUM(seconds)>0 ORDER BY seconds DESC,kind').all(...params) as unknown as ListeningRecap['kinds']
+    const top=this.db.prepare('SELECT title,subtitle,kind,SUM(seconds) seconds FROM listening WHERE day BETWEEN ? AND ? GROUP BY target HAVING SUM(seconds)>0 ORDER BY seconds DESC,target LIMIT 5').all(...params) as unknown as ListeningRecap['top']
+    const days=this.db.prepare('SELECT day,SUM(seconds) seconds FROM listening WHERE day BETWEEN ? AND ? GROUP BY day HAVING SUM(seconds)>0 ORDER BY day').all(...params) as unknown as ListeningRecap['days']
+    return {start,end,totalSeconds:Number(totals.seconds),activeDays:Number(totals.days),uniqueItems:Number(totals.items),finishedBooks:Number(totals.books),finishedEpisodes:Number(totals.episodes),kinds,top,days}
   }
   preferences(): Preferences { return { ...defaultPreferences, ...this.get<Preferences>('preferences') } }
   laterList(): ListenLater[] { return (this.get<ListenLater[]>('listenLater') ?? []).sort((a, b) => Number(a.done) - Number(b.done) || a.due.localeCompare(b.due)) }

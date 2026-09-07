@@ -1,6 +1,6 @@
-# Feature inventory — 0.3
+# Feature inventory — 0.4
 
-The target is a full desktop replacement for Feishin and Audiobookshelf's web client, with lyrics deliberately excluded. **0.3 expands daily listening; it does not claim full parity.** This inventory distinguishes working behavior from remaining work.
+The target is a full desktop replacement for Feishin and Audiobookshelf's web client, with lyrics deliberately excluded. **0.4 adds themes and date-range listening recaps; it does not claim full parity.** This inventory distinguishes working behavior from remaining work.
 
 ## Available
 
@@ -21,7 +21,7 @@ The target is a full desktop replacement for Feishin and Audiobookshelf's web cl
 | Player/queue | Cover opens expanded player and queue; seek/volume/speed/repeat/shuffle; insert/append/move/remove/jump/clear; restore queue after restart without autoplay |
 | Personal | SQLite Listen Later dates, notes, rescheduling, completion/reopening/removal; recent device listening history |
 | Audio | ReplayGain off/track/album; clipping prevention; ten-band EQ; per-book/episode speed; timed and chapter-end sleep |
-| Appearance | Forest/charcoal; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; minimum 1024 × 720 layout |
+| Appearance | 12 palettes including translucent Glass; visual theme picker; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; minimum 1024 × 720 layout |
 | Open source | GPL-3.0-only; user/developer/security/API documentation; model, provider, local-file, playback and desktop tests |
 | Updates | Settings check/download/restart-to-install; stable GitHub releases; verified download integrity; explicit user actions |
 | Releases | Version-tagged GitHub Actions Windows builds; packaged integration checks; GitHub CLI publication; corresponding source and SHA-256 checksums |
@@ -39,12 +39,12 @@ Audiobookshelf search follows its relevance-ranked endpoint, capped at 100 match
 | 6 — Gapless | Prepares the next music/local track in MPV's internal playlist; waits for its file-loaded event; format changes may reopen the device. Crossfade is not included. |
 | 7 — Smart rewind | Configurable short/long rewind after 10 seconds / 5 minutes away; explicit chapter/seek positions remain exact. |
 | 9 — Podcast inbox | Expanded show indexing, independent progress, title/show search, newest/oldest/show sorting, all/unfinished/in-progress/finished, bulk status writes and partial failure reporting. |
-| 13 — Mini-player | Separate frameless always-on-top window, pin toggle, cover, transport, seek, return to main window. |
+| 13 — Mini-player | Separate frameless always-on-top window, native pin state and persisted pin choice, cover, transport, seek, return to main window. |
 | 14 — Saved queues | Named mixed/music/spoken sessions with index/position; load without autoplay, resume, replace, delete; drag-and-drop and keyboard-accessible arrow ordering. |
 | 15 — Playlists | Local favorite/rating/genre/artist/year/unplayed rules; ordered results; same-server JSON import/export preserving duplicates. Navidrome smart playlists remain server managed. |
 | 16 — Large collections | 30-second music-page cache, request deduplication, 100-row queue/track pages, 60-row episode pages, bounded show expansion, cached inbox with background refresh. |
 | 17 — Notes/bookmarks | Timestamped searchable local notes for playable media; exact-position playback; note editing/deletion; server book bookmark title editing. |
-| 18 — Listening habits | Device listening time on a fixed 30-day chart with date labels and zero-day slots, a recent-first daily table with optional quiet days and media totals, top listens, completion counts, configurable daily goal. No imported server history. |
+| 18 — Listening habits | Device listening time on a fixed 30-day chart with date labels and zero-day slots, a recent-first daily table with optional quiet days and media totals, top listens, completion counts, configurable daily goal. Custom inclusive date-range recap with three poster styles, preview and 1080 × 1440 PNG export. No imported server history. |
 | 20 — Personal backups | Native file export/preview, server/root matching, transactional replacement of preferences/queues/notes/plans/rules, strict validation; credentials, downloads, statistics and server progress excluded. |
 
 The inbox indexes up to 100,000 episodes and displays refresh warnings rather than pretending a partial index is complete. Rule evaluation is capped at 100,000 tracks and 5,000 selected results. Downloads are capped at 1,000 entries, named queues at 100, and notes at 10,000. Initial inbox indexing requires expanded show requests and may take time.

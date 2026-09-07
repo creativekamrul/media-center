@@ -154,6 +154,7 @@ async function main() {
     assert.ok(!JSON.stringify(saved).includes('test-password'))
     const navId = saved.connections.find(c => c.provider === 'navidrome').id, absId = saved.connections.find(c => c.provider === 'audiobookshelf').id
     await require('./layout-smoke.cjs')(page, artifacts)
+    await require('./theme-smoke.cjs')(page, artifacts)
     await page.getByRole('button', { name: 'Music', exact: true }).click()
     await page.getByRole('button', { name: 'Playlists', exact: true }).click()
     await page.getByRole('button', { name: 'New playlist', exact: true }).click()

@@ -6,4 +6,6 @@ import './style.css'
 import './features.css'
 import './readability.css'
 import './modern.css'
+import './themes.css'
+import './recap.css'
 createRoot(document.getElementById('root')!).render(<React.StrictMode>{new URLSearchParams(location.search).get('mini') === '1' ? <MiniPlayer/> : <App/>}</React.StrictMode>)
