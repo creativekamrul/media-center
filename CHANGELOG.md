@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.7.6
+
+First public release after 0.7.0, including the locally tested 0.7.1–0.7.5 improvements below.
+
+- Make volume easier to see and adjust with a wider, filled track, larger thumb, keyboard focus ring and percentage. Enlarge bottom-player artwork to 72px (64px on narrower windows).
+- Add a new Home with continuation shelves, favorites/recent-music mixes and device listening stats. Give local music a persistent tagged library with albums, songs, artists, genres, favorites, recents, playlists and folders.
+- Share lyric appearance controls across normal and immersive views, including fonts, colors, backgrounds and centered word emphasis. Use enhanced-LRC word timestamps when available and clearly described visual estimates for line-only records.
+- Group and theme Settings, add custom CSS import with preview and backup support, and polish fullscreen, seek controls and accessibility. Coalesce high-frequency MPV telemetry to reduce renderer churn.
+- Refresh the README and GitHub Pages feature guide with current, reviewed screenshots. Earlier local versions were not published separately.
+
+## 0.7.5
+
+- Replace Flow's upward word lift with smooth enlargement from each word's center in normal and immersive lyrics. Reserve room for the larger word so neighboring text does not jump or overlap.
+- Rename the choice to Flow · word emphasis and match the appearance preview. Existing Flow preferences carry over automatically; reduced-motion and Smooth motion settings remain respected.
+
+## 0.7.4
+
+- Fix Flow word lift in normal and immersive lyrics. Line-timed records now get presentation-only word estimates; real enhanced-LRC timestamps retain priority. Increase the visible lift and keep wrapping stable as lines change. Respect Smooth motion and system reduced-motion settings.
+- Hide horizontal Home shelf scrollbars while retaining previous/next arrows, keyboard access and horizontal gestures.
+
+## 0.7.3
+
+- Share lyric appearance, word colors, typography and animation styles between the normal and immersive players, with the customization popup available in both.
+- Redesign Home with a featured continuation, horizontal shelves, shuffled favorites/recent-music mixes, and a live device listening widget with daily goal and seven-day activity.
+- Move Local music into Your collection. Add a persistent recursive metadata index and Albums, Songs, Artists, Genres, Favorites, Recently added, Recently played, Playlists and Folders tabs, search, rescan, source-specific favorites and playlist creation.
+- Bound indexing and paginated results, keep media read-only, guard junction/traversal access, and defer local artwork reads until tiles approach the viewport. Shelf action menus use native popovers to escape scrolling containers.
+
+## 0.7.2
+
+- Match Settings navigation to the app's pill buttons with a filled active state.
+- Add an immersive lyrics appearance popup with live preview, save/cancel/reset, six system fonts plus the theme font, size/weight/spacing/alignment, upcoming/sung/current-word colors, dimming, glow and background shade.
+- Add Flow word lift, Focus soft blur, Gentle fade and no-animation choices with reduced-motion support. Keep native word timing and the line-sweep fallback; retain the current queue beside the lyrics.
+- Preserve older immersive preferences during migration. Validate every saved appearance value in the main process.
+
+## 0.7.1
+
+- Coalesce MPV position, buffering, and codec telemetry before cloning/broadcasting state, with a 250 ms interval and trailing delivery. Commands, errors, and status transitions publish immediately.
+- Group Settings into Updates, Servers, Playback, Appearance, Listening, and Sharing with a sticky section rail, active tracking, and compact navigation chips. Apply the active theme to every settings surface, including translucent Glass panels.
+- Separate Save theme from Save audio preferences while sharing one complete draft. Add validated local UTF-8 CSS import (512 KB limit), preview, removal, mini-player synchronization, and preference-backup support.
+- Render enhanced-LRC word timestamps as karaoke fills, with a line-sweep fallback and reduced-motion support. Add main-window fullscreen using F11, Escape, or the immersive header.
+- Polish controls with custom checkboxes, themed hover feedback, consistent form heights, chapter seek markers, a visible seek thumb, and an expanding volume control.
+
 ## 0.7.0
 
 - Add manual LRCLIB search with result metadata, synced/plain indicators, lyric previews, and a per-song saved match. Store the selected lyrics in SQLite outside the expiring cache, so reopening the song needs no provider or LRCLIB request. Replace or clear a match from the lyrics panel.

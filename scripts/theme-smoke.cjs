@@ -21,7 +21,7 @@ module.exports=async function themeSmoke(page,artifacts){
  await page.getByRole('button',{name:'Glass',exact:true}).click()
  await page.getByRole('button',{name:'Save audio preferences',exact:true}).click()
  await page.getByRole('button',{name:'Home',exact:true}).click()
- await page.locator('.home-continue-grid').waitFor()
+ await page.locator('.home-shelf-track[aria-label="Continue listening"]').waitFor()
  assert.equal(await page.locator('.workspace').evaluate(el=>el.scrollWidth>el.clientWidth),false)
  assert.ok(await page.locator('.sidebar').evaluate(el=>getComputedStyle(el).backdropFilter.includes('blur')))
  await page.screenshot({path:resolve(artifacts,'theme-glass.png')})

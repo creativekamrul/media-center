@@ -2,10 +2,19 @@
 
 The installer, app interface and Audiobookshelf client identification all use the version in `package.json`. The project uses version tags such as `v0.2.1`; ordinary commits run checks without creating a release.
 
-## Publish a version
+## Build locally first
 
-1. Update the version with `npm version patch --no-git-tag-version` (or `minor`, or an explicit version). This updates both package files.
-2. Add a matching `## 0.2.2` section to `CHANGELOG.md`, describing the actual changes.
+Always create and verify a local installer for the user to test before publishing. Publish to GitHub only when the user explicitly asks; local builds do not create or push tags.
+
+1. Update the version with `npm version patch --no-git-tag-version` (or an explicit version) and add the matching changelog heading.
+2. Run `npm run release:check`, then `npm run package:win`. Packaging uses `--publish never`.
+3. Test `release/win-unpacked/Media Center.exe` with `MEDIA_CENTER_EXECUTABLE` and `MPV_TEST_PATH` using `npm run test:desktop`.
+4. Give the user `release/Media-Center-X.Y.Z-win-x64.exe` to install and test. Keep build output out of Git.
+
+## Publish a version after the user requests it
+
+1. Use the version and source already tested in the local release. Do not bump the version again solely for publication.
+2. Confirm the matching changelog section describes those tested changes. If further fixes are needed, rebuild and verify the local release first.
 3. Run `npm run release:check`, `npm test`, `npm run build` and the appropriate desktop checks.
 4. Commit the changes on `main`. Review staged files; do not include media, databases, test profiles, credentials or build output.
 5. Preview with `npm run release:preview`, then run `npm run release`.

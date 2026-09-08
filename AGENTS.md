@@ -35,3 +35,9 @@
 - Changes to API models, playback routes, progress identity, or seeking must preserve/add meaningful regression tests covering both books and podcasts.
 - Use `npm run test:desktop` for real Electron integration. Set `MPV_TEST_PATH` for muted native audio testing and `MEDIA_CENTER_EXECUTABLE` for packaged application testing.
 - Never commit server credentials, user library data, downloaded media, test profiles, or build artifacts.
+
+## Release workflow
+
+- Always build and verify a local Windows installer first so the user can test it.
+- Publish to GitHub only after the user explicitly requests publication. A request to implement changes or create a local release does not authorize pushing a release tag or publishing a GitHub release.
+- Use `npm run package:win` for local installers (`--publish never`). Keep installers in ignored `release/` and give the user the exact installer path.

@@ -1,3 +1,4 @@
+import { readThemeCss } from './custom-css'
 import { LyricsClient } from './lyrics'
 import { progressKey } from '../shared/timeline'
 import type { LyricsResult } from '../shared/lyrics'
@@ -12,7 +13,7 @@ import { Audiobookshelf } from './providers/audiobookshelf'
 import { Navidrome } from './providers/navidrome'
 import { serverUrl } from './providers/http'
 import { LocalFiles } from './local'
-import { registerFeatures, queueItemSchema } from './features'
+import { registerFeatures, queueItemSchema, preferenceSchema } from './features'
 import { autoUpdater } from 'electron-updater'
 import { Updates } from './updates'
 import { APP_VERSION } from '../shared/version'
@@ -55,6 +56,11 @@ function handle<T extends z.ZodTypeAny>(channel: string, schema: T, action: (inp
 }
 function createWindow() {
   window = new BrowserWindow({ width: 1440, height: 940, minWidth: 1024, minHeight: 720, backgroundColor: '#121416', title: 'Media Center', show: process.env.MEDIA_CENTER_SMOKE !== '1', autoHideMenuBar: true, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true } })
+  window.webContents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown' || input.isAutoRepeat) return
+    if (input.key === 'F11') { event.preventDefault(); window?.setFullScreen(!window.isFullScreen()) }
+    if (input.key === 'Escape' && window?.isFullScreen()) { event.preventDefault(); window.setFullScreen(false) }
+  })
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
   window.webContents.on('will-navigate', event => event.preventDefault())
   if (!app.isPackaged && process.env.ELECTRON_RENDERER_URL) void window.loadURL(process.env.ELECTRON_RENDERER_URL)
@@ -139,6 +145,12 @@ else {
     handle('updates:check', z.undefined(), () => updates.check())
     handle('updates:download', z.undefined(), () => updates.download())
     handle('updates:install', z.undefined(), () => updates.install())
+    handle('window:fullscreen', z.enum(['toggle','exit']), action => { if(window && !window.isDestroyed()) window.setFullScreen(action === 'toggle' ? !window.isFullScreen() : false) })
+    handle('theme:preview', preferenceSchema.nullable(), prefs => { if(miniWindow && !miniWindow.isDestroyed()) miniWindow.webContents.send('theme:state', prefs ?? store.preferences()) })
+    handle('theme:import-css', z.undefined(), async () => {
+      const result = await dialog.showOpenDialog(window!, {title:'Import custom theme CSS', filters:[{name:'CSS theme', extensions:['css']}], properties:['openFile']})
+      return result.canceled || !result.filePaths[0] ? null : readThemeCss(result.filePaths[0])
+    })
     handle('settings:get', z.undefined(), () => store.settings())
     handle('connections:save', connectionSchema, async input => {
       serverUrl(input.url, '')

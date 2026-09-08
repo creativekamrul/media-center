@@ -1,3 +1,6 @@
+import {LocalLibrary} from './local-library'
+import {localQuerySchema,localPlaylistSchema} from '../shared/local-library'
+import { customCssSchema } from '../shared/custom-css'
 import {defaultPlayingScreen,playingScreenSchema} from '../shared/playing-screen'
 import { appearanceSchema } from '../shared/appearance'
 import { themeIds } from '../shared/themes'
@@ -13,7 +16,7 @@ export const id = z.string().min(1).max(2048)
 export const spokenTarget = z.discriminatedUnion('kind', [z.object({ kind: z.literal('audiobook'), serverId: id, bookId: id }).strict(), z.object({ kind: z.literal('podcast-episode'), serverId: id, showId: id, episodeId: id }).strict()])
 export const targetSchema = z.discriminatedUnion('kind', [...spokenTarget.options, z.object({ kind: z.literal('music-track'), serverId: id, trackId: id }).strict(), z.object({ kind: z.literal('local-file'), serverId: z.literal('local'), rootId: id, fileId: id }).strict(), z.object({ kind: z.literal('radio'), serverId: id, stationId: id }).strict()])
 export const queueItemSchema = z.object({ target: targetSchema, title: z.string().max(2000), subtitle: z.string().max(2000), cover: z.string().max(2048).optional(), context: z.string().max(2000).optional(), duration: z.number().finite().nonnegative().optional() }).strict()
-export const preferenceSchema = z.object({ replayGain: z.enum(['no', 'track', 'album']), preventClipping: z.boolean(), equalizer: z.array(z.number().finite().min(-12).max(12)).length(10), closeToTray: z.boolean(), theme: z.enum(themeIds), appearance: appearanceSchema.optional(), scrobble: z.boolean() }).strict()
+export const preferenceSchema = z.object({ replayGain: z.enum(['no', 'track', 'album']), preventClipping: z.boolean(), equalizer: z.array(z.number().finite().min(-12).max(12)).length(10), closeToTray: z.boolean(), theme: z.enum(themeIds), appearance: appearanceSchema.optional(), customCss: customCssSchema.optional(), scrobble: z.boolean() }).strict()
 export type Handle = <T extends z.ZodTypeAny>(channel: string, schema: T, action: (input: z.infer<T>) => unknown) => void
 export function registerFeatures(handle: Handle, store: Store, player: Player, local: LocalFiles, provider: (id: string) => Navidrome | Audiobookshelf, window: () => BrowserWindow) {
   const inflight=new Map<string,Promise<unknown>>()
@@ -38,6 +41,10 @@ export function registerFeatures(handle: Handle, store: Store, player: Player, l
   handle('spoken:bookmark-delete', z.object({ serverId: id, bookId: id, time: z.number().finite().nonnegative() }).strict(), i => abs(i.serverId).bookmark(i.bookId, i.time))
   const index = z.number().int().min(0).max(4999)
   handle('queue:edit', z.union([z.object({ action: z.enum(['append','next']), items: z.array(queueItemSchema).min(1).max(5000) }).strict(), z.object({ action: z.enum(['remove','jump']), index }).strict(), z.object({ action: z.literal('move'), from: index, to: index }).strict(), z.object({ action: z.enum(['clear','clear-upcoming','restore']) }).strict(), z.object({ action: z.literal('sleep-chapter'), enabled: z.boolean() }).strict()]), i => player.edit(i))
+  const localLibrary=new LocalLibrary(store,local)
+  handle('local:library',localQuerySchema,i=>localLibrary.query(i))
+  handle('local:playlist',localPlaylistSchema,i=>localLibrary.playlist(i))
+  handle('local:favorite',z.object({rootId:id,fileId:z.string().min(1).max(4096),favorite:z.boolean()}).strict(),i=>localLibrary.favorite(i.rootId,i.fileId,i.favorite))
   handle('local:roots', z.undefined(), () => local.roots())
   handle('local:add', z.undefined(), async () => { const result = await dialog.showOpenDialog(window(), { title: 'Choose a local audio folder', properties: ['openDirectory'] }); return result.canceled || !result.filePaths[0] ? null : local.add(result.filePaths[0]) })
   handle('local:remove', id, async id => { if (player.state.queue.some(q => q.target.kind === 'local-file' && q.target.rootId === id)) await player.command({ action: 'stop' }); local.remove(id) })

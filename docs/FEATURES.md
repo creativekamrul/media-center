@@ -1,6 +1,6 @@
-# Feature inventory — 0.5
+# Feature inventory
 
-The target is a full desktop replacement for Feishin and Audiobookshelf's web client. **0.5 adds LRCLIB lyrics and Black Glass; it does not claim full parity.** This inventory distinguishes working behavior from remaining work.
+The target is a full desktop replacement for Feishin and Audiobookshelf's web client. **Full parity is not complete.** This inventory distinguishes working behavior from remaining work.
 
 ## Available
 
@@ -17,13 +17,13 @@ The target is a full desktop replacement for Feishin and Audiobookshelf's web cl
 | Podcasts | Show libraries and independent episodes; title/description/filename search; date/title/season/episode/filename/duration/progress sort; ascending/descending; downloaded-only filter |
 | Status | Finished/unfinished/in-progress/not-started filters; exact-item finished/unfinished/reset writes; Continue Listening books and episodes |
 | Server tracking | Navidrome now-playing/completion scrobbles; ABS sessions, periodic progress, pause/seek/exit flush; visible failures and local checkpoints |
-| Local files | Multiple selected roots; original folder tree; current-folder search/sort; cached tags/format/size; embedded artwork; native playback |
+| Local music | Multiple selected roots; persistent recursive collection with nine tabs, source-specific favorites/playlists and library search; original Folders view; cached tags/format/size; lazy embedded artwork; native playback. See 0.7.3 limits below. |
 | Player/queue | Cover opens expanded player and queue; seek/volume/speed/repeat/shuffle; insert/append/move/remove/jump/clear; restore queue after restart without autoplay |
 | Personal | SQLite Listen Later dates, notes, rescheduling, completion/reopening/removal; recent device listening history |
 | Audio | ReplayGain off/track/album; clipping prevention; ten-band EQ; per-book/episode speed; timed and chapter-end sleep |
 | Appearance | 13 palettes including translucent Glass and Black Glass; visual theme picker; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; minimum 1024 × 720 layout |
 | Open source | GPL-3.0-only; user/developer/security/API documentation; model, provider, local-file, playback and desktop tests |
-| Lyrics | On-demand LRCLIB for music/tagged local files; synced-line highlighting and seeking; plain/instrumental/missing states; cache and rate-limit handling. No word karaoke, embedded lyrics or manual match search yet. |
+| Lyrics | On-demand LRCLIB for music/tagged local files; synced-line highlighting and seeking; plain/instrumental/missing states; cache and rate-limit handling. Manual search and persisted per-song bindings; enhanced-LRC karaoke in the 0.7.1 changes below. Embedded lyric extraction remains unsupported. |
 | Updates | Settings check/download/restart-to-install; stable GitHub releases; verified download integrity; explicit user actions |
 | Releases | Version-tagged GitHub Actions Windows builds; packaged integration checks; GitHub CLI publication; corresponding source and SHA-256 checksums |
 
@@ -54,7 +54,7 @@ The inbox indexes up to 100,000 episodes and displays refresh warnings rather th
 
 - Crossfade, customizable shortcuts, Windows media-session integration, continuous transitions across unlike audio formats, broader accessibility audit.
 - Automatic download retention, resumable byte-range downloads, automatic offline reconciliation, durable reconnect/session recovery, token refresh. Offline checkpoints require a preview and explicit position sync.
-- Native Navidrome smart-playlist rule editor, server music-folder tree, advanced native filters, artist biographies/similar artists, album ratings, playlist artwork and interoperable M3U/XSPF import/export, radio management, custom CSS.
+- Native Navidrome smart-playlist rule editor, server music-folder tree, advanced native filters, artist biographies/similar artists, album ratings, playlist artwork and interoperable M3U/XSPF import/export, radio management.
 - Dedicated ABS author/series/collection pages and management, all personalized shelves/statistics, podcast discovery/subscription/RSS import and download/retention management.
 - ABS metadata matching/editing, chapter/cover editors, supplementary files and ebook/PDF reading; library/user/server administration, scans, backups, logs, permissions and sharing.
 - Complete accessibility audit, localization, code signing, macOS/Linux testing and packaging.
@@ -74,5 +74,27 @@ Research references: [Feishin](https://github.com/jeffvli/feishin), [Navidrome 0
 ## Personalization (0.7.0)
 
 - Manual LRCLIB search, preview, and persistent per-source/song lyric binding for music and local audio. Saved content bypasses automatic network lookups and cache expiry, including offline use. Clear/replace controls are in the lyrics panel. Search displays up to 20 results; no pagination or lyric editing/upload is provided.
-- Five optional color overrides and six system font choices for interface, headings, and lyrics. In-app preview, reset, persistence, validated preference backups, and live mini-player synchronization. Arbitrary CSS and font file imports remain unsupported.
+- Five optional color overrides and six system font choices for interface, headings, and lyrics. In-app preview, reset, persistence, validated preference backups, and live mini-player synchronization. Local CSS import is included in the 0.7.1 changes below; font file imports remain unsupported.
 - Lyric bindings are device-local and are not currently exported in personal backups or synchronized to media servers.
+
+## 0.7.1 settings and player polish
+
+- MPV telemetry broadcasts are coalesced to one per 250 ms, with a guaranteed trailing snapshot; urgent state changes remain immediate.
+- Settings have a sticky six-section navigation rail and theme-aware panels. Theme and audio saves share a complete preferences draft.
+- Custom CSS import is local, UTF-8, and bounded to 512 KB. It supports preview, removal, mini-player synchronization, and validated backups.
+- Lyrics support real enhanced-LRC word timing when available. Line-only records use presentation-only word estimates for Flow, or an approximate line sweep for other styles; cached or saved records without word data retain the fallback until refreshed or rebound.
+- True fullscreen is available in the main window (F11/header toggle; Escape exits). Mini-player requests are rejected.
+- Chapter seek markers, persistent seek thumbs, expanding volume, and consistent themed controls.
+
+## 0.7.2 immersive appearance
+
+- Settings navigation uses the same rounded buttons and active treatment as the app.
+- Immersive lyrics: live-preview appearance popup, bounded persistent typography/colors/layout, word glow and lift, focus/fade/still modes, cancel/reset and older-preference migration. Real word timing remains dependent on the lyric record.
+
+
+## 0.7.3 Home and local collection
+
+- Normal and immersive lyric panels share the appearance popup and saved settings, including real word timing where available, estimated word-emphasis/line-sweep fallbacks, focus/centered growth/fade modes and reduced motion.
+- Home offers horizontal shelves, a featured continuation, up-to-50-track favorites/recent/local-history mixes and a live device statistics widget. Mixes use existing collections/history, not recommendation models.
+- Local music is a persistent indexed collection with nine tabs, source-scoped search/favorites/playlists, recursive tag scanning, paginated tracks, lazy covers and explicit rescans. The original folder browser remains available.
+- Limits: 100 results and playable tracks per page; 50,000 indexed tracks / 5,000 folders / 100,000 entries per source. Local playlists currently support create/play/delete only. No automatic watcher, metadata editing, local playlist import/export or backup inclusion yet. Local genres display the file's combined genre tags.

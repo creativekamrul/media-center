@@ -28,7 +28,7 @@ function TrackSeek({player,error,compact}:{player:PlaybackState;error:(s:string)
  const value=clamp(preview??player.position)
  return <div className={compact?'seek-row mini-seek-row':'seek-row'}>
   {!compact&&<span>{duration(value)}</span>}
-  <input aria-label="Playback position" aria-valuetext={`${duration(value)} of ${duration(player.duration)}`} type="range" min={0} max={player.duration||1} step={.1} disabled={!enabled} value={value}
+  <div className="seek-track"><div className="chapter-ticks" aria-hidden="true">{player.duration>0&&player.chapters.filter(c=>c.start>0&&c.start<player.duration).map(c=><i key={c.id} title={c.title} style={{left:`${c.start/player.duration*100}%`}}/>)}</div><input aria-label="Playback position" aria-valuetext={`${duration(value)} of ${duration(player.duration)}`} type="range" min={0} max={player.duration||1} step={.1} disabled={!enabled} value={value}
    style={{'--progress':`${value/(player.duration||1)*100}%`,touchAction:'none'} as CSSProperties}
    onPointerDown={e=>{if(!enabled||e.button!==0)return;e.preventDefault();e.currentTarget.focus();e.currentTarget.setPointerCapture(e.pointerId);dragging.current=e.pointerId;revision.current++;setPreview(fromPointer(e))}}
    onPointerMove={e=>{if(dragging.current===e.pointerId)setPreview(fromPointer(e))}}
@@ -36,7 +36,7 @@ function TrackSeek({player,error,compact}:{player:PlaybackState;error:(s:string)
    onPointerCancel={()=>{dragging.current=null;setPreview(null)}}
    onLostPointerCapture={()=>{if(dragging.current!==null){dragging.current=null;setPreview(null)}}}
    onChange={e=>{if(dragging.current===null)void commit(Number(e.currentTarget.value))}}
-  />
+  /></div>
   {!compact&&<span>{duration(player.duration)}</span>}
  </div>
 }

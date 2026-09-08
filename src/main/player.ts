@@ -1,3 +1,4 @@
+import { StatePublisher } from './state-publisher'
 import { EventEmitter } from 'node:events'
 import { emptyPlayback, defaultPreferences, type PlayTarget, type PlaybackState, type PlayerCommand, type QueueItem, type QueueEdit, type Preferences } from '../shared/types'
 import type { LocalFiles } from './local'
@@ -52,7 +53,7 @@ export class Player extends EventEmitter {
         if (event.name === 'audio-codec-name' && typeof event.data === 'string') this.state.codec = event.data
         if (event.name === 'audio-params') this.state.sampleRate = event.data?.samplerate
         if (event.name === 'paused-for-cache') this.state.buffering = !!event.data
-        this.publish()
+        if (['time-pos','audio-codec-name','audio-params','paused-for-cache'].includes(event.name)) this.publish(true)
       }
       if (event.event === 'end-file' && event.reason === 'eof') void this.enqueue(() => this.ended()).catch(error => this.fail(error instanceof Error ? error.message : 'Could not advance playback.'))
       if (event.event === 'end-file' && event.reason === 'error') this.fail('MPV could not decode or read this audio stream. Check the connection and file format.')
@@ -66,7 +67,8 @@ export class Player extends EventEmitter {
       if (this.saveTick % 15 === 0) void this.enqueue(() => this.sync()).catch(() => {})
     }, 1000)
   }
-  private publish() { this.emit('state', structuredClone(this.state)) }
+  private publisher = new StatePublisher(() => this.emit('state', structuredClone(this.state)))
+  private publish(telemetry = false) { this.publisher.publish(telemetry) }
   private saveQueue() { this.store.set('queue', { queue: this.state.queue, index: this.state.queueIndex }) }
   private fail(message: string) { this.state.status = 'error'; this.state.error = message; this.publish() }
   enqueue<T>(work: () => Promise<T>): Promise<T> {
@@ -319,5 +321,5 @@ export class Player extends EventEmitter {
   }).catch(error => { if (this.state.status === 'loading') this.fail(error instanceof Error ? error.message : 'Playback failed.'); throw error }) }
   acknowledgeOffline(target: PlayTarget) {const current=this.state.queue[this.state.queueIndex];if(current&&progressKey(current.target)===progressKey(target)&&this.state.status==='idle'){this.state.syncError=undefined;this.publish()}}
   async restoreQueue(items: QueueItem[], index: number) { await this.command({action:'stop'}); await this.enqueue(async()=>{ this.state.queue=structuredClone(items);this.state.queueIndex=index;const item=items[index];this.state.title=item.title;this.state.subtitle=item.subtitle;this.state.kind=item.target.kind;this.saveQueue();this.publish() }) }
-  async shutdown() { clearInterval(this.timer); await this.enqueue(async () => { if (this.state.status === 'playing') { await this.mpv.command(['set_property', 'pause', true]).catch(() => {}); this.state.status = 'paused' }; await this.clearStaged(); await this.closeSession(); this.saveQueue(); await this.mpv.stop() }) }
+  async shutdown() { clearInterval(this.timer); this.publisher.cancel(); await this.enqueue(async () => { if (this.state.status === 'playing') { await this.mpv.command(['set_property', 'pause', true]).catch(() => {}); this.state.status = 'paused' }; await this.clearStaged(); await this.closeSession(); this.saveQueue(); await this.mpv.stop() }) }
 }

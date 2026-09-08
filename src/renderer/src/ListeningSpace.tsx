@@ -1,19 +1,18 @@
-import { AppearanceEditor } from './AppearanceEditor'
-import { applyAppearance } from './appearance'
+import { usePreferencesDraft } from './SettingsPreferences'
 import {ImmersivePlayer} from './ImmersivePlayer'
 import { LyricsPanel } from './LyricsPanel'
-import { ThemePicker } from './ThemePicker'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { ArrowDown, ArrowUp, Folder, FolderPlus, Play, Trash2, X } from 'lucide-react'
-import { defaultPreferences, type HistoryItem, type ListenLater, type LocalFile, type LocalFolder, type LocalRoot, type PlaybackState, type QueueItem } from '../../shared/types'
+import { type HistoryItem, type ListenLater, type LocalFile, type LocalFolder, type LocalRoot, type PlaybackState, type QueueItem } from '../../shared/types'
 import { Art, duration, message } from './ui'
 import { SavedQueues } from './DailySpace'
 import { api, ListenActions } from './actions'
 export function QueueArt({ item }: { item?: QueueItem }) {
   const [cover, setCover] = useState<string | null>(null), target = item?.target
-  useEffect(() => { setCover(null); let live = true; if (target?.kind === 'local-file') void api.localCover({ rootId: target.rootId, fileId: target.fileId }).then(c => { if (live) setCover(c) }).catch(() => {}); return () => { live = false } }, [JSON.stringify(target)])
+  const art=useRef<HTMLDivElement>(null)
+  useEffect(()=>{setCover(null);let live=true;if(target?.kind!=='local-file'||!art.current)return;const observer=new IntersectionObserver(entries=>{if(!entries.some(e=>e.isIntersecting))return;observer.disconnect();void api.localCover({rootId:target.rootId,fileId:target.fileId}).then(c=>{if(live)setCover(c)}).catch(()=>{})},{rootMargin:'200px'});observer.observe(art.current);return()=>{live=false;observer.disconnect()}},[JSON.stringify(target)])
   if (!item) return <div className="art idle-art">♫</div>
-  if (target?.kind === 'local-file') return cover ? <div className="art"><img src={cover} alt=""/></div> : <div className="art idle-art">♫</div>
+  if (target?.kind === 'local-file') return cover ? <div ref={art} className="art"><img src={cover} alt=""/></div> : <div ref={art} className="art idle-art">♫</div>
   return <Art item={{ id: item.cover ?? (target?.kind === 'audiobook' ? target.bookId : target?.kind === 'podcast-episode' ? target.showId : ''), title: item.title, subtitle: item.subtitle, serverId: item.target.serverId, kind: item.target.kind, cover: item.cover }}/>
 }
 export function QueuePage({ player, error, expanded = false, close }: { player: PlaybackState; error: (s: string) => void; expanded?: boolean; close?: () => void }) {
@@ -37,7 +36,7 @@ export function QueuePage({ player, error, expanded = false, close }: { player: 
     </section>}</div>
   </div>
 }
-export function LocalPage({ error }: { error: (s: string) => void }) {
+export function LocalFolders({ error }: { error: (s: string) => void }) {
   const [roots, setRoots] = useState<LocalRoot[]>([]), [rootId, setRootId] = useState(''), [folder, setFolder] = useState(''), [data, setData] = useState<LocalFolder | null>(null), [search, setSearch] = useState(''), [sort, setSort] = useState('name'), [busy, setBusy] = useState(false), [revision, setRevision] = useState(0)
   useEffect(() => { void api.localRoots().then(setRoots).catch(e => error(message(e))) }, [revision])
   const root = roots.find(r => r.id === rootId) ?? roots[0]
@@ -60,7 +59,6 @@ export function LaterPage({ error, history = false }: { error: (s: string) => vo
   </div>
 }
 export function AudioPreferences({ error }: { error: (s: string) => void }) {
-  const [prefs, setPrefs] = useState(defaultPreferences), [saved, setSaved] = useState(false)
-  useEffect(() => { void api.preferences().then(setPrefs).catch(e => error(message(e)));return()=>{void api.preferences().then(applyAppearance).catch(()=>{})} }, [])
-  return <section className="settings-panel audio-preferences"><h2>Make it sound like yours</h2><p className="muted">ReplayGain and equalization are optional. Leave both off for unprocessed audio.</p><label className="field">ReplayGain<select value={prefs.replayGain} onChange={e => setPrefs({ ...prefs, replayGain: e.target.value as typeof prefs.replayGain })}><option value="no">Off</option><option value="track">Track gain</option><option value="album">Album gain</option></select></label><label className="check-field"><input type="checkbox" checked={prefs.preventClipping} onChange={e => setPrefs({ ...prefs, preventClipping: e.target.checked })}/>Prevent ReplayGain clipping</label><div className="equalizer">{['31','62','125','250','500','1k','2k','4k','8k','16k'].map((b,i) => <label key={b}><span>{prefs.equalizer[i]} dB</span><input aria-label={`Equalizer ${b} Hz`} type="range" min={-12} max={12} step={1} value={prefs.equalizer[i]} onChange={e => setPrefs({ ...prefs, equalizer: prefs.equalizer.map((v,j) => j === i ? Number(e.target.value) : v) })}/><small>{b}</small></label>)}</div><button className="text-button" onClick={() => setPrefs({ ...prefs, equalizer: Array(10).fill(0) })}>Reset equalizer</button><label className="check-field"><input type="checkbox" checked={prefs.scrobble} onChange={e => setPrefs({ ...prefs, scrobble: e.target.checked })}/>Send now playing and listening history to Navidrome</label><label className="check-field"><input type="checkbox" checked={prefs.closeToTray} onChange={e => setPrefs({ ...prefs, closeToTray: e.target.checked })}/>Keep playing in the system tray when the window closes</label><ThemePicker value={prefs.theme} onChange={theme=>setPrefs({...prefs,theme})}/><AppearanceEditor value={prefs} onChange={p=>{setPrefs(p);setSaved(false)}}/><button className="primary" onClick={() => void api.savePreferences(prefs).then(() => { applyAppearance(prefs); setSaved(true) }).catch(e => error(message(e)))}>Save audio preferences</button>{saved && <span className="action-notice" role="status">Saved</span>}</section>
+  const {prefs,setPrefs,save,busy,notice} = usePreferencesDraft()
+  return <section className="settings-panel audio-preferences"><h2>Make it sound like yours</h2><p className="muted">ReplayGain and equalization are optional. Leave both off for unprocessed audio.</p><label className="field">ReplayGain<select aria-label="ReplayGain" value={prefs.replayGain} onChange={e => setPrefs({ ...prefs, replayGain: e.target.value as typeof prefs.replayGain })}><option value="no">Off</option><option value="track">Track gain</option><option value="album">Album gain</option></select></label><label className="check-field"><input type="checkbox" checked={prefs.preventClipping} onChange={e => setPrefs({ ...prefs, preventClipping: e.target.checked })}/>Prevent ReplayGain clipping</label><div className="equalizer">{['31','62','125','250','500','1k','2k','4k','8k','16k'].map((b,i) => <label key={b}><span>{prefs.equalizer[i]} dB</span><input aria-label={`Equalizer ${b} Hz`} type="range" min={-12} max={12} step={1} value={prefs.equalizer[i]} onChange={e => setPrefs({ ...prefs, equalizer: prefs.equalizer.map((v,j) => j === i ? Number(e.target.value) : v) })}/><small>{b}</small></label>)}</div><button className="text-button" onClick={() => setPrefs({ ...prefs, equalizer: Array(10).fill(0) })}>Reset equalizer</button><label className="check-field"><input type="checkbox" checked={prefs.scrobble} onChange={e => setPrefs({ ...prefs, scrobble: e.target.checked })}/>Send now playing and listening history to Navidrome</label><label className="check-field"><input type="checkbox" checked={prefs.closeToTray} onChange={e => setPrefs({ ...prefs, closeToTray: e.target.checked })}/>Keep playing in the system tray when the window closes</label><button className="primary" disabled={busy} onClick={()=>void save('Audio preferences saved')}>Save audio preferences</button>{notice && <span className="action-notice" role="status">{notice}</span>}</section>
 }

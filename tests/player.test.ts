@@ -27,6 +27,21 @@ describe('playback coordination', () => {
     player = new Player(mpv, store, id => id === 'n' ? nav : abs)
   })
   afterEach(async () => { await player.shutdown(); vi.useRealTimers() })
+  it.each(['audiobook','podcast-episode'] as const)('coalesces %s telemetry but publishes commands and errors immediately',async kind=>{
+    const items=kind==='audiobook'?queue:[{target:{kind:'podcast-episode' as const,serverId:'s',showId:'show',episodeId:'ep'},title:'Episode',subtitle:''}]
+    if(kind==='podcast-episode')vi.mocked(abs.detail).mockResolvedValue({kind:'podcast-show',id:'show',serverId:'s',libraryId:'p',title:'Show',subtitle:'Host',description:'',author:'Host',episodeCount:1,episodes:[{id:'ep',title:'Episode',duration:1000}]} as Awaited<ReturnType<typeof abs.detail>>)
+    await player.play(items,0)
+    const snapshots:typeof player.state[]=[], listener=vi.fn(state=>snapshots.push(state));player.on('state',listener)
+    for(let i=0;i<20;i++)mpv.emit('event',{event:'property-change',name:'time-pos',data:50+i})
+    expect(listener).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(250)
+    expect(listener).toHaveBeenCalledTimes(1);expect(snapshots[0].position).toBe(player.state.position)
+    expect(snapshots[0].queue[0].target).toEqual(items[0].target)
+    mpv.emit('event',{event:'property-change',name:'time-pos',data:80})
+    await player.command({action:'volume',value:30});expect(snapshots.at(-1)?.volume).toBe(30)
+    const count=listener.mock.calls.length;await vi.advanceTimersByTimeAsync(250);expect(listener).toHaveBeenCalledTimes(count)
+    mpv.emit('failure','Test failure');expect(snapshots.at(-1)?.status).toBe('error')
+  })
   it('resumes a multi-file book at the correct file and local offset', async () => {
     await player.play(queue, 0)
     expect(mpv.command).toHaveBeenCalledWith(['loadfile', 'https://test.invalid/b', 'replace', -1, expect.objectContaining({ start: '50' })])

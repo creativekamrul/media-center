@@ -130,11 +130,20 @@ export function registerDaily(handle: Handle, store: Store, player: Player, down
     store.cacheClear(); return {updated,failed}
   })
   handle('home:get', z.boolean().optional(), async refresh => {
-    const data:HomeData={continuing:[],albums:[],episodes:[],warnings:[]}
+    const data:HomeData={mixes:[],continuing:[],albums:[],episodes:[],warnings:[]}
     const results=await Promise.allSettled(store.connections().map(async c => { const p=provider(c.id); if(p instanceof Audiobookshelf) data.continuing.push(...await p.continuing()); else { const result=await p.catalog({serverId:c.id,libraryId:'all',view:'recent',page:0,search:''}); data.albums.push(...result.items.filter((i):i is MusicAlbum=>i.kind==='album').slice(0,8)) } }))
     results.forEach((r,i)=>{if(r.status==='rejected') data.warnings.push(`${store.connections()[i]?.name}: could not refresh Home.`)})
     data.continuing.sort((a,b)=>(b.progress.updatedAt??0)-(a.progress.updatedAt??0))
     data.episodes=(await inbox(refresh)).filter(e=>e.episode.progress?.status!=='finished').sort((a,b)=>(b.episode.publishedAt??0)-(a.episode.publishedAt??0)).slice(0,12);data.warnings.push(...inboxWarnings)
+    const liveServers=new Set(store.connections().map(c=>c.id)),liveRoots=new Set((store.get<{id:string}[]>('localRoots')??[]).map(r=>r.id))
+    const history=store.history().map(h=>h.item).filter(q=>q.target.kind==='music-track'?liveServers.has(q.target.serverId):q.target.kind==='local-file'&&liveRoots.has(q.target.rootId))
+    const unique=(items:QueueItem[])=>[...new Map(items.map(q=>[progressKey(q.target),q])).values()].slice(0,50)
+    const rotation=unique(history.filter(q=>q.target.kind==='music-track')),localRotation=unique(history.filter(q=>q.target.kind==='local-file'))
+    if(rotation.length)data.mixes.push({id:'rotation',title:'Back in rotation',subtitle:'Music from your recent listening',items:rotation})
+    if(localRotation.length)data.mixes.push({id:'local',title:'From your folders',subtitle:'Your recently played local music',items:localRotation})
+    const favorites:QueueItem[]=[]
+    await Promise.allSettled(store.connections().filter(c=>c.provider==='navidrome').map(async c=>{try{const result=await nav(c.id).catalog({serverId:c.id,libraryId:'all',view:'favorites',page:0,search:''});favorites.push(...result.items.filter((i):i is MusicTrack=>i.kind==='music-track').map(trackQueue))}catch{data.warnings.push(`${c.name}: favorites mix unavailable.`)}}))
+    if(favorites.length)data.mixes.unshift({id:'favorites',title:'Your favorites',subtitle:'A mix of tracks you have starred',items:unique(favorites)})
     return data
   })
   const jsonFile = async (title:string) => { const d=await dialog.showOpenDialog(window(),{title,properties:['openFile'],filters:[{name:'Media Center JSON',extensions:['json']}]}); if(d.canceled||!d.filePaths[0]) return null; if((await stat(d.filePaths[0])).size>25*1024*1024) throw new Error('File exceeds the 25 MB import limit.'); return JSON.parse(await readFile(d.filePaths[0],'utf8')) as unknown }

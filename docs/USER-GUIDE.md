@@ -80,7 +80,7 @@ Listening stats counts time actually spent playing on this device, excluding pau
 
 Open Now Playing → Lyrics (or the immersive player), then **Find lyrics**. Search by song, artist, or album, select a result to preview its lyrics and duration, and choose **Use these lyrics**. The selected record and its text are stored in SQLite for that source/song. They do not expire or require another search, even offline. **Clear saved match** restores automatic lookup; **Find lyrics** lets you replace the choice. Manual choices can select a different recording length, so check the preview and timing. Books, podcasts, and radio do not offer lyric search.
 
-In Settings, below the theme palettes, **Customize this theme** offers background, panel, accent, main text, and secondary text colors, plus interface, heading, and lyric font families. **Preview in app** applies unsaved changes temporarily. **Save audio preferences** saves audio and appearance together and updates the mini player. Leaving Settings discards an unsaved preview. Use a color's **Default** or **Reset customization** to return to the selected theme. These are local system fonts, with fallbacks if a family is unavailable.
+In Settings, below the theme palettes, **Customize this theme** offers background, panel, accent, main text, and secondary text colors, plus interface, heading, and lyric font families. **Preview in app** applies unsaved changes temporarily. **Save theme** (in 0.7.1) or **Save audio preferences** saves audio and appearance together and updates the mini player. Leaving Settings discards an unsaved preview. Use a color's **Default** or **Reset customization** to return to the selected theme. These are local system fonts, with fallbacks if a family is unavailable.
 
 Appearance preferences are included in personal backups. Manual lyric bindings currently remain only in this device's database and are not included in exported backups.
 
@@ -114,3 +114,35 @@ Versions 0.2.1 and earlier need one manual installation of 0.2.2 or newer. An in
 - Playlist rejected: it may be smart, read-only or owned by another user; the server controls permissions.
 
 Normal exit flushes progress. Forced termination or network failure can leave the most recent interval unsynchronized. Never include credentials or the app database in bug reports.
+
+## Settings and player polish (0.7.1)
+
+Use the Settings rail to jump to Updates, Servers, Playback, Appearance, Listening, or Sharing. It tracks the visible section and becomes a row of chips in narrower windows. System reduced-motion preferences disable animated jumps.
+
+Appearance previews your theme while you edit. **Save theme** and **Save audio preferences** each save the full current shared preferences draft, including edits in the other section. Leaving Settings without saving restores the saved appearance.
+
+In Appearance, **Import theme CSS** opens a native picker for a local `.css` file (UTF-8, at most 512 KB). A leading UTF-8 BOM is accepted; NUL characters, embedded BOMs, invalid encoding, and oversized files are rejected. CSS text is stored with preferences, not the original file path. Changes preview in the main and already-open mini player, and persist with Save theme. **Remove custom CSS** previews removal; save to keep it removed. Preference backups include CSS and validate it on restore. The existing Content Security Policy still restricts external resources.
+
+F11 toggles true fullscreen anywhere in the main window. The immersive player also has a Fullscreen button. Escape exits fullscreen. These controls do not change the mini player.
+
+Synced lyrics use real per-word timing when LRCLIB supplies enhanced LRC. For ordinary line-timed records, Flow estimates word progression from word lengths within each line. This is a visual guide, not recorded word alignment; other styles use a smooth line sweep. Plain lyrics stay static. Pausing or buffering stops interpolation; seeking updates the fill. Reduced-motion settings use playback updates without continuous animation. Existing saved matches with line-only data keep working; search and bind the record again to retrieve newly available word timing.
+
+
+## Immersive lyric styling (0.7.2)
+
+Open Immersive view, then **Appearance**. The popup previews your changes immediately: choose background/shade, font, weight, size, line spacing, alignment, upcoming and sung text colors, current-word color, surrounding-line opacity and glow. Save appearance keeps the choices on this computer; Cancel or Escape restores the previous appearance. Reset appearance previews the defaults until you save.
+
+Choose Flow · word emphasis to enlarge the active word smoothly from its center without moving it upward, Focus for softened surrounding lines, Gentle fade for quiet line transitions, or No lyric animation. Smooth motion also controls the background; system reduced-motion settings take priority. Real word highlights require enhanced-LRC timestamps. For line-only records, Flow uses approximate word emphasis while other styles use a line sweep; plain lyrics remain untimed. The queue stays on the right. Styling is independently implemented with visual inspiration from [Spicy Lyrics](https://github.com/Spikerko/spicy-lyrics); its Spotify extension code is not bundled.
+
+
+## Home and local music (0.7.3)
+
+Home now includes horizontal shelves (scroll or use the arrow buttons), a featured audiobook/episode continuation, and music mixes. Your favorites uses starred Navidrome songs; Back in rotation uses recent music on this device; From your folders uses recent local music. Each mix includes up to 50 tracks and shuffles when played. Empty mixes are hidden until there is real listening data. Home's stats widget refreshes every 15 seconds and on window focus, showing this device's listening today, this week, goal progress, and finished book/episode totals.
+
+**Local music**, under **Your collection**, indexes the subfolders of a native-picker-approved source. Browse Albums, Songs, Artists, Genres, Favorites, Recently added, Recently played, Playlists, or the original Folders view. Album grouping uses album artist and album title; untagged albums use folders. Album detail follows disc/track order. Search covers title, artist, album and genre. Recently added uses file modification dates; Recently played comes from this device's history. Mark individual hearts for favorites. Select songs on a page and choose Create playlist to save a named local playlist; open it from Playlists to play it or delete the list. Original files are never changed.
+
+Use **Rescan library** after adding, changing, moving or deleting files. The first scan may take time. Indexing is limited per source to 50,000 tracks, 5,000 folders and 100,000 directory entries, with visible warnings. Results and playback actions are paginated at 100 tracks. Local favorites, playlists and indexes are device-local; local playlists currently support creation/playback/deletion, not editing, importing, or exporting. Personal backups do not yet include these local-library lists.
+
+In the normal Now playing screen, choose Lyrics, then **Lyrics appearance**. It shares saved typography, colors, word glow, backgrounds and animation settings with the immersive view. Exact word timing depends on the record. Line-only records use approximate word motion in Flow and a line sweep in other styles. Changes made in either player apply the next time the other view opens.
+
+Home shelves hide their horizontal scrollbars. Use the arrow buttons, horizontal trackpad gestures, or keyboard focus to browse each shelf.

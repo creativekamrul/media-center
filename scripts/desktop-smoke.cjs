@@ -100,7 +100,7 @@ async function main() {
     await desktop.evaluate(({ BrowserWindow }) => { for (const window of BrowserWindow.getAllWindows()) window.webContents.setBackgroundThrottling(false) })
     // Windows can withhold compositor frames for a hidden packaged executable.
     // Exercise the packaged UI as it will actually run, without stealing focus.
-    if (process.env.MEDIA_CENTER_EXECUTABLE) await desktop.evaluate(({ BrowserWindow }) => { for (const window of BrowserWindow.getAllWindows()) window.showInactive() })
+    if (process.env.MEDIA_CENTER_EXECUTABLE || process.env.MEDIA_CENTER_VISIBLE_SMOKE) await desktop.evaluate(({ BrowserWindow }) => { for (const window of BrowserWindow.getAllWindows()) window.showInactive() })
     async function waitPlayback(predicate) {
       const deadline = Date.now() + 20000
       let state
@@ -155,6 +155,7 @@ async function main() {
     const navId = saved.connections.find(c => c.provider === 'navidrome').id, absId = saved.connections.find(c => c.provider === 'audiobookshelf').id
     await require('./layout-smoke.cjs')(page, artifacts)
     await require('./theme-smoke.cjs')(page, artifacts)
+    await require('./settings-polish-smoke.cjs')({desktop,page,artifacts})
     await page.getByRole('button', { name: 'Music', exact: true }).click()
     await page.getByRole('button', { name: 'Playlists', exact: true }).click()
     await page.getByRole('button', { name: 'New playlist', exact: true }).click()
@@ -263,8 +264,10 @@ async function main() {
       const localPath = resolve(artifacts,'local-fixture'); mkdirSync(resolve(localPath,'Disc 1'),{recursive:true})
       const wav = Buffer.alloc(44+192000*3); wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(2,22);wav.writeUInt32LE(48000,24);wav.writeUInt32LE(192000,28);wav.writeUInt16LE(4,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);writeFileSync(resolve(localPath,'Disc 1','Local track.wav'),wav)
       await desktop.evaluate(({ dialog }, path) => { dialog.showOpenDialog = async () => ({ canceled:false,filePaths:[path] }) },localPath)
-      await page.getByRole('button', { name: 'Local files', exact: true }).click()
+      await page.getByRole('button', { name: 'Local music', exact: true }).click()
       await page.getByRole('button', { name: 'Add folder', exact: true }).click()
+      await require('./local-library-smoke.cjs')({page,artifacts})
+      await page.getByRole('tab',{name:'Folders',exact:true}).click()
       await page.getByRole('button', { name: 'Disc 1', exact: true }).click()
       await page.locator('.local-file-row').waitFor()
       assert.ok((await page.locator('.local-file-row').innerText()).includes('48 kHz'))
@@ -287,8 +290,9 @@ async function main() {
       await desktop.close(); desktop = undefined
       desktop = await electron.launch({ executablePath: process.env.MEDIA_CENTER_EXECUTABLE || undefined, args: process.env.MEDIA_CENTER_EXECUTABLE ? [profileArg] : [resolve('out/main/index.js'),profileArg], env: { ...process.env, MEDIA_CENTER_SMOKE:'1' }, timeout:30000 })
       const restoredPage = await desktop.firstWindow()
-      await desktop.evaluate(({ BrowserWindow }, visible) => { for (const window of BrowserWindow.getAllWindows()) { window.webContents.setBackgroundThrottling(false); if (visible) window.showInactive() } }, !!process.env.MEDIA_CENTER_EXECUTABLE)
+      await desktop.evaluate(({ BrowserWindow }, visible) => { for (const window of BrowserWindow.getAllWindows()) { window.webContents.setBackgroundThrottling(false); if (visible) window.showInactive() } }, !!(process.env.MEDIA_CENTER_EXECUTABLE || process.env.MEDIA_CENTER_VISIBLE_SMOKE))
       await restoredPage.waitForFunction(()=>getComputedStyle(document.body).fontFamily.includes('Verdana'))
+      const localSaved=await restoredPage.evaluate(async()=>{const r=(await window.mediaCenter.localRoots())[0];return {favorites:await window.mediaCenter.localLibrary({rootId:r.id,view:'favorites',page:0,search:''}),playlists:await window.mediaCenter.localLibrary({rootId:r.id,view:'playlists',page:0,search:''})}});assert.equal(localSaved.favorites.total,1);assert.equal(localSaved.playlists.groups[0].title,'Local test playlist')
       const persistedLyrics=await restoredPage.evaluate(()=>window.mediaCenter.lyrics({}));assert.equal(persistedLyrics.recordId,42);assert.equal(persistedLyrics.saved,true)
       const restored = await restoredPage.evaluate(async () => ({ playback: await window.mediaCenter.playback(), plans: await window.mediaCenter.laterList(), roots: await window.mediaCenter.localRoots(), prefs: await window.mediaCenter.preferences() }))
       assert.equal(restored.playback.status,'idle'); assert.equal(restored.playback.queue.length,1); assert.equal(restored.playback.queue[0].target.kind,'local-file'); assert.equal(restored.plans[0].done,true); assert.equal(restored.roots.length,1); assert.equal(restored.prefs.equalizer[5],2)

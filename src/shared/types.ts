@@ -37,6 +37,9 @@ export interface UpdateState {
   version?: string; percent?: number; transferred?: number; total?: number; checkedAt?: number; error?: string
 }
 export interface DesktopAPI extends DailyAPI {
+  importThemeCss(): Promise<string | null>
+  previewTheme(preferences: Preferences | null): Promise<void>
+  fullscreen(action: 'toggle' | 'exit'): Promise<void>
   updateState(): Promise<UpdateState>
   checkForUpdates(): Promise<UpdateState>
   downloadUpdate(): Promise<UpdateState>
@@ -76,6 +79,9 @@ export interface DesktopAPI extends DailyAPI {
   localAdd(): Promise<LocalRoot | null>
   localRemove(id: string): Promise<void>
   localBrowse(input: { rootId: string; folder: string }): Promise<LocalFolder>
+  localLibrary(input: import('./local-library').LocalQuery): Promise<import('./local-library').LocalPageData>
+  localFavorite(input:{rootId:string;fileId:string;favorite:boolean}):Promise<void>
+  localPlaylist(input:import('./local-library').LocalPlaylistCommand):Promise<void>
   localCover(input: { rootId: string; fileId: string }): Promise<string | null>
   laterList(): Promise<ListenLater[]>
   laterSave(input: { item: QueueItem; due: string; note: string; id?: string; done?: boolean }): Promise<ListenLater>
@@ -100,9 +106,9 @@ export interface ContinueItem { item: QueueItem; progress: Progress; libraryId: 
 export interface Bookmark { time: number; title: string; createdAt?: number }
 export type QueueEdit = { action: 'append' | 'next'; items: QueueItem[] } | { action: 'remove' | 'jump'; index: number } | { action: 'move'; from: number; to: number } | { action: 'clear' | 'clear-upcoming' | 'restore' } | { action: 'sleep-chapter'; enabled: boolean }
 export interface LocalRoot { id: string; name: string; path: string }
-export interface LocalFile { id: string; name: string; title: string; artist: string; album: string; duration: number; size: number; modified: number; codec?: string; sampleRate?: number; bitDepth?: number; bitRate?: number; trackNumber?: number; year?: number; hasCover: boolean; error?: string }
+export interface LocalFile { id: string; name: string; title: string; artist: string; album: string; duration: number; size: number; modified: number; codec?: string; sampleRate?: number; bitDepth?: number; bitRate?: number; trackNumber?: number; discNumber?: number; albumArtist?: string; genre?: string; year?: number; hasCover: boolean; error?: string }
 export interface LocalFolder { rootId: string; folder: string; folders: { id: string; name: string }[]; files: LocalFile[]; warnings: string[] }
 export interface ListenLater { id: string; item: QueueItem; due: string; note: string; done: boolean; createdAt: number }
 export interface HistoryItem { id: string; item: QueueItem; position: number; duration: number; playedAt: number }
-export interface Preferences { replayGain: 'no' | 'track' | 'album'; preventClipping: boolean; equalizer: number[]; closeToTray: boolean; theme: import('./themes').ThemeId; appearance?: import('./appearance').Appearance; scrobble: boolean }
+export interface Preferences { replayGain: 'no' | 'track' | 'album'; preventClipping: boolean; equalizer: number[]; closeToTray: boolean; theme: import('./themes').ThemeId; appearance?: import('./appearance').Appearance; customCss?: string; scrobble: boolean }
 export const defaultPreferences: Preferences = { replayGain: 'no', preventClipping: true, equalizer: [0,0,0,0,0,0,0,0,0,0], closeToTray: false, theme: 'forest', scrobble: true }

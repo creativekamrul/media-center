@@ -1,6 +1,14 @@
 import { accentText, defaultAppearance, fonts } from '../../shared/appearance'
 import type { Preferences } from '../../shared/types'
+export function watchAppearance(error:(e:unknown)=>void=()=>{}){
+  let live=true,received=false
+  const off=window.mediaCenter.onTheme(p=>{received=true;if(live)applyAppearance(p)})
+  void window.mediaCenter.preferences().then(p=>{if(live&&!received)applyAppearance(p)}).catch(error)
+  return()=>{live=false;off()}
+}
 export function applyAppearance(p:Preferences){
+  let style=document.getElementById('custom-theme-css') as HTMLStyleElement | null
+  if(p.customCss){if(!style){style=document.createElement('style');style.id='custom-theme-css';document.head.append(style)}style.textContent=p.customCss}else style?.remove()
   const root=document.documentElement,a=p.appearance??defaultAppearance
   root.dataset.theme=p.theme
   root.dataset.customColors=Object.keys(a.colors).length?'true':'false'
