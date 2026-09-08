@@ -32,7 +32,7 @@ Move from a favorite album to the next chapter without switching players. Media 
 | **Audiobookshelf podcasts** | Browse shows and independent episodes, filter listening status, search, sort, and catch up through the podcast inbox. |
 | **Local music library** | Browse tagged albums, songs, artists and genres; keep local favorites and playlists, or explore the original folder structure. Files stay untouched. |
 
-## New in 0.7.6
+## New in 0.7.7
 
 - **A Home built around your listening.** Browse shelves with arrow controls, return to unfinished books and episodes, play mixes from your favorites or recent music, and see your daily listening at a glance.
 - **A proper local music collection.** Nine library tabs, recursive tag indexing, search, rescanning, favorites, playlists, and the folder view you already know.

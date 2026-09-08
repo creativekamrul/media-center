@@ -123,3 +123,10 @@ See `FEATURES.md` for substantive parity gaps. Passing tests does not certify fu
 - Reviewed the new Home, local library, immersive player and lyric appearance screenshots before copying them to site/assets. Older sample-library images remain identified in the asset provenance document. Website static validation checked eight gallery panels/tabs, unique IDs, anchors, local assets and JavaScript syntax; the local page returned HTTP 200.
 - Local installer: release/Media-Center-0.7.6-win-x64.exe, 114,545,086 bytes, SHA-256 e6d9f617df37f7e32fc2d46fac6bb8b7ef55a06357a2026b2e97142be45ba321. GitHub Actions rebuilds public assets from the tagged source; public checksums may differ from the local build.
 - GitHub publication is explicitly requested for this release. The release workflow gates publication on its own source and packaged checks; Pages deploys only site/.
+
+## 0.7.7 publication retry - 2026-09-09
+
+- Reproduced the 0.7.6 CI shelf timeout locally. The test expected a scroll offset strictly below 2px, but Chromium's snap can settle at exactly the 2px inset that the UI correctly recognizes as the start.
+- The harness now shows source-test windows without taking focus, waits for the forward scroll to settle, uses the UI's inclusive start boundary, and waits for the disabled Previous button and rendered volume percentage. No app behavior or publication gate was bypassed.
+- The no-MPV source suite and complete native packaged suite passed with zero renderer errors. Typecheck, build and release version checks passed; application logic and the 126 passing unit tests are unchanged from 0.7.6.
+- Local 0.7.7 installer: 114,546,893 bytes; SHA-256 68632f41630d7e6af2cc5f4b9c66d0e7e976440804fb67ecfd4c674e302ffcfe. The failed v0.7.6 tag is preserved; no GitHub release was created for it.

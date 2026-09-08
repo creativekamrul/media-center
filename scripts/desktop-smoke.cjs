@@ -98,9 +98,9 @@ async function main() {
     desktop = await electron.launch({ executablePath: process.env.MEDIA_CENTER_EXECUTABLE || undefined, args: process.env.MEDIA_CENTER_EXECUTABLE ? [profileArg] : [resolve('out/main/index.js'), profileArg], env: { ...process.env, MEDIA_CENTER_SMOKE: '1' }, timeout: 30000 })
     const page = await desktop.firstWindow()
     await desktop.evaluate(({ BrowserWindow }) => { for (const window of BrowserWindow.getAllWindows()) window.webContents.setBackgroundThrottling(false) })
-    // Windows can withhold compositor frames for a hidden packaged executable.
-    // Exercise the packaged UI as it will actually run, without stealing focus.
-    if (process.env.MEDIA_CENTER_EXECUTABLE || process.env.MEDIA_CENTER_VISIBLE_SMOKE) await desktop.evaluate(({ BrowserWindow }) => { for (const window of BrowserWindow.getAllWindows()) window.showInactive() })
+    // Windows can withhold compositor frames for hidden source and packaged windows.
+    // Exercise the UI as it actually runs, without stealing focus, including on CI.
+    await desktop.evaluate(({ BrowserWindow }) => { for (const window of BrowserWindow.getAllWindows()) window.showInactive() })
     async function waitPlayback(predicate) {
       const deadline = Date.now() + 20000
       let state

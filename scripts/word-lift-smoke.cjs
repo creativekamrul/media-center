@@ -69,6 +69,7 @@ module.exports=async function wordLiftSmoke({page,waitPlayback,artifacts}) {
  await volume.focus();await page.keyboard.press(previous<100?'ArrowRight':'ArrowLeft')
  const expected=previous<100?previous+1:previous-1
  await waitPlayback(p=>p.volume===expected)
+ await page.waitForFunction(value=>document.querySelector('.volume-value')?.textContent===`${value}%`,expected)
  assert.equal(await page.locator('.volume-value').textContent(),`${expected}%`)
  assert.equal(await volume.evaluate(el=>el.style.getPropertyValue('--volume-level')),`${expected}%`)
  await page.evaluate(value=>window.mediaCenter.command({action:'volume',value}),previous)

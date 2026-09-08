@@ -1,8 +1,15 @@
 # Changelog
 
+## 0.7.7
+
+Public rollout of the 0.7.1–0.7.6 improvements: Home shelves and mixes, the tagged local music library, shared lyric appearance and centered word emphasis, theme-aware Settings and CSS import, larger player artwork and clearer volume controls.
+
+- Correct the desktop validation harness on Windows runners: show test windows without taking focus and wait for scrolling to settle before testing the reverse arrow, using the UI's two-pixel start boundary. Version 0.7.6 stopped at its validation gate and was not published as a GitHub release.
+- Refresh README and website release links for the successful rollout. See 0.7.6 below for the full feature summary.
+
 ## 0.7.6
 
-First public release after 0.7.0, including the locally tested 0.7.1–0.7.5 improvements below.
+Prepared after 0.7.0, including the locally tested 0.7.1–0.7.5 improvements below; publication was stopped by a desktop validation timeout and superseded by 0.7.7.
 
 - Make volume easier to see and adjust with a wider, filled track, larger thumb, keyboard focus ring and percentage. Enlarge bottom-player artwork to 72px (64px on narrower windows).
 - Add a new Home with continuation shelves, favorites/recent-music mixes and device listening stats. Give local music a persistent tagged library with albums, songs, artists, genres, favorites, recents, playlists and folders.

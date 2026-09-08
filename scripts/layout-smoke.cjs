@@ -39,8 +39,17 @@ module.exports = async function layoutSmoke(page, artifacts) {
     assert.ok(await page.locator('.home-shelf-track').evaluateAll(items=>items.every(el=>getComputedStyle(el).scrollbarWidth==='none')),'Home shelves hide scrollbars while retaining arrow navigation')
     await page.getByRole('button',{name:'Next Continue listening',exact:true}).click()
     await page.waitForFunction(()=>document.querySelector('.home-shelf-track[aria-label="Continue listening"]').scrollLeft>0)
+    // Wait for smooth scrolling and snapping to settle before testing the return trip.
+    // Reversing at the first nonzero animation frame races Chromium's snap target.
+    await page.waitForFunction(()=>{
+      const el=document.querySelector('.home-shelf-track[aria-label="Continue listening"]'),now=performance.now()
+      if(el.__testScrollLeft!==el.scrollLeft){el.__testScrollLeft=el.scrollLeft;el.__testScrollAt=now;return false}
+      return now-el.__testScrollAt>350
+    },undefined,{polling:50})
     await page.getByRole('button',{name:'Previous Continue listening',exact:true}).click()
-    await page.waitForFunction(()=>document.querySelector('.home-shelf-track[aria-label="Continue listening"]').scrollLeft<2)
+    // Snap alignment can land exactly on the shelf's 2px inset. Match the UI's start edge.
+    await page.waitForFunction(()=>document.querySelector('.home-shelf-track[aria-label="Continue listening"]').scrollLeft<=2&&document.querySelector('button[aria-label="Previous Continue listening"]').disabled)
+    assert.equal(await page.getByRole('button',{name:'Previous Continue listening',exact:true}).isDisabled(),true)
     assert.ok(Math.max(...grid.widths)-Math.min(...grid.widths)<2,'Resume cards share equal column widths')
     assert.ok(Math.max(...grid.heights)-Math.min(...grid.heights)<2,'Short and long titles keep the same card height')
     assert.equal(await page.locator('.workspace').evaluate(el => el.scrollWidth > el.clientWidth), false)
