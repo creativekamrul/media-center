@@ -324,3 +324,13 @@ This installer supersedes the earlier 1.2.0 local build recorded above.
 - This is a local installer only; no commit, tag, push or GitHub release was published for 1.2.1.
 
 - Final visual review caught an invalid menu background when theme variables were absent. Added an unconditional opaque backing color, rebuilt the installer above, then reran the targeted packaged UI suite successfully. The full native playback suite had passed before this isolated CSS correction.
+
+
+## 1.2.2 local Discord artwork fallback — 2026-09-11
+
+- Restored the existing generated audiobook/podcast artwork inside the app and left Windows media artwork behavior unchanged. The new default cover applies only to Discord RPC.
+- Typecheck, 192 unit tests across 32 files, production build, release version check and whitespace checks passed.
+- Discord tests verify audiobook and podcast fallback assets in serialized IPC frames, opt-in/private-listening gates, and absence of Last.fm/network requests for spoken metadata. Live Discord profile rendering was not inspected.
+- The full packaged native-MPV suite passed with zero renderer errors, including new assertions that missing book/show covers still render the generated artwork rather than the Discord fallback. The first run exposed an incorrect test selector; correcting it required no application change.
+- Built `release/Media-Center-1.2.2-win-x64.exe` with `npm run package:win` (`--publish never`), 154,434,860 bytes. SHA-256: `cf4b3063b0e07a112fae00a3a3317ece8854478da11c390375d9ead3b47d3d74`.
+- This corrected installer replaces the earlier local 1.2.2 preview. No GitHub tag or release was published.

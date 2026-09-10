@@ -21,7 +21,7 @@ export function presence(state:PlaybackState,settings:DiscordSettings,art?:strin
   const allowed=state.kind==='music-track'?settings.music:state.kind==='audiobook'?settings.books:state.kind==='podcast-episode'?settings.podcasts:state.kind==='local-file'?settings.local:false
   if(state.privateListening||!settings.enabled||!allowed||!['playing','paused'].includes(state.status)||(state.status==='paused'&&!settings.showPaused))return null
   const clean=(value:string)=>value.replace(/[\u0000-\u001f]/g,' ').slice(0,128).padEnd(2,' ')
-  return {type:2,details:clean(state.title),state:clean(`${state.status==='paused'?'Paused · ':''}${state.subtitle}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position/state.speed),end:Math.floor(now/1000+(state.duration-state.position)/state.speed)}}:{}),...(['music-track','local-file'].includes(state.kind??'')?{assets:{large_image:(art&&publicArtwork(art))||defaultDiscordArtwork,large_text:clean(state.title)}}:{})}
+  return {type:2,details:clean(state.title),state:clean(`${state.status==='paused'?'Paused · ':''}${state.subtitle}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position/state.speed),end:Math.floor(now/1000+(state.duration-state.position)/state.speed)}}:{}),assets:{large_image:(art&&publicArtwork(art))||defaultDiscordArtwork,large_text:clean(state.title)}}
 }
 
 export class DiscordPresence {
@@ -73,8 +73,9 @@ export class DiscordPresence {
   retryArtwork(){this.generation++;this.metadataKey='';this.refreshArtwork=true;this.signature='';this.status.artwork=false;this.status.artworkMessage='Waiting to look up the current track...';void this.tick()}
   private async artwork(state:PlaybackState):Promise<ArtworkResult>{
     const item=state.queue[state.queueIndex]
-    if(!item||!['music-track','local-file'].includes(item.target.kind))return {message:'Audiobooks and podcasts use text-only Discord presence.'}
-    const custom=this.store.get<string>('personal-cover-source:'+progressKey(item.target));if(custom&&publicArtwork(custom))return {url:custom,message:'Using your chosen album artwork.'}
+    if(!item)return {message:'No artwork is available for the current media.'}
+    const custom=this.store.get<string>('personal-cover-source:'+progressKey(item.target));if(custom&&publicArtwork(custom))return {url:custom,message:'Using your chosen public artwork.'}
+    if(!['music-track','local-file'].includes(item.target.kind))return {message:'No shareable public artwork is available for this media.'}
     if(!this.store.secret('lastfm'))return {message:'Add a Last.fm API key to look up album covers.'}
     const targetKey=progressKey(item.target),generation=this.generation
     let metadata=this.metadataKey===targetKey?this.metadata:undefined
@@ -101,7 +102,7 @@ export class DiscordPresence {
       if(!this.socket){if(Date.now()>=this.nextConnect)await this.connect(settings.applicationId);return}if(!this.status.connected)return
       if(this.pending){if(Date.now()-this.pending.sent>15000){this.socket.destroy();this.pending=undefined}return}
       const state=structuredClone(this.player.state),generation=this.generation
-      let art:string|undefined,artworkMessage='Start a shared music track to look up its artwork.'
+      let art:string|undefined,artworkMessage='Start shared media to display its artwork.'
       if(presence(state,settings))try{const result=await this.artwork(state);art=result.url;artworkMessage=result.message}catch(e){artworkMessage=e instanceof Error?e.message:'Music metadata could not be loaded for artwork matching.'}
       if(generation!==this.generation||this.stopped)return
       // Never publish an old lookup after the user changed or hid the current media.

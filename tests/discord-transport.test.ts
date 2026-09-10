@@ -3,7 +3,7 @@ import {afterEach,describe,expect,it,vi} from 'vitest'
 vi.mock('../src/main/store',()=>({Store:class{}}))
 vi.mock('node:net',()=>({createConnection:vi.fn()}))
 import {createConnection} from 'node:net'
-import {DiscordPresence,discordDefaults,rpcFrame} from '../src/main/discord'
+import {DiscordPresence,discordDefaults,defaultDiscordArtwork,rpcFrame} from '../src/main/discord'
 import {emptyPlayback} from '../src/shared/types'
 import type {Store} from '../src/main/store'
 import type {Player} from '../src/main/player'
@@ -38,6 +38,16 @@ describe('Discord local transport',()=>{
       expect(acknowledge().args.activity.assets.large_image).toBe(cover)
       expect(rpc.status.artworkMessage).toContain('Album cover found');expect(rpc.status.artwork).toBe(true)
     }finally{rpc.stop()}
+  })
+  it.each(['audiobook','podcast-episode'] as const)('sends a default %s image through Discord IPC without a music lookup',async kind=>{
+    vi.useFakeTimers();const pipe=new Pipe(),fetcher=vi.fn();vi.stubGlobal('fetch',fetcher)
+    vi.mocked(createConnection).mockImplementation((()=>{queueMicrotask(()=>pipe.emit('connect'));return pipe}) as unknown as typeof createConnection)
+    const target=kind==='audiobook'?{kind,serverId:'books',bookId:'book'}:{kind,serverId:'books',showId:'show',episodeId:'episode'}
+    const state={...emptyPlayback,status:'playing' as const,kind,title:'Spoken fixture',subtitle:'Series',duration:90,queue:[{target,title:'Spoken fixture',subtitle:'Series'}],queueIndex:0}
+    const settings={...discordDefaults,enabled:true,books:true,podcasts:true,applicationId:'123456789012345678'}
+    const store={get:(key:string)=>key==='discordSettings'?settings:undefined,secret:()=> 'a'.repeat(32)} as unknown as Store
+    const provider=vi.fn(()=>{throw Error('Spoken metadata must not be sent to Last.fm')}),rpc=new DiscordPresence(store,Object.assign(new EventEmitter(),{state}) as Player,provider,{} as LocalFiles)
+    try{await vi.advanceTimersByTimeAsync(1);pipe.emit('data',rpcFrame(1,{evt:'READY'}));await vi.advanceTimersByTimeAsync(1);const activity=JSON.parse(pipe.frames.at(-1)!.subarray(8).toString()).args.activity;expect(activity.assets.large_image).toBe(defaultDiscordArtwork);expect(rpc.status.artwork).toBe(true);expect(rpc.status.artworkMessage).toContain('default cover');expect(fetcher).not.toHaveBeenCalled();expect(provider).not.toHaveBeenCalled()}finally{rpc.stop()}
   })
   it('handles fragmented READY frames, acknowledgement, ping/pong, privacy clearing and reconnect',async()=>{
     vi.useFakeTimers();const pipes:Pipe[]=[]

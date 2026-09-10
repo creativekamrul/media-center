@@ -31,12 +31,18 @@ describe('Discord presence privacy and artwork',()=>{
     const {hasLastfmKey:_,...base}=discordDefaults
     expect(discordSchema.safeParse(base).success).toBe(true);expect(discordSchema.safeParse({...base,enabled:true}).success).toBe(false);expect(discordSchema.safeParse({...base,applicationId:'abc'}).success).toBe(false);expect(discordSchema.safeParse({...base,botToken:'no'}).success).toBe(false)
   })
-  it('automatically supplies a public default for shared music without an API key or uploaded asset',()=>{
+  it('automatically supplies a public default for every shared media type without an API key or uploaded asset',()=>{
     for(const legacy of [undefined,false,true])expect(presence(playing,{...settings,defaultCoverAsset:legacy})?.assets?.large_image).toBe(defaultDiscordArtwork)
     expect(presence({...playing,kind:'local-file'},{...settings,local:true})?.assets?.large_image).toBe(defaultDiscordArtwork)
-    expect(presence({...playing,kind:'audiobook'},{...settings,books:true})?.assets).toBeUndefined()
-    expect(presence({...playing,kind:'podcast-episode'},{...settings,podcasts:true})?.assets).toBeUndefined()
+    expect(presence({...playing,kind:'audiobook'},{...settings,books:true})?.assets?.large_image).toBe(defaultDiscordArtwork)
+    expect(presence({...playing,kind:'podcast-episode'},{...settings,podcasts:true})?.assets?.large_image).toBe(defaultDiscordArtwork)
     expect(presence({...playing,privateListening:true},settings)).toBeNull()
+  })
+  it.each(['audiobook','podcast-episode'] as const)('uses safe chosen artwork or the default for %s without exposing private URLs',kind=>{
+    const optedIn={...settings,books:true,podcasts:true},state={...playing,kind},safe='https://coverartarchive.org/release/22222222-1234-1234-1234-123456789abc/front-500'
+    expect(presence(state,optedIn,safe)?.assets.large_image).toBe(safe)
+    for(const url of [undefined,'https://private.test/cover?token=secret','file:///C:/book.png'])expect(presence(state,optedIn,url)?.assets.large_image).toBe(defaultDiscordArtwork)
+    expect(presence({...state,privateListening:true},optedIn)).toBeNull()
   })
   it('encodes little-endian IPC frames using byte length for Unicode titles',()=>{
     const value={title:'音楽'},frame=rpcFrame(1,value);expect(frame.readUInt32LE(0)).toBe(1);expect(frame.readUInt32LE(4)).toBe(Buffer.byteLength(JSON.stringify(value)));expect(JSON.parse(frame.subarray(8).toString())).toEqual(value)

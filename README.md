@@ -45,7 +45,9 @@ Personal shelves, metadata customization, offline plans, per-show podcast prefer
 
 **1.2.1 refinements:** consistent collection and episode actions, opaque More menus, playlist cover generation inside customization, redesigned Saved queues and independent queue scrolling in Now Playing.
 
-[Read the 1.2.1 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.2.1) · [Full changelog](CHANGELOG.md)
+**1.2.2 update:** Discord activity now includes a default cover for shared audiobooks and podcasts when public artwork is unavailable. The generated covers inside the app stay as they are.
+
+[Read the 1.2.2 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.2.2) · [Full changelog](CHANGELOG.md)
 
 ## A closer look
 

@@ -58,7 +58,7 @@ Audiobookshelf search follows its relevance-ranked endpoint, capped at 100 match
 
 | 1 — Discord Rich Presence | Optional own Application ID; local Windows IPC, reconnect, music/book/episode/local privacy switches, pause and speed-adjusted timestamps. Requires live Discord setup to verify a real profile. |
 
-| 2 — Last.fm artwork | Encrypted user key; album lookup with track fallback; seven-day positive and one-hour negative cache; bounded responses; transient retries and manual refresh; separate artwork diagnostics; per-track artist/album correction; only public Last.fm CDN URLs. Books/podcasts use text-only presence. |
+| 2 — Last.fm artwork | Encrypted user key; album lookup with track fallback; seven-day positive and one-hour negative cache; bounded responses; transient retries and manual refresh; separate artwork diagnostics; per-track artist/album correction; only public Last.fm CDN URLs. Books/podcasts use validated chosen public artwork or the branded default; spoken metadata is never looked up as music. |
 
 | 3 — Home | Server Continue Listening with equal-sized fluid cards, recent albums, newest unfinished indexed episodes, Listen Later plans. |
 
@@ -244,7 +244,7 @@ Limits: local watching requires an available source; identity matching is strong
 
 - Ordered collection navigation with validated backward-compatible preferences, optional queue below Home, Library tools in Listening Space and a hidden Customize shortcut when collapsed.
 - Saved music-only immersive Lyrics/Now Playing switch; lyric tools grouped in the header alongside Fullscreen and Appearance. Books and podcasts retain their existing stage.
-- Public branded Discord fallback, independent of the legacy uploaded-asset preference. Shared music and opted-in local files only; private listening and media-sharing gates remain enforced.
+- Public branded Discord fallback, independent of the legacy uploaded-asset preference. All opted-in music, book, podcast and local media; private listening and media-sharing gates remain enforced.
 
 - Refreshed mini player with icon branding, larger square art, two-line titles, centered main-style transport and seek controls, elapsed/total time and theme synchronization.
 

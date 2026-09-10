@@ -98,7 +98,7 @@ Discord integration is optional and off initially. Create an application in the 
 
 Choose which media types to share. Music is selected initially; books, podcasts, and local files are private unless enabled. Pause handling is configurable. Disconnects are retried automatically. Media Center only updates your activity; it does not send Discord chat messages.
 
-Enter your own Last.fm API key privately in Settings for album artwork. It is encrypted using Windows protection. Album artist/title metadata goes to Last.fm and only a public Last.fm CDN image URL goes to Discord. No private cover URLs or server authentication are shared. Correct the current track's album artist/title in the artwork correction section when needed. Books and podcasts currently show text without uploaded private covers. Live profile verification requires your Application ID and running Discord client.
+Enter your own Last.fm API key privately in Settings for album artwork. It is encrypted using Windows protection. Album artist/title metadata goes to Last.fm and only a public Last.fm CDN image URL goes to Discord. No private cover URLs or server authentication are shared. Correct the current track's album artist/title in the artwork correction section when needed. Books and podcasts show the branded default when no chosen public artwork is available. Private server artwork is never uploaded. Live profile verification requires your Application ID and running Discord client.
 
 ## Troubleshooting
 
@@ -225,7 +225,7 @@ Open a track's context menu, or the controls on a collection header, and choose 
 
 Use **Choose image** for a local PNG/JPEG, or search an artist and album under **Find album artwork**. Search results identify MusicBrainz releases, with Apple iTunes used if MusicBrainz cannot connect or finds no releases. Preview the image and choose **Use this cover**; the preview identifies its provider. There is no additional API key. Remove a custom cover to return to the original artwork or the bundled Media Center fallback.
 
-For Discord, a selected public Cover Art Archive or Apple iTunes match can be shared directly. In 1.1.1, missing music artwork automatically uses the branded default cover from the project's published GitHub image. No manual asset upload or Last.fm key is needed for this fallback. Your private server and local artwork are never uploaded.
+For Discord, a selected public Cover Art Archive or Apple iTunes match can be shared directly. From 1.2.2, missing artwork for any shared media type automatically uses the branded default cover from the project's published GitHub image. No manual asset upload or Last.fm key is needed for this fallback. Your private server and local artwork are never uploaded.
 
 ## Show defaults, people and list views (1.1.0)
 

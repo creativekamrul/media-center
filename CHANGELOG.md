@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.2
+
+Discord artwork for every shared listen.
+
+- Use the branded default cover for every enabled Discord media type, including audiobooks and podcast episodes. Keep private listening and individual media-sharing preferences enforced.
+- Allow already-selected, validated public artwork for spoken Discord presence without sending book or episode metadata to Last.fm.
+- Preserve the generated audiobook and podcast covers inside the app.
+
 ## 1.2.1
 
 Consistent library controls and a calmer listening workspace.
