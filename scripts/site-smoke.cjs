@@ -1,0 +1,35 @@
+const {_electron:electron}=require('playwright')
+const {resolve}=require('node:path')
+const {pathToFileURL}=require('node:url')
+const {existsSync,mkdirSync,writeFileSync}=require('node:fs')
+const assert=require('node:assert/strict')
+;(async()=>{
+ const artifacts=resolve('artifacts/site-1.0');mkdirSync(artifacts,{recursive:true})
+ const desktop=await electron.launch({args:[resolve('out/main/index.js'),'--user-data-dir='+resolve(artifacts,'profile')],env:{...process.env,MEDIA_CENTER_SMOKE:'1'}})
+ try{
+  const page=await desktop.firstWindow();const errors=[];page.on('pageerror',e=>errors.push(e.message))
+  await page.goto(pathToFileURL(resolve('site/index.html')).href)
+  const links=await page.locator('[href],[src]').evaluateAll(els=>els.flatMap(el=>[el.getAttribute('href'),el.getAttribute('src')]).filter(Boolean))
+  for(const link of links){if(/^(https?:|#|data:)/.test(link))continue;assert.ok(existsSync(resolve('site',link.split('#')[0])),`Local site asset exists: ${link}`)}
+  assert.equal(await page.locator('meta[property="og:image"]').getAttribute('content'),'https://creativekamrul.github.io/media-center/assets/social-preview.png')
+  assert.equal(await page.getByRole('tab').count(),10)
+  for(const width of [1440,768,390]){
+   await page.setViewportSize({width,height:960});await page.evaluate(()=>scrollTo(0,0))
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`Site fits ${width}px`)
+   await page.screenshot({path:resolve(artifacts,`site-${width}.png`)})
+   await page.getByRole('tab',{name:'Recap',exact:true}).click()
+   await page.getByRole('tabpanel').locator('img').evaluate(el=>el.decode())
+   await page.getByRole('button',{name:'Enlarge Recap screenshot',exact:true}).click()
+   await page.getByRole('dialog').waitFor();await page.keyboard.press('Escape')
+   await page.getByRole('tab',{name:'Recap',exact:true}).focus();await page.keyboard.press('Home')
+   assert.equal(await page.getByRole('tab',{name:'Home',exact:true}).getAttribute('aria-selected'),'true')
+  }
+  assert.deepEqual(errors,[])
+  const noJsWindow=desktop.waitForEvent('window')
+  await desktop.evaluate(({BrowserWindow},url)=>{const win=new BrowserWindow({show:false,width:1000,height:800,webPreferences:{javascript:false,sandbox:true}});void win.loadURL(url)},pathToFileURL(resolve('site/index.html')).href)
+  const noJs=await noJsWindow;await noJs.waitForLoadState('load')
+  assert.equal(await noJs.locator('.gallery figure:visible').count(),10,'All gallery images remain available without JavaScript')
+  writeFileSync(resolve(artifacts,'site-smoke.json'),JSON.stringify({passed:true,widths:[1440,768,390],checks:['asset links','Open Graph cover','ten gallery tabs','keyboard navigation','image dialog/Escape','no-JavaScript gallery'],errors},null,2))
+  console.log('Website checks passed: desktop/tablet/mobile, assets, gallery, keyboard/dialog and no-JavaScript fallback.')
+ }finally{await desktop.close()}
+})().catch(e=>{console.error(e);process.exitCode=1})

@@ -1,6 +1,6 @@
 {
   "name": "media-center",
-  "version": "0.7.7",
+  "version": "1.0.0",
   "private": true,
   "description": "A desktop home for music, audiobooks, and podcasts",
   "author": "Media Center",
@@ -12,13 +12,14 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:desktop": "node scripts/desktop-smoke.cjs",
-    "package:win": "npm run build && electron-builder --win nsis --x64 --publish never",
-    "package:dir": "npm run build && electron-builder --dir",
+    "package:win": "npm run build:media-controls && npm run build && electron-builder --win nsis --x64 --publish never",
+    "package:dir": "npm run build:media-controls && npm run build && electron-builder --dir",
     "release:check": "node scripts/release-check.cjs",
     "release:assets": "node scripts/release-assets.cjs",
     "release": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/publish-version.ps1",
     "test:updater": "node scripts/test-updater.cjs",
-    "release:preview": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/publish-version.ps1 -DryRun"
+    "release:preview": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/publish-version.ps1 -DryRun",
+    "build:media-controls": "node scripts/build-media-controls.cjs"
   },
   "dependencies": {
     "electron-updater": "^6.8.9",
@@ -72,6 +73,15 @@
       {
         "from": "build/icon.ico",
         "to": "icon.ico"
+      },
+      {
+        "from": "artifacts/smtc",
+        "to": "smtc",
+        "filter": [
+          "*.exe",
+          "*.dll",
+          "notices/**/*"
+        ]
       }
     ],
     "artifactName": "Media-Center-${version}-win-${arch}.${ext}",

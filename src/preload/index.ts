@@ -2,6 +2,18 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopAPI, PlaybackState, UpdateState } from '../shared/types'
 
 const api: DesktopAPI = {
+ releaseNews:action=>ipcRenderer.invoke('release:news',action),
+ profiles:()=>ipcRenderer.invoke('profiles:get'),profileSave:n=>ipcRenderer.invoke('profiles:save',n),profileApply:id=>ipcRenderer.invoke('profiles:apply',id),profileDelete:id=>ipcRenderer.invoke('profiles:delete',id),
+ outputProfile:a=>ipcRenderer.invoke('output:profile',a),transitions:i=>ipcRenderer.invoke('transitions:prefs',i),libraryHealth:id=>ipcRenderer.invoke('library:health',id),rediscover:()=>ipcRenderer.invoke('home:rediscover'),seriesShelves:()=>ipcRenderer.invoke('books:series'),recovery:()=>ipcRenderer.invoke('connections:recovery'),exportDiagnostics:()=>ipcRenderer.invoke('diagnostics:export'),
+ undoState:()=>ipcRenderer.invoke('undo:get'),undo:()=>ipcRenderer.invoke('undo:apply'),onUndo:fn=>{const cb=(_e:unknown,s:{label:string}|null)=>fn(s);ipcRenderer.on('undo:state',cb);return()=>ipcRenderer.removeListener('undo:state',cb)},
+ lyricImport:i=>ipcRenderer.invoke('lyrics:import',i),lyricEdit:i=>ipcRenderer.invoke('lyrics:edit',i),playlistArtwork:i=>ipcRenderer.invoke('playlist:artwork',i),exportArtwork:i=>ipcRenderer.invoke('artwork:export',i),
+ podcastDestinations:()=>ipcRenderer.invoke('podcast:destinations'),podcastDiscover:i=>ipcRenderer.invoke('podcast:discover',i),podcastOPML:i=>ipcRenderer.invoke('podcast:opml',i),podcastSubscribe:i=>ipcRenderer.invoke('podcast:subscribe',i),
+ experience:()=>ipcRenderer.invoke('experience:get'),saveExperience:i=>ipcRenderer.invoke('experience:save',i),
+ onExperience:fn=>{const cb=(_e:unknown,p:import('../shared/experience').Experience)=>fn(p);ipcRenderer.on('experience:state',cb);return()=>ipcRenderer.removeListener('experience:state',cb)},
+ unifiedSearch:q=>ipcRenderer.invoke('search:all',q),mediaDetails:i=>ipcRenderer.invoke('media:details',i),mediaPlaylists:i=>ipcRenderer.invoke('media:playlists',i),mediaAddPlaylist:i=>ipcRenderer.invoke('media:add-playlist',i),saveMix:i=>ipcRenderer.invoke('mix:save',i),pinnedMusic:()=>ipcRenderer.invoke('home:pins'),
+ lyricOffset:i=>ipcRenderer.invoke('lyrics:offset',i),resetData:scope=>ipcRenderer.invoke('data:reset',scope),localPlaylistContents:input=>ipcRenderer.invoke('local:playlist-contents',input),
+ localPlaylistFile:i=>ipcRenderer.invoke('local:playlist-file',i),
+ onShortcut:fn=>{const cb=(_e:unknown,action:string)=>fn(action);ipcRenderer.on('app:shortcut',cb);return()=>ipcRenderer.removeListener('app:shortcut',cb)},
   lyrics: input=>ipcRenderer.invoke('lyrics:get',input),
   searchLyrics: input=>ipcRenderer.invoke('lyrics:search',input),
   bindLyrics: input=>ipcRenderer.invoke('lyrics:bind',input),

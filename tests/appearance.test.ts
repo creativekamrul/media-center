@@ -3,6 +3,13 @@ vi.mock('electron',()=>({safeStorage:{}}))
 import {Store} from '../src/main/store'
 import {appearanceSchema,defaultAppearance,accentText} from '../src/shared/appearance'
 describe('Custom appearance',()=>{
+ it('migrates old appearance settings to solid and persists the selected finish',()=>{
+  const {surfaceStyle,...legacy}=defaultAppearance
+  expect(appearanceSchema.parse(legacy).surfaceStyle).toBe('solid')
+  expect(appearanceSchema.safeParse({...legacy,surfaceStyle:'invalid'}).success).toBe(false)
+  const store=new Store(':memory:')
+  try { store.set('preferences',{...store.preferences(),appearance:{...legacy,surfaceStyle:'gradient'}}); expect(store.preferences().appearance?.surfaceStyle).toBe('gradient') } finally {store.close()}
+ })
  it('validates bounded color and font choices and restores saved preferences',()=>{
   const a={...defaultAppearance,colors:{accent:'#112233',background:'#000000'},headingFont:'verdana' as const}
   expect(appearanceSchema.parse(a)).toEqual(a)

@@ -82,7 +82,7 @@ module.exports=async function playingScreenSmoke({page,waitPlayback,artifacts}){
  await page.getByRole('button',{name:'Cancel',exact:true}).click()
  await page.getByRole('button',{name:'Classic view',exact:true}).click()
  assert.equal(await page.locator('.sidebar').evaluate(el=>el.inert),false)
- await page.waitForFunction(()=>getComputedStyle(document.querySelector('.standard-lyrics .lyric-line.current')).fontFamily.includes('Georgia'))
+ await page.waitForFunction(()=>{const line=document.querySelector('.standard-lyrics .lyric-line.current');return !!line&&getComputedStyle(line).fontFamily.includes('Georgia')})
  assert.equal(await page.locator('.standard-lyrics .lyric-line.current').evaluate(el=>getComputedStyle(el).fontSize),'48px')
  await page.getByRole('button',{name:'Lyrics appearance',exact:true}).click()
  await page.getByLabel('Current word color',{exact:true}).fill('#88ddaa')

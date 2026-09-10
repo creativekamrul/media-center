@@ -1,3 +1,5 @@
+import type {StudioAPI as importStudioAPI} from './studio'
+import type {ExperienceAPI} from './experience'
 import type { DailyAPI } from './daily'
 export type Provider = 'navidrome' | 'audiobookshelf'
 export type Section = 'music' | 'audiobooks' | 'podcasts'
@@ -12,7 +14,7 @@ interface ItemBase { id: string; serverId: string; libraryId: string; title: str
 export interface MusicAlbum extends ItemBase { kind: 'album'; year?: number; trackCount: number; starred?: boolean; rating?: number; genre?: string; duration?: number; playCount?: number; artistId?: string }
 export interface MusicTrack { kind: 'music-track'; id: string; serverId: string; title: string; artist: string; album: string; duration: number; codec?: string; bitRate?: number; sampleRate?: number; bitDepth?: number; starred?: boolean; rating?: number; cover?: string; albumId?: string; artistId?: string; genre?: string; year?: number; trackNumber?: number; discNumber?: number; playCount?: number }
 export interface Progress { status: 'unplayed' | 'in-progress' | 'finished'; position: number; duration: number; fraction: number; updatedAt?: number; finishedAt?: number }
-export interface Audiobook extends ItemBase { kind: 'audiobook'; authors: string[]; narrators: string[]; series: string[]; duration: number; chapters: Chapter[]; tracks: AudioTrack[]; progress?: Progress }
+export interface Audiobook extends ItemBase { kind: 'audiobook'; authors: string[]; narrators: string[]; series: string[]; seriesOrder?:{id?:string;name:string;sequence:string}[]; duration: number; chapters: Chapter[]; tracks: AudioTrack[]; progress?: Progress }
 export interface PodcastEpisode { kind: 'podcast-episode'; id: string; showId: string; serverId: string; title: string; description: string; publishedAt?: number; duration: number; downloaded: boolean; season?: string; episode?: string; filename?: string; subtitle?: string; progress?: Progress }
 export interface PodcastShow extends ItemBase { kind: 'podcast-show'; author: string; episodeCount: number; episodes: PodcastEpisode[] }
 export type LibraryItem = MusicAlbum | Audiobook | PodcastShow
@@ -26,7 +28,7 @@ export interface PlaybackState {
   status: 'idle' | 'loading' | 'playing' | 'paused' | 'error'; title: string; subtitle: string;
   kind?: PlayTarget['kind']; position: number; duration: number; speed: number; volume: number;
   chapters: Chapter[]; queue: QueueItem[]; queueIndex: number; error?: string; syncError?: string;
-  sleepAt?: number; codec?: string; sampleRate?: number; repeat: 'off' | 'all' | 'one'; shuffle: boolean; buffering?: boolean; sleepChapter?: boolean
+  sleepAt?: number; codec?: string; sampleRate?: number; repeat: 'off' | 'all' | 'one'; shuffle: boolean; buffering?: boolean; crossfading?: boolean; sleepChapter?: boolean
 }
 export interface Settings { mpvPath: string; exclusive: boolean; audioDevice: string; connections: Connection[] }
 export type PlayerCommand = { action: 'toggle' | 'next' | 'previous' | 'stop' | 'shuffle' } | { action: 'seek' | 'speed' | 'volume' | 'sleep'; value: number } | { action: 'repeat'; value: 'off' | 'all' | 'one' }
@@ -36,7 +38,8 @@ export interface UpdateState {
   status: 'unavailable' | 'idle' | 'checking' | 'up-to-date' | 'available' | 'downloading' | 'ready' | 'installing' | 'error'
   version?: string; percent?: number; transferred?: number; total?: number; checkedAt?: number; error?: string
 }
-export interface DesktopAPI extends DailyAPI {
+export interface DesktopAPI extends DailyAPI, ExperienceAPI, importStudioAPI {
+  releaseNews(action:'get'|'seen'|'changelog'):Promise<{version:string;unread:boolean}>
   importThemeCss(): Promise<string | null>
   previewTheme(preferences: Preferences | null): Promise<void>
   fullscreen(action: 'toggle' | 'exit'): Promise<void>
@@ -90,7 +93,7 @@ export interface DesktopAPI extends DailyAPI {
   preferences(): Promise<Preferences>
   savePreferences(input: Preferences): Promise<void>
 }
-export const emptyPlayback: PlaybackState = { status: 'idle', title: 'Nothing playing yet', subtitle: 'Find something worth listening to', position: 0, duration: 0, speed: 1, volume: 80, chapters: [], queue: [], queueIndex: 0, repeat: 'off', shuffle: false }
+export const emptyPlayback: PlaybackState = { status: 'idle', title: 'Nothing playing yet', subtitle: 'Find something worth listening to', position: 0, duration: 0, speed: 1, volume: 80, chapters: [], queue: [], queueIndex: 0, repeat: 'off', shuffle: false, crossfading:false }
 
 export type MusicView = 'albums' | 'newest' | 'recent' | 'frequent' | 'random' | 'songs' | 'artists' | 'playlists' | 'favorites' | 'genres' | 'radio'
 export interface MusicArtist { kind: 'artist'; id: string; serverId: string; title: string; albumCount: number; starred?: boolean; cover?: string; description?: string }
@@ -106,7 +109,7 @@ export interface ContinueItem { item: QueueItem; progress: Progress; libraryId: 
 export interface Bookmark { time: number; title: string; createdAt?: number }
 export type QueueEdit = { action: 'append' | 'next'; items: QueueItem[] } | { action: 'remove' | 'jump'; index: number } | { action: 'move'; from: number; to: number } | { action: 'clear' | 'clear-upcoming' | 'restore' } | { action: 'sleep-chapter'; enabled: boolean }
 export interface LocalRoot { id: string; name: string; path: string }
-export interface LocalFile { id: string; name: string; title: string; artist: string; album: string; duration: number; size: number; modified: number; codec?: string; sampleRate?: number; bitDepth?: number; bitRate?: number; trackNumber?: number; discNumber?: number; albumArtist?: string; genre?: string; year?: number; hasCover: boolean; error?: string }
+export interface LocalFile { id: string; name: string; title: string; artist: string; album: string; duration: number; size: number; modified: number; codec?: string; sampleRate?: number; bitDepth?: number; bitRate?: number; trackNumber?: number; discNumber?: number; albumArtist?: string; genre?: string; year?: number; hasCover: boolean; fileIdentity?:string; error?: string }
 export interface LocalFolder { rootId: string; folder: string; folders: { id: string; name: string }[]; files: LocalFile[]; warnings: string[] }
 export interface ListenLater { id: string; item: QueueItem; due: string; note: string; done: boolean; createdAt: number }
 export interface HistoryItem { id: string; item: QueueItem; position: number; duration: number; playedAt: number }

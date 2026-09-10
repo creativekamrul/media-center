@@ -50,3 +50,8 @@ export function activeLyricIndex(lines:LyricLine[],position:number):number {
   let low=0,high=lines.length-1,result=-1
   while(low<=high){const mid=(low+high)>>1;if(lines[mid].time<=position+0.025){result=mid;low=mid+1}else high=mid-1}return result
 }
+
+export function encodeLrc(record:Pick<LyricsRecord,'lines'|'plain'>){
+ const stamp=(n:number)=>`${String(Math.floor(n/60)).padStart(2,'0')}:${(n%60).toFixed(3).padStart(6,'0')}`
+ return record.lines.length?record.lines.map(l=>`[${stamp(l.time)}]`+(l.words?.length?l.words.map(w=>`<${stamp(w.time)}>${w.text}`).join('')+(l.words.at(-1)?.end!==undefined?`<${stamp(l.words.at(-1)!.end!)}>`:''):l.text)).join('\n'):record.plain
+}

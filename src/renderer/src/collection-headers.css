@@ -1,0 +1,80 @@
+/* One shared detail layout for server and local collections. */
+.detail-hero {
+  display: grid;
+  grid-template-columns: var(--collection-art-size,220px) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 24px;
+  padding: 24px;
+  margin-bottom: 28px;
+}
+.detail-hero > .art {
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  aspect-ratio: 1;
+  min-height: 0;
+  align-self: start;
+  overflow: hidden;
+  border-radius: 12px;
+}
+.detail-hero > .art img { width: 100%; height: 100%; object-fit: cover; }
+.detail-hero > .book-art img { object-fit: contain; }
+.detail-hero > .detail-heading { min-width: 0; width: 100%; align-self: start; }
+.detail-hero :is(h1,h2) { max-width: none; margin: 6px 0 10px; overflow-wrap: anywhere; }
+.detail-heading > p { margin: 0 0 8px; }
+.detail-heading > .eyebrow { margin: 0; }
+.detail-heading > :is(.listen-actions,.collection-management,.local-playlist-management) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  max-width: none;
+  margin: 16px 0 0;
+}
+.detail-heading > :is(.collection-management,.local-playlist-management) {
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.detail-heading > :is(.listen-actions,.collection-management,.local-playlist-management) > button {
+  flex: 1 1 110px;
+  min-height: 42px;
+  margin: 0;
+  padding: 10px 14px;
+  justify-content: center;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.detail-heading > :is(.collection-management,.local-playlist-management):empty { display: none; }
+.detail-heading > .listen-actions > .action-notice { flex-basis: 100%; }
+.detail-hero .detail-heading > .listen-actions .action-label { display: inline; }
+.detail-heading > small { display: block; margin-top: 8px; }
+.detail-heading > .status-control { margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.detail-heading > .primary { margin-top: 16px; min-width: 160px; }
+.listening-summary > .daily-card { display: flex; flex-direction: column; gap: 8px; }
+.listening-summary .stat-number { line-height: 1.1; font-variant-numeric: tabular-nums; }
+.listening-summary .daily-card > p { margin: 0; }
+.listening-summary .stat-context { display: block; margin-top: auto; padding-top: 10px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+@media (max-width: 1150px) {
+  .detail-hero { padding: 20px; gap: 20px; }
+  .detail-heading > :is(.listen-actions,.collection-management,.local-playlist-management) { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:stretch; }
+  .detail-heading > :is(.listen-actions,.collection-management,.local-playlist-management) > button { min-width:0; width:auto; white-space:normal; }
+  .detail-heading > :is(.listen-actions,.collection-management,.local-playlist-management) > button:last-of-type:nth-child(odd) { grid-column:1/-1; }
+  .detail-heading > .listen-actions > .action-notice { grid-column:1/-1; }
+}
+.detail-hero[data-stacked=true] { grid-template-columns:minmax(0,1fr); }
+.detail-hero[data-stacked=true] > .art { width:100%; }
+
+/* Let the text/actions (or adjacent stats) determine the row height. The
+   artwork inherits that height and derives its width from its square ratio. */
+.home-feature { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: stretch; }
+.home-feature-copy { align-self: center; }
+.home-feature > .art {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  contain: size;
+  align-self: stretch;
+  aspect-ratio: 1;
+}

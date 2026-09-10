@@ -33,19 +33,22 @@ async function main() {
     }
     pump()
   }
-  const book = { id: 'book-one', libraryId: 'books', mediaType: 'book', media: { metadata: { title: 'The Test Book', authors: [{ name: 'Test Author' }], narrators: ['Test Narrator'] }, duration: 1000, tracks: [{ index: 1, title: 'Part One', startOffset: 0, duration: 400 }, { index: 2, title: 'Part Two', startOffset: 400, duration: 600 }], chapters: [{ id: 0, title: 'Opening chapter', start: 0, end: 200 }, { id: 1, title: 'Across the files', start: 200, end: 800 }, { id: 2, title: 'Closing chapter', start: 800, end: 1000 }] } }
-  const podcast = { id: 'show-one', libraryId: 'podcasts', mediaType: 'podcast', media: { metadata: { title: 'The Test Podcast', author: 'Test Host' }, numEpisodes: 2, episodes: [{ id: 'episode-one', title: 'First independent episode', publishedAt: 1700000000000, audioFile: { duration: 1200 } }, { id: 'episode-two', title: 'Second independent episode', publishedAt: 1700100000000, audioFile: { duration: 800 } }] } }
-  const fixtureSong = { id: 'song', title: 'Original Audio', artist: 'Test Artist', album: 'The Test Album', duration: 600, suffix: 'wav', samplingRate: 96000, bitDepth: 24 }
+  const book = { id: 'book-one', libraryId: 'books', mediaType: 'book', media: { metadata: { title: 'The Test Book', authors: [{ name: 'Test Author' }], series:[{id:'series-one',name:'Test Series',sequence:'2'}], narrators: ['Test Narrator'] }, duration: 1000, tracks: [{ index: 1, title: 'Part One', startOffset: 0, duration: 400 }, { index: 2, title: 'Part Two', startOffset: 400, duration: 600 }], chapters: [{ id: 0, title: 'Opening chapter', start: 0, end: 200 }, { id: 1, title: 'Across the files', start: 200, end: 800 }, { id: 2, title: 'Closing chapter', start: 800, end: 1000 }] } }
+  const podcast = { id: 'show-one', libraryId: 'podcasts', mediaType: 'podcast', media: { metadata: { title: 'The Test Podcast', author: 'Test Host',feedUrl:'https://example.test/podcast.xml' }, numEpisodes: 2, episodes: [{ id: 'episode-one', title: 'First independent episode', publishedAt: 1700000000000, audioFile: { duration: 1200 } }, { id: 'episode-two', title: 'Second independent episode', publishedAt: 1700100000000, audioFile: { duration: 800 } }] } }
+  const fixtureSong = { id: 'song', coverArt:'fixture-song-cover', title: 'Original Audio', artist: 'Test Artist', album: 'The Test Album', duration: 600, suffix: 'wav', samplingRate: 96000, bitDepth: 24 }
   let playlists = [], progress = [{ libraryItemId: 'book-one', currentTime: 450, duration: 1000, progress: .45 }, { libraryItemId: 'show-one', episodeId: 'episode-one', currentTime: 20, duration: 1200, progress: 20/1200 }, { libraryItemId: 'show-one', episodeId: 'episode-two', currentTime: 800, duration: 800, progress: 1, isFinished: true }], bookmarks = []
   const resumeBooks = Array.from({length:10},(_,i)=>({...book,id:`resume-book-${i}`,media:{...book.media,metadata:{...book.media.metadata,title:i%2?'A longer listening title with several parts and a subtitle':'Short story '+i}}}))
   progress.push(...resumeBooks.map((b,i)=>({libraryItemId:b.id,currentTime:30+i,duration:1000,progress:(30+i)/1000})))
   const mutations = []
+  let failLibraries = false
   const server = createServer(async (req, res) => {
     requests.push(req.url)
     const url = new URL(req.url, 'http://localhost')
     res.setHeader('Content-Type', 'application/json')
+    if (failLibraries && (url.pathname.includes('getMusicFolders') || url.pathname === '/api/libraries')) { res.statusCode = 503; return res.end('{}') }
     if (url.pathname.startsWith('/rest/')) {
       if (!url.searchParams.get('t') || url.searchParams.has('p')) { res.statusCode = 401; return res.end('{}') }
+      if (url.pathname.includes('getCoverArt')&&url.searchParams.get('id')==='fixture-song-cover') {res.setHeader('Content-Type','image/png');return res.end(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64'))}
       if (url.pathname.includes('stream.view')) return serveWav(req, res, 600)
       const data = { status: 'ok', version: '1.16.1' }
       let form = url.searchParams
@@ -62,6 +65,7 @@ async function main() {
       if (url.pathname.includes('getInternetRadioStations')) data.internetRadioStations = { internetRadioStation: [] }
       if (url.pathname.includes('getMusicFolders')) data.musicFolders = { musicFolder: [{ id: '1', name: 'Test Music' }] }
       if (url.pathname.includes('getAlbumList2') || url.pathname.includes('search3')) data[url.pathname.includes('search3') ? 'searchResult3' : 'albumList2'] = { album: [...Array.from({length:24},(_,i)=>({id:'archive-'+i,name:i===0?'A very long album title with multiple movements (Original Motion Picture Soundtrack)':'Archive recording '+(i+1),artist:'Fixture Artist',songCount:1,year:2025})), { id: 'album', name: 'The Test Album', artist: 'Test Artist', songCount: 1, year: 2026 }] }
+      if(url.pathname.includes('search3')) data.searchResult3.song=[fixtureSong].filter(s=>(s.title+' '+s.artist).toLowerCase().includes((form.get('query')||'').toLowerCase()))
       if (url.pathname.includes('getAlbum.view')) data.album = { id: 'album', name: 'The Test Album', artist: 'Test Artist', songCount: 1, song: [{ id: 'song', title: 'Original Audio', artist: 'Test Artist', duration: 300, suffix: 'flac', samplingRate: 96000, bitDepth: 24 }] }
       if (url.pathname.includes('getSong.view')) data.song = { id: 'song', title: 'Original Audio', artist: 'Test Artist', album: 'The Test Album', duration: 600, suffix: 'wav', samplingRate: 96000, bitDepth: 24 }
       return res.end(JSON.stringify({ 'subsonic-response': data }))
@@ -82,7 +86,12 @@ async function main() {
     if (url.pathname === '/api/me') return res.end(JSON.stringify({ id: 'test-user', mediaProgress: progress, bookmarks }))
     if (url.pathname.startsWith('/api/me/progress/') && req.method === 'PATCH') { let body = ''; for await (const chunk of req) body += chunk; const payload = JSON.parse(body), parts = url.pathname.split('/'), itemId = parts[4], episodeId = parts[5]; let p = progress.find(p => p.libraryItemId === itemId && p.episodeId === episodeId); if (!p) { p = { libraryItemId: itemId, episodeId }; progress.push(p) }; Object.assign(p, payload); mutations.push({ path: url.pathname, payload }); return res.end('OK') }
     if (url.pathname.includes('/bookmark')) { let body = ''; for await (const chunk of req) body += chunk; if (req.method === 'POST' || req.method === 'PATCH') bookmarks.push({ libraryItemId: 'book-one', ...JSON.parse(body) }); if (req.method === 'DELETE') bookmarks = bookmarks.filter(b => b.time !== Number(url.pathname.split('/').at(-1))); return res.end('OK') }
-    if (url.pathname === '/api/libraries') return res.end(JSON.stringify({ libraries: [{ id: 'books', name: 'Test Books', mediaType: 'book' }, { id: 'podcasts', name: 'Test Podcasts', mediaType: 'podcast' }] }))
+    if(url.pathname==='/api/search/podcast')return res.end(JSON.stringify([{title:'Fixture podcast discovery',artistName:'Fixture host',feedUrl:'https://example.test/new.xml'}]))
+    if(url.pathname==='/api/podcasts/feed')return res.end(JSON.stringify({podcast:{metadata:{title:'Fixture RSS show',author:'Fixture host'},episodes:[]}}))
+    if(url.pathname==='/api/podcasts/opml/parse')return res.end(JSON.stringify({feeds:[{title:'Imported fixture show',feedUrl:'https://example.test/imported.xml'}]}))
+    if(url.pathname==='/api/podcasts/opml/create'){let body='';for await(const chunk of req)body+=chunk;mutations.push({path:url.pathname,payload:JSON.parse(body)});return res.end('OK')}
+    if (url.pathname === '/api/libraries') return res.end(JSON.stringify({ libraries: [{ id: 'books', name: 'Test Books', mediaType: 'book' }, { id: 'podcasts', name: 'Test Podcasts', mediaType: 'podcast',folders:[{id:'pod-folder',fullPath:'/podcasts'}] }] }))
+    if (url.pathname === '/api/libraries/books/search') return res.end(JSON.stringify({book:[book].filter(b=>b.media.metadata.title.toLowerCase().includes((url.searchParams.get('q')||'').toLowerCase())).map(libraryItem=>({libraryItem}))}))
     if (url.pathname === '/api/libraries/books/items') return res.end(JSON.stringify({ results: [book], total: 1 }))
     if (url.pathname === '/api/libraries/podcasts/items') return res.end(JSON.stringify({ results: [podcast], total: 1 }))
     if (url.pathname === '/api/items/book-one') return res.end(JSON.stringify(book))
@@ -113,6 +122,17 @@ async function main() {
       throw new Error(`Playback state did not settle: ${JSON.stringify(state)}`)
     }
     page.on('pageerror', error => errors.push(error.message))
+    await page.getByRole('dialog',{name:'What’s new in Media Center 1.0.0',exact:true}).waitFor()
+    await page.getByRole('button',{name:'Keep listening',exact:true}).click()
+    assert.equal((await page.evaluate(()=>window.mediaCenter.releaseNews('get'))).unread,false)
+    if(process.env.MEDIA_CENTER_STUDIO_ONLY){
+      const root=resolve(artifacts,'studio-audio');mkdirSync(root,{recursive:true});const wav=Buffer.alloc(44+8000*2*90);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(8000,24);wav.writeUInt32LE(16000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);writeFileSync(resolve(root,'studio.wav'),wav)
+      await page.getByRole('button',{name:'Explore sample library'}).click();await desktop.evaluate(({dialog},data)=>{dialog.showOpenDialog=async(_w,o)=>({canceled:false,filePaths:[o.properties.includes('openDirectory')?data.root:data.mpv]})},{root,mpv:mpvPath});
+      await page.evaluate(async url=>{const a=window.mediaCenter;await a.saveConnection({provider:'navidrome',name:'Fixture Music',url,username:'test-user',secret:'test-password'});await a.saveConnection({provider:'audiobookshelf',name:'Fixture Books',url,username:'',secret:'test-token'});await a.chooseMpv();const root=await a.localAdd();await a.localPlaylist({action:'create',rootId:root.id,name:'Local test playlist',files:['studio.wav']});await a.command({action:'volume',value:0});await a.play({queue:[{target:{kind:'local-file',serverId:'local',rootId:root.id,fileId:'studio.wav'},title:'Local studio fixture',subtitle:'Fixture artist'}],index:0})},url);await new Promise(r=>setTimeout(r,1500));await page.evaluate(()=>window.mediaCenter.command({action:'toggle'}));
+      await require('./studio-smoke.cjs')({desktop,page,artifacts,mutations});assert.deepEqual(errors,[]);return
+    }
+
+    await require('./release-polish-smoke.cjs')({desktop,page,artifacts})
     await page.getByRole('button', { name: 'Explore sample library' }).click()
     await page.getByRole('button', { name: /Blue Hour The Sunday Sessions/ }).waitFor()
     await page.screenshot({ path: resolve(artifacts, 'music-preview.png') })
@@ -153,6 +173,15 @@ async function main() {
     assert.ok(!JSON.stringify(saved).includes('test-token'))
     assert.ok(!JSON.stringify(saved).includes('test-password'))
     const navId = saved.connections.find(c => c.provider === 'navidrome').id, absId = saved.connections.find(c => c.provider === 'audiobookshelf').id
+    await page.getByRole('button', {name:'Music',exact:true}).click()
+    failLibraries = true
+    await page.getByRole('button', {name:'Refresh libraries',exact:true}).click()
+    await page.getByRole('heading', {name:'Couldn’t connect to your libraries',exact:true}).waitFor()
+    await page.screenshot({path:resolve(artifacts,'connection-error-1.0.png')})
+    failLibraries = false
+    await page.getByRole('button', {name:'Retry connections',exact:true}).click()
+    await page.getByRole('button', {name:'Playlists',exact:true}).waitFor()
+    if(await page.getByRole('button',{name:'Dismiss error',exact:true}).count())await page.getByRole('button',{name:'Dismiss error',exact:true}).click()
     await require('./layout-smoke.cjs')(page, artifacts)
     await require('./theme-smoke.cjs')(page, artifacts)
     await require('./settings-polish-smoke.cjs')({desktop,page,artifacts})
@@ -168,14 +197,16 @@ async function main() {
     await page.getByRole('button', { name: 'Refresh libraries', exact: true }).click()
     await page.getByRole('button', { name: /Tomorrow morning/ }).click()
     await page.getByRole('heading', { name: 'Playlist tracks', exact: true }).waitFor()
+    assert.equal(await page.locator('.song-row .track-artwork').count(),3,'Every playlist track has a thumbnail')
+    await page.locator('.song-row .track-artwork').first().scrollIntoViewIfNeeded()
+    await page.waitForFunction(()=>[...document.querySelectorAll('.song-row .track-artwork img')].some(img=>img.complete&&img.naturalWidth>0))
+    assert.ok(requests.some(r=>r.includes('getCoverArt')&&r.includes('fixture-song-cover')),'Artwork resolves via authenticated main-process cover API')
     await page.setViewportSize({width:1008,height:680})
-    const actionBoxes = await page.locator('.detail-hero .listen-actions').first().locator('button').evaluateAll(buttons => buttons.map(b => { const r=b.getBoundingClientRect(),s=getComputedStyle(b); return {y:r.y,height:r.height,font:parseFloat(s.fontSize)} }))
-    assert.ok(actionBoxes.every(b=>b.height>=40 && b.font>=13), 'Playlist actions should be readable and easy to click')
-    assert.ok(actionBoxes.every(b=>Math.abs(b.y-actionBoxes[0].y)<2), 'Play must align with its neighboring actions')
-    assert.ok((await page.locator('.detail-hero').boundingBox()).height < 300, 'Playlist header should leave room for tracks')
-    const management = await page.locator('.collection-management button').evaluateAll(bs=>bs.map(b=>b.getBoundingClientRect().y))
-    assert.equal(management.length,3)
-    assert.ok(management.every(y=>Math.abs(y-management[0])<2), 'Playlist management actions share one row')
+    assert.equal(await page.locator('.song-table').evaluate(el=>el.scrollWidth>el.clientWidth),false,'Track artwork fits narrow playlist rows')
+    await page.locator('.song-row').first().scrollIntoViewIfNeeded()
+    await page.screenshot({path:resolve(artifacts,'playlist-artwork.png')})
+    assert.equal(await page.locator('.collection-management button').count(),4)
+    await require('./collection-header-smoke.cjs')(page,artifacts,'playlist')
     await page.screenshot({ path: resolve(artifacts,'playlist-v021.png') })
     await page.setViewportSize({width:1440,height:940})
     await page.getByRole('button', { name: 'Back', exact: true }).click()
@@ -183,14 +214,17 @@ async function main() {
     await page.getByRole('button', { name: /The Test Album Test Artist/ }).click()
     await page.getByRole('heading', { name: 'Tracks', exact: true }).waitFor()
     assert.equal(await page.locator('.workspace').evaluate(el=>el.scrollTop),0,'Opening an album from a scrolled library must start at the heading')
+    await require('./collection-header-smoke.cjs')(page,artifacts,'album')
     await page.getByRole('button', { name: 'Audiobooks', exact: true }).click()
     await page.getByRole('button', { name: /The Test Book Test Author/ }).click()
     await page.getByRole('heading', { name: 'Chapters', exact: true }).waitFor()
     assert.equal(await page.locator('.chapter-row').count(), 3)
+    await require('./collection-header-smoke.cjs')(page,artifacts,'audiobook')
     await page.getByRole('button', { name: 'Podcasts', exact: true }).click()
     await page.getByRole('button', { name: /The Test Podcast Test Host/ }).click()
     await page.getByRole('heading', { name: 'Episodes', exact: true }).waitFor()
     assert.equal(await page.locator('.episode-card').count(), 2)
+    await require('./collection-header-smoke.cjs')(page,artifacts,'podcast')
     assert.equal(await page.locator('.chapter-row').count(), 0)
     await page.getByLabel('Episode status', { exact: true }).selectOption('finished')
     assert.equal(await page.locator('.episode-card').count(), 1)
@@ -280,6 +314,7 @@ async function main() {
       const snapshots = await page.evaluate(async () => ({ plans: await window.mediaCenter.laterList(), roots: await window.mediaCenter.localRoots(), history: await window.mediaCenter.history() }))
       await require('./daily-smoke.cjs')({desktop,page,waitPlayback,artifacts})
       await require('./customization-smoke.cjs')({desktop,page,artifacts})
+      await require('./experience-smoke.cjs')({desktop,page,artifacts})
       assert.equal(snapshots.plans[0].done,true); assert.equal(snapshots.plans[0].due,'2026-09-10'); assert.equal(snapshots.roots.length,1); assert.ok(snapshots.history.length>0)
     }
     await page.setViewportSize({ width: 1024, height: 720 })
@@ -292,6 +327,8 @@ async function main() {
       const restoredPage = await desktop.firstWindow()
       await desktop.evaluate(({ BrowserWindow }, visible) => { for (const window of BrowserWindow.getAllWindows()) { window.webContents.setBackgroundThrottling(false); if (visible) window.showInactive() } }, !!(process.env.MEDIA_CENTER_EXECUTABLE || process.env.MEDIA_CENTER_VISIBLE_SMOKE))
       await restoredPage.waitForFunction(()=>getComputedStyle(document.body).fontFamily.includes('Verdana'))
+      assert.equal((await restoredPage.evaluate(()=>window.mediaCenter.releaseNews('get'))).unread,false,'Release dismissal survives restart')
+      assert.equal(await restoredPage.getByRole('dialog',{name:'What’s new in Media Center 1.0.0',exact:true}).count(),0)
       const localSaved=await restoredPage.evaluate(async()=>{const r=(await window.mediaCenter.localRoots())[0];return {favorites:await window.mediaCenter.localLibrary({rootId:r.id,view:'favorites',page:0,search:''}),playlists:await window.mediaCenter.localLibrary({rootId:r.id,view:'playlists',page:0,search:''})}});assert.equal(localSaved.favorites.total,1);assert.equal(localSaved.playlists.groups[0].title,'Local test playlist')
       const persistedLyrics=await restoredPage.evaluate(()=>window.mediaCenter.lyrics({}));assert.equal(persistedLyrics.recordId,42);assert.equal(persistedLyrics.saved,true)
       const restored = await restoredPage.evaluate(async () => ({ playback: await window.mediaCenter.playback(), plans: await window.mediaCenter.laterList(), roots: await window.mediaCenter.localRoots(), prefs: await window.mediaCenter.preferences() }))
@@ -299,6 +336,7 @@ async function main() {
       await restoredPage.getByRole('button', { name:'Resume playback',exact:true }).click()
       let resumed; for (let i=0;i<100;i++) { resumed = await restoredPage.evaluate(() => window.mediaCenter.playback()); if (resumed.status === 'playing') break; await new Promise(r => setTimeout(r,100)) }; assert.equal(resumed.status,'playing')
       await restoredPage.evaluate(() => window.mediaCenter.command({action:'stop'}))
+      await require('./studio-smoke.cjs')({desktop,page:restoredPage,artifacts,mutations})
     }
     writeFileSync(resolve(artifacts, process.env.MEDIA_CENTER_EXECUTABLE ? 'packaged-smoke.json' : 'desktop-smoke.json'), JSON.stringify({ passed: true, version: require('../package.json').version, packagedExecutable: process.env.MEDIA_CENTER_EXECUTABLE || null, nativeMpvTested: !!mpvPath, nativeAudioRequests: audioRequests.length, checks: ['production Electron/preload/SQLite', 'sample music/books/podcasts', 'book chapters distinct from podcast episodes', 'episode availability filter', 'Navidrome authentication and album browsing', 'Audiobookshelf authentication and separate libraries', 'credentials excluded from renderer settings', 'missing MPV error', 'minimum window layout', 'readable aligned action buttons', 'navigation resets inherited scroll', 'grouped episode controls at 1024 and 1920 pixels', 'playlist creation and replacement with ordered duplicate tracks', 'episode status search and sorting', 'server completion mutation', ...(mpvPath ? ['real MPV 24-bit/96 kHz 300+ MB virtual WAV streaming', 'authenticated episode playback', 'resume second book file and seek backward to first while paused', 'server progress sync', 'raw Navidrome audio and music speed reset', 'editable queue and expanded player', 'SQLite listen-later save reschedule completion', 'local WAV metadata and native playback', 'live ReplayGain and equalizer', 'restart persistence without autoplay','native gapless transition','mini-window pin and restricted IPC','original offline book/episode downloads and cross-file seeks','offline progress preview and commit','saved queue load without autoplay','timestamped notes','cross-show inbox and Home','listening statistics','credential-free backup preview/restore and schema rejection'] : [])], requestCount: requests.length, rendererErrors: errors }, null, 2))
     console.log('Desktop smoke passed: production Electron, 2 fixture servers, 3 media types, 0 renderer errors.')

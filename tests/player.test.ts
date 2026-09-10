@@ -53,6 +53,9 @@ describe('playback coordination', () => {
     expect(mpv.command).toHaveBeenCalledWith(['loadfile', 'https://test.invalid/a', 'replace', -1, expect.objectContaining({ start: '220' })])
     expect(abs.sync).toHaveBeenLastCalledWith('session', 220, 1000, 0, false)
   })
+  it('rejects an undo snapshot after another queued edit and preserves current playback otherwise',async()=>{
+    await player.play([...queue,...queue,...queue],0);await player.command({action:'toggle'});const before=structuredClone(player.state.queue);await player.edit({action:'remove',index:2});const after=structuredClone(player.state.queue);await player.restoreQueueEdit(before,0,after);expect(player.state.status).toBe('paused');expect(player.state.queue).toHaveLength(3);await expect(player.restoreQueueEdit(before,0,after)).rejects.toThrow('overwrite')
+  })
   it('preserves pause while seeking across files', async () => {
     await player.play(queue, 0); await player.command({ action: 'toggle' }); await player.command({ action: 'seek', value: 100 })
     expect(player.state.status).toBe('paused'); expect(mpv.command).toHaveBeenLastCalledWith(['set_property', 'pause', true])
@@ -134,4 +137,9 @@ describe('playback coordination', () => {
     await player.play(queue,0); await player.edit({action:'append',items:[{target:{kind:'music-track',serverId:'n',trackId:'missing'},title:'Missing',subtitle:''}]});vi.mocked(nav.track).mockRejectedValue(new Error('Track was removed'))
     await expect(player.edit({action:'jump',index:1})).rejects.toThrow(/removed/);expect(player.state.status).toBe('error')
   })
+  it('adds music automatically only at natural queue end, never on manual next',async()=>{
+    const item={target:{kind:'music-track' as const,serverId:'n',trackId:'song'},title:'Song',subtitle:''},next={...item,target:{...item.target,trackId:'next'}};const auto=vi.fn().mockResolvedValue([next]);player.autoplay=auto;await player.play([item],0);await player.command({action:'next'});expect(auto).not.toHaveBeenCalled();await player.play([item],0);mpv.emit('event',{event:'end-file',reason:'eof'});await vi.advanceTimersByTimeAsync(1);expect(auto).toHaveBeenCalledTimes(1);expect(player.state.queue[1].target).toEqual(next.target)
+  })
+  it('does not invoke music autoplay after an audiobook ends',async()=>{player.autoplay=vi.fn().mockResolvedValue([]);await player.play(queue,0);await player.command({action:'seek',value:999});mpv.emit('event',{event:'end-file',reason:'eof'});await vi.advanceTimersByTimeAsync(1);expect(player.autoplay).not.toHaveBeenCalled()})
+
 })

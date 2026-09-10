@@ -1,0 +1,44 @@
+/* Library tools share the active palette and spacing system. */
+.studio-page{display:grid;gap:20px;min-width:0;padding-bottom:24px}
+.studio-page>h1,.studio-page>.eyebrow,.studio-page>h2{margin:0}
+.studio-page .browse-tabs{flex-wrap:wrap;gap:8px}
+.studio-page .browse-tabs [aria-selected=true]{background:var(--accent);color:var(--accent-text,#141718)}
+.studio-page .field{max-width:620px}
+.studio-empty{padding:32px;border:1px dashed var(--line);border-radius:16px;color:var(--muted);text-align:center}
+.studio-shelf{display:grid;gap:14px;min-width:0}
+.studio-shelf .unified-result{margin:0;min-width:0}
+.studio-shelf .unified-result>div{min-width:0}
+.studio-shelf strong,.profile-row strong{overflow-wrap:anywhere}
+.profile-row,.health-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0;border-top:1px solid var(--line)}
+.profile-row>div:first-child,.health-row>div:first-child{min-width:0;flex:1}
+.profile-row small,.health-row small{display:block;color:var(--muted);font-size:12px;overflow-wrap:anywhere;margin-top:5px}
+.profile-row .control-actions{flex-shrink:0}
+.health-tags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:55%}
+.health-tags span,.health-status{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:5px 10px;font-size:12px;color:var(--muted)}
+.health-status.online{color:var(--accent)}
+.studio-page .check-field small{display:block;overflow-wrap:anywhere;color:var(--muted);margin-top:5px}
+.settings-extra-row{margin-top:20px}
+.undo-toast{position:fixed;z-index:100;bottom:calc(var(--player-height,104px) + 20px);left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;max-width:calc(100vw - 32px);padding:12px 16px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 40px #0005}
+.undo-toast span{font-size:13px}
+.command-results{display:grid;gap:5px;max-height:50vh;overflow-y:auto;padding:3px}
+.command-result{display:flex;justify-content:space-between;gap:16px;text-align:left;min-height:44px;border:1px solid transparent;border-radius:10px;padding:10px 14px;background:transparent;color:var(--text)}
+.command-result span{color:var(--muted)}
+.command-result.selected,.command-result:hover{border-color:var(--line);background:var(--panel-raised,var(--panel));box-shadow:inset 3px 0 var(--accent)}
+.designer-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,.85fr);gap:24px;align-items:start;margin:20px 0}
+.designer-grid>div:first-child{display:grid;gap:16px}
+.cover-preview{aspect-ratio:1;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:grid;place-items:center;background:var(--bg);color:var(--muted)}
+.cover-preview img{width:100%;height:100%;object-fit:cover}
+.lyric-editor-text{width:100%;min-height:300px;resize:vertical;font:14px/1.7 ui-monospace,Consolas,monospace;padding:16px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;tab-size:2}
+@media(max-width:760px){.profile-row,.health-row{align-items:flex-start;flex-direction:column}.health-tags{max-width:100%;justify-content:flex-start}.designer-grid{grid-template-columns:1fr}.cover-preview{max-width:360px;width:100%;justify-self:center}.undo-toast{width:max-content}.studio-page .section-title{align-items:flex-start;flex-wrap:wrap}}
+
+.modal:has(.designer-grid),.modal:has(.lyric-editor-text){width:min(900px,100%)}
+.modal .field .lyric-editor-text{min-height:260px;max-height:45vh;font:14px/1.7 ui-monospace,Consolas,monospace}
+
+.local-playlist-management{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+.local-page>.section-title:has(.local-playlist-management){flex-wrap:wrap;justify-content:flex-start;gap:16px}
+
+.designer-grid input[type=range],.settings-panel input[aria-label="Crossfade seconds"]{appearance:none;height:28px;min-height:28px;padding:0;border:0;background:transparent;box-shadow:none;width:100%}
+.designer-grid input[type=range]::-webkit-slider-runnable-track,.settings-panel input[aria-label="Crossfade seconds"]::-webkit-slider-runnable-track{height:6px;border-radius:8px;background:var(--control-border)}
+.designer-grid input[type=range]::-webkit-slider-thumb,.settings-panel input[aria-label="Crossfade seconds"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;margin-top:-6px;border-radius:50%;background:var(--accent);border:2px solid var(--panel);box-shadow:0 0 0 1px var(--accent)}
+.designer-grid .control-actions label{display:flex;align-items:center;gap:8px;font-size:13px}
+.designer-grid input[type=color]{height:36px;width:52px;padding:4px;background:var(--control);border:1px solid var(--control-border);border-radius:8px}

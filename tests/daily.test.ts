@@ -65,6 +65,13 @@ describe('personal data boundaries',()=>{
     expect(backupSchema.safeParse({...backup,queues:[{id:'q',name:'q',items:[book],index:1,position:0,updatedAt:0}]}).success).toBe(false)
     expect(backupSchema.safeParse({...backup,notes:[{id:'n',item:{...episode,target:{kind:'podcast-episode',serverId:'s',showId:'p'}},position:1,title:'Note',text:'',updatedAt:0}]}).success).toBe(false)
   })
+  it('keeps surface styles in validated preference backups and migrates older appearances',()=>{
+    const appearance={colors:{accent:'#abcdef'},bodyFont:'segoe',headingFont:'georgia',lyricsFont:'segoe'}
+    const restored=backupSchema.parse({...backup,preferences:{...defaultPreferences,appearance:{...appearance,surfaceStyle:'gradient',translucency:true}}})
+    expect(restored.preferences.appearance?.surfaceStyle).toBe('gradient')
+    expect(restored.preferences.appearance?.translucency).toBe(true)
+    expect(backupSchema.parse({...backup,preferences:{...defaultPreferences,appearance}}).preferences.appearance?.surfaceStyle).toBe('solid')
+  })
   it('combines playlist rules and handles missing year, ratings, and play counts',()=>{
     const rule:SmartPlaylist={id:'r',name:'r',serverId:'n',libraryId:'l',favorite:true,minRating:4,genre:'Jazz',artist:'artist',neverPlayed:true,minYear:1990,maxYear:2020,order:'title',limit:100}
     const song={kind:'music-track' as const,id:'t',serverId:'n',title:'T',artist:'Artist',album:'A',duration:50,starred:true,rating:5,genre:'jazz',year:2000}

@@ -99,7 +99,7 @@ module.exports = async function dailySmoke({desktop,page,waitPlayback,artifacts}
   await page.getByText('Your recap image was saved.',{exact:true}).waitFor()
   const png=readFileSync(recapPath);assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(png.readUInt32BE(16),1080);assert.equal(png.readUInt32BE(20),1440)
   for(const style of ['sunset','ink']){
-    await page.locator('.recap-controls select').selectOption(style)
+    await page.getByLabel('Picture style',{exact:true}).selectOption(style)
     await desktop.evaluate(({dialog},path)=>{dialog.showSaveDialog=async()=>({canceled:false,filePath:path})},resolve(artifacts,'listening-recap-'+style+'.png'))
     await page.getByRole('button',{name:'Save PNG image',exact:true}).click()
     await page.getByText('Your recap image was saved.',{exact:true}).waitFor()

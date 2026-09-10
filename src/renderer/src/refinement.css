@@ -1,0 +1,174 @@
+/* Final shared finish. Decorative surfaces are separate from playback/lyric fills. */
+[data-theme] {
+  --line:color-mix(in srgb,var(--text) 12%,transparent);
+  --control-border:color-mix(in srgb,var(--text) 22%,transparent);
+  --control-hover:color-mix(in srgb,var(--text) 7%,transparent);
+  --surface-raised:color-mix(in srgb,var(--panel) 94%,var(--text));
+  --surface-wash:linear-gradient(135deg,color-mix(in srgb,var(--accent) 8%,var(--panel)),var(--panel));
+}
+
+/* Chromium's axis-specific scrollbar styling keeps vertical scrolling visible.
+   Rails still support arrows, touchpads, Shift+wheel and keyboard focus. */
+*,.sidebar-scroll,.breakdown-scroll,.lyrics-scroll,.screen-queue-scroll,.continue-grid { scrollbar-width:auto }
+::-webkit-scrollbar { width:8px; height:0 }
+::-webkit-scrollbar:horizontal { height:0 }
+::-webkit-scrollbar-thumb { background:color-mix(in srgb,var(--text) 26%,transparent); border:2px solid transparent; background-clip:padding-box; border-radius:8px }
+::-webkit-scrollbar-thumb:hover { background-color:color-mix(in srgb,var(--text) 40%,transparent) }
+::-webkit-scrollbar-track { background:transparent }
+::-webkit-scrollbar-corner { background:transparent }
+.home-shelf-track,.immersive-stage .lyrics-scroll { scrollbar-width:none }
+.continue-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr)); gap:14px; overflow:visible; padding:2px 0; align-items:stretch }
+.continue-grid article.resume-card { width:auto; min-width:0; height:100% }
+.library-toolbar,.browse-tabs,.selection-bar,.status-control { flex-wrap:wrap }
+.library-toolbar>* { min-width:0; max-width:100% }
+.episode-copy,.card-copy,.song-title,.queue-copy,.settings-panel,.daily-card { min-width:0 }
+.path-box { overflow-wrap:anywhere }
+
+[data-theme] :is(.daily-card,.episode-card,.detail-hero,.plan-card,.continue-grid article,.engine-card,.home-feature,.home-stats,.home-mix,.folder-card) {
+  border-color:var(--line); border-radius:16px; color:var(--text); box-shadow:none;
+}
+[data-theme] :is(.home-feature,.home-mix,.hero,.recap-placeholder) { background:var(--surface-wash) }
+.home-feature-glow { opacity:.3 }
+.home-mix::after { opacity:.35 }
+[data-theme] :is(.daily-row,.song-row,.track-row,.queue-row,.chapter-row,.local-file-row,.download-row) { border-color:var(--line) }
+[data-theme] :is(.song-row,.queue-row,.chapter-row,.local-file-row):hover { background:var(--control-hover) }
+[data-theme] .queue-row.current { background:var(--control-hover); box-shadow:inset 2px 0 var(--accent) }
+[data-theme] :is(.card-copy span,.card-copy small,.song-title small,.queue-copy small,.daily-card p,.daily-row small,.episode-copy>span,.check-field,.page-intro,.description) { color:var(--muted) }
+[data-theme] .episode-card .episode-copy>p:not(.eyebrow) { color:var(--muted) }
+.home-feature,.home-stats { padding:24px }
+.home-mix { padding:20px }
+.home-stats dl { gap:16px }
+
+[data-theme] :is(.secondary,.filter,.sort-button) { background:var(--control-hover); border-color:var(--line); color:var(--text); box-shadow:none }
+[data-theme] :is(.secondary,.filter,.sort-button):hover:not(:disabled) { background:var(--surface-raised); border-color:var(--control-border); color:var(--text) }
+[data-theme] :is(.filter.active,.sort-button.active) { background:var(--control-hover); border-color:var(--accent); color:var(--accent) }
+[data-theme] .secondary.danger { color:#ffc1b8; background:#c3473418; border-color:#c3473455 }
+[data-theme] .secondary.danger:hover:not(:disabled) { background:#c347342c }
+[data-theme] .text-button { color:var(--muted) }
+[data-theme] .text-button:hover:not(:disabled) { color:var(--text); background:var(--control-hover) }
+[data-theme] button.primary:hover:not(:disabled) { box-shadow:0 3px 10px #0002; filter:brightness(1.05) }
+[data-theme] :is(button,input,select,textarea,summary,a):focus-visible { outline:2px solid var(--accent); outline-offset:3px }
+[data-theme] :is(.field input,.field select,.field textarea,.daily-controls>input,.daily-controls>select,.library-toolbar>select,.search,.rating) { background:var(--bg); color:var(--text); border:1px solid var(--control-border); border-radius:12px }
+[data-theme] :is(input,textarea)::placeholder { color:var(--muted); opacity:.8 }
+[data-theme] .search { padding-inline:12px; gap:10px }
+[data-theme] .search input { background:transparent; border:0; box-shadow:none; min-height:0; border-radius:0 }
+[data-theme] .search input:focus-visible { outline:none }
+[data-theme] :is(.modal,.settings-rail,.appearance-editor,.appearance-preview,.lyric-result) { border-color:var(--line); border-radius:16px }
+[data-theme] .modal { box-shadow:0 24px 80px #0006 }
+[data-theme] .lyrics-appearance { --panel:inherit; --control:inherit; --control-text:inherit; --text:inherit; --muted:inherit; --accent-text:inherit; background:var(--panel); border-color:var(--line) }
+[data-theme] .lyric-style-preview { background:var(--bg); border-color:var(--line) }
+.surface-style-setting { display:flex; align-items:center; justify-content:space-between; gap:20px; padding-block:8px 20px; margin-bottom:20px; border-bottom:1px solid var(--line) }
+.surface-style-setting h3 { font-size:15px; margin:0 0 8px }
+.surface-style-setting p { margin:0; max-width:580px }
+.surface-style-toggle { display:flex; flex-shrink:0; padding:4px; gap:4px; background:var(--bg); border:1px solid var(--line); border-radius:999px }
+.surface-style-toggle button { border-radius:999px; min-height:40px; padding:8px 18px; color:var(--muted); font-weight:600 }
+.surface-style-toggle button:hover { background:var(--control-hover); color:var(--text) }
+.surface-style-toggle button[aria-pressed=true] { background:var(--accent); color:var(--accent-text,#17191e) }
+
+/* Solid removes only decorative washes, never album art, progress or karaoke. */
+[data-surface-style=solid] :is(.app-shell,.mini-player) { background:var(--bg) }
+[data-surface-style=solid] :is(.hero,.home-feature,.home-mix,.recap-placeholder,.station-art,.idle-art) { background:var(--panel) }
+[data-surface-style=solid] .home-feature-glow { display:none }
+[data-surface-style=solid] .home-mix::after { display:none }
+@media(max-width:800px) { .surface-style-setting { align-items:flex-start; flex-direction:column; gap:14px } }
+
+/* Small list artwork shares the existing lazy, authenticated cover path. */
+.track-artwork { display:block; width:44px; height:44px; flex:0 0 44px; border-radius:9px; overflow:hidden; border:1px solid var(--line); align-self:center }
+.track-artwork>.art { width:100%; height:100%; min-height:0; aspect-ratio:1; border-radius:0; font-size:22px }
+.track-artwork .art :is(.art-label,.art-footer,strong) { display:none }
+.track-artwork img { width:100%; height:100%; object-fit:cover }
+.track-title-with-art { display:flex; align-items:center; gap:12px; min-width:0 }
+.track-title-with-art>div { min-width:0 }
+.row-media-copy { flex:1; min-width:0 }
+.daily-card>.track-artwork { float:left; margin:0 14px 10px 0 }
+.daily-card:has(>.track-artwork)>.listen-actions { clear:both }
+button.screen-queue-item { grid-template-columns:16px 36px minmax(0,1fr) auto; gap:8px }
+.screen-queue-item .track-artwork { width:36px; height:36px; flex-basis:36px }
+.plan-card>.track-artwork { flex:0 0 44px }
+.local-library-track .song-title>span:last-child { min-width:0 }
+.translucency-toggle { gap:20px }
+.translucency-toggle small { display:block; margin-top:6px; color:var(--muted); line-height:1.6 }
+[data-translucency=true] { --translucent-panel:color-mix(in srgb,var(--panel) 72%,transparent) }
+[data-translucency=true] :is(.sidebar,.topbar,.player-bar,.daily-card,.episode-card,.detail-hero,.plan-card,.continue-grid article,.engine-card,.home-feature,.home-stats,.home-mix,.settings-panel,.settings-rail,.modal,.lyrics-appearance,.local-collection-card,.folder-card) {
+ background:var(--translucent-panel); backdrop-filter:blur(22px) saturate(115%); border-color:var(--line); box-shadow:inset 0 1px color-mix(in srgb,var(--text) 5%,transparent);
+}
+[data-translucency=true] .settings-group .settings-panel { background:var(--translucent-panel) }
+[data-translucency=true] .mini-player { background:color-mix(in srgb,var(--panel) 65%,var(--bg)); backdrop-filter:blur(22px) }
+[data-translucency=true][data-surface-style=gradient] :is(.home-feature,.home-mix) { background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 7%,transparent),transparent),var(--translucent-panel) }
+@media(max-width:1100px) { .song-row .track-artwork { width:38px; height:38px; flex-basis:38px }.plan-card:not(.history-card) { flex-wrap:wrap } }
+
+.mix-artwork { position:absolute; right:20px; top:16px; width:64px; height:64px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-auto-rows:1fr; gap:2px; border-radius:10px; overflow:hidden; pointer-events:none }
+.mix-artwork>.art { min-width:0; width:100%; height:100%; border-radius:0; font-size:18px }
+.mix-artwork:has(>.art:only-child) { grid-template-columns:1fr }
+.mix-artwork .art :is(.art-label,.art-footer,strong) { display:none }
+.home-mix>.eyebrow { padding-right:68px }
+.shortcut-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.reset-choices{display:grid;gap:10px}.reset-choices small{margin-bottom:16px;color:var(--muted)}.unified-result{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.unified-result>div:nth-child(2){min-width:0;flex:1}.unified-result small{display:block;color:var(--muted)}.track-details>div{display:grid;grid-template-columns:100px 1fr;gap:12px;padding:8px 0}.track-details dd{margin:0;overflow-wrap:anywhere}html[data-density=compact] :is(.song-row,.track-row,.queue-row,.local-library-track,.unified-result){min-height:48px;padding-top:5px;padding-bottom:5px}html[data-density=compact] .track-artwork{width:34px;height:34px;flex-basis:34px}html[data-density=compact] :is(.daily-card,.media-card,.settings-panel){padding:12px}html[data-density=compact] .home-shelf-track{gap:10px}
+.home-redesign{display:flex;flex-direction:column}.home-greeting{order:-3}.home-redesign>p{order:-2}.home-section[hidden]{display:none}.home-section .home-shelf{margin-top:0}.home-section{margin-bottom:28px;min-width:0}.home-editor-row{display:flex;align-items:center;gap:10px;padding:6px 0}.home-editor-row>label,.home-editor-row>span{flex:1}.mix-preview-actions{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}.home-mix .mix-preview-open{position:static;width:auto;height:auto;align-self:flex-start;padding:8px 0;background:none;color:var(--muted);font-size:12px}.home-redesign>.modal-shade{order:100}
+.podcast-rule{border-top:1px solid var(--line);padding:16px 0;margin-top:12px}.playlist-file-name{overflow-wrap:anywhere;min-width:0}.lyric-offset{max-width:340px;margin-bottom:12px}.home-editor-row .check-field{margin:0}
+
+/* Consistent control groups and compact, predictable Settings flow. */
+.home-header-actions,.control-actions,.settings-actions { display:flex; align-items:center; flex-wrap:wrap; gap:10px }
+.home-header-actions { margin-left:auto; justify-content:flex-end; flex-shrink:0 }
+.control-actions { margin-block:14px }
+.settings-actions { margin-top:20px; padding-top:16px; border-top:1px solid var(--line) }
+.settings-actions :is(button,.action-notice) { margin:0 }
+.settings-listening-stack { display:grid; grid-template-columns:minmax(0,1fr); gap:16px }
+.settings-groups { gap:28px }
+.settings-group .settings-panel { padding:22px }
+.settings-panel>h2 { margin:0 0 14px }
+.settings-panel>p { line-height:1.6 }
+.settings-panel>.muted { margin:0 0 18px }
+.settings-panel :is(.daily-field-grid,.shortcut-grid) { gap:16px; margin:18px 0 }
+.settings-panel :is(.daily-field-grid,.shortcut-grid)>.field { margin:0; justify-content:space-between }
+.listening-basics .daily-field-grid,.shortcut-grid { grid-template-columns:repeat(4,minmax(0,1fr)) }
+.settings-toggle-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-block:16px }
+.settings-panel .check-field { display:flex; align-items:center; gap:12px; min-height:48px; padding:12px 14px; margin:10px 0; border:1px solid var(--line); border-radius:10px; background:var(--control); color:var(--text); line-height:1.5; cursor:pointer }
+.settings-panel .check-field:hover { border-color:var(--control-border); background:var(--control-hover) }
+.settings-panel .check-field input { margin:0; flex-shrink:0 }
+.settings-panel .check-field small { display:block; margin-top:4px; font-size:12px; color:var(--muted); font-weight:normal }
+.settings-toggle-grid .check-field { margin:0; align-items:flex-start }
+.settings-toggle-grid .check-field input { margin-top:2px }
+.settings-subsection { margin-top:22px; padding-top:20px; border-top:1px solid var(--line) }
+.settings-subsection h3 { margin:0 0 8px }
+.settings-subsection>p { margin:0; line-height:1.6 }
+.settings-inline-form { display:flex; align-items:flex-end; flex-wrap:wrap; gap:12px; margin-block:16px }
+.settings-inline-form>.field { flex:1; min-width:180px; margin:0 }
+.settings-inline-form>button { flex-shrink:0 }
+.podcast-rule { display:grid; grid-template-columns:minmax(0,1fr) 156px; align-items:center; gap:12px; padding:16px; margin-top:12px; border:1px solid var(--line); border-radius:10px }
+.podcast-rule>.field { margin:0 }
+.podcast-rule>.check-field { margin:0 }
+.podcast-rule>.text-button { justify-self:end; white-space:nowrap }
+.reset-choices { gap:0; margin-top:8px }
+.reset-choice { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:18px 0; border-top:1px solid var(--line) }
+.reset-choice:last-child { padding-bottom:0 }
+.reset-choice>div { flex:1; min-width:0 }
+.reset-choice small { display:block; margin:5px 0 0; line-height:1.6; color:var(--muted) }
+.reset-choice>button { flex-shrink:0; max-width:100% }
+.settings-panel details { margin-top:16px; padding:14px 16px; border:1px solid var(--line); border-radius:10px }
+.settings-panel summary { cursor:pointer; color:var(--text); line-height:1.5 }
+.settings-panel details[open]>summary { margin-bottom:14px }
+.modal .home-editor-row { padding:10px 0; border-bottom:1px solid var(--line) }
+.modal .home-editor-row:last-of-type { margin-bottom:16px }
+.modal>.listen-actions { margin-block:16px }
+html[data-density=compact] .settings-group .settings-panel { padding:18px }
+@media(max-width:1400px) { .listening-basics .daily-field-grid,.shortcut-grid { grid-template-columns:repeat(2,minmax(0,1fr)) } }
+@media(max-width:900px) {
+ .home-greeting { flex-wrap:wrap; align-items:flex-start }
+ .home-header-actions { margin-left:0; justify-content:flex-start }
+ .settings-toggle-grid { grid-template-columns:minmax(0,1fr) }
+ .reset-choice { align-items:flex-start; flex-direction:column; gap:12px }
+ .settings-group .settings-panel { padding:18px }
+}
+@media(max-width:600px) {
+ .listening-basics .daily-field-grid,.shortcut-grid,.podcast-rule { grid-template-columns:minmax(0,1fr) }
+ .podcast-rule>.text-button { justify-self:start }
+ .settings-inline-form { align-items:stretch; flex-direction:column }
+}
+
+.connection-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:16px; row-gap:14px }
+.connection-form>:not(.field) { grid-column:1 / -1 }
+.connection-form>.field { margin:0; justify-content:space-between }
+.connection-form>:is(.form-hint,.secure-note) { margin:0; line-height:1.6 }
+.dialog-toggle-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-block:14px }
+.dialog-toggle-grid .check-field { display:flex; align-items:center; gap:10px; padding:10px 12px; margin:0; border:1px solid var(--line); border-radius:8px; background:var(--control) }
+@media(max-width:700px) { .connection-form,.dialog-toggle-grid { grid-template-columns:minmax(0,1fr) } }

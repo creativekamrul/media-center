@@ -5,14 +5,14 @@ import {LocalFiles} from './local'
 import type {Store} from './store'
 import type {LocalFile} from '../shared/types'
 import {localAlbumKey,type LocalQuery,type LocalPageData,type LocalGroup,type LocalPlaylist,type LocalPlaylistCommand} from '../shared/local-library'
-interface Index {files:LocalFile[];updatedAt:number;warnings:string[]}
+interface Index {version?:number;files:LocalFile[];updatedAt:number;warnings:string[]}
 const extensions=new Set(['.mp3','.flac','.wav','.wave','.m4a','.m4b','.aac','.ogg','.opus','.aiff','.aif','.ape','.alac','.wma','.dsf','.dff','.wv','.mka','.ac3'])
 export class LocalLibrary {
  private scans=new Map<string,Promise<Index>>()
  constructor(private store:Store,private local:LocalFiles){}
  private async scan(rootId:string):Promise<Index>{
   const root=this.local.roots().find(r=>r.id===rootId);if(!root)throw Error('Choose a local source.')
-  const result:Index={files:[],updatedAt:Date.now(),warnings:[]},pending=[''],seen=new Set<string>();let entriesRead=0
+  const result:Index={version:3,files:[],updatedAt:Date.now(),warnings:[]},pending=[''],seen=new Set<string>();let entriesRead=0
   while(pending.length){
    const folder=pending.shift()!
    try{
@@ -29,12 +29,20 @@ export class LocalLibrary {
    }catch{if(result.warnings.length<50)result.warnings.push(`Could not read ${folder||root.name}.`)}
   }
   if(!this.local.roots().some(r=>r.id===rootId))throw Error('This source was removed during indexing.')
+  const old=this.store.get<Index>(`local-index:${rootId}`)
+  if(old){
+   const currentIds=new Set(result.files.map(f=>f.id)),identities=new Map<string,string[]>()
+   for(const f of result.files)if(f.fileIdentity){const ids=identities.get(f.fileIdentity)??[];ids.push(f.id);identities.set(f.fileIdentity,ids)}
+   const moved=new Map<string,string>()
+   for(const f of old.files)if(!currentIds.has(f.id)&&f.fileIdentity){const candidates=identities.get(f.fileIdentity);if(candidates?.length===1)moved.set(f.id,candidates[0])}
+   if(moved.size){const remap=(id:string)=>moved.get(id)??id;this.store.set(`local-favorites:${rootId}`,[...new Set((this.store.get<string[]>(`local-favorites:${rootId}`)??[]).map(remap))]);this.store.set(`local-playlists:${rootId}`,(this.store.get<LocalPlaylist[]>(`local-playlists:${rootId}`)??[]).map(p=>({...p,files:p.files.map(remap)})))}
+  }
   this.store.set(`local-index:${rootId}`,result);return result
  }
- async index(rootId:string,refresh=false){
+ async index(rootId:string,refresh=false):Promise<Index>{
   if(!this.local.roots().some(r=>r.id===rootId))throw Error('Choose a local source.')
-  const running=this.scans.get(rootId);if(running)return running
-  const cached=this.store.get<Index>(`local-index:${rootId}`);if(cached&&!refresh)return cached
+  const running=this.scans.get(rootId);if(running){await running;return refresh?this.index(rootId,true):this.store.get<Index>(`local-index:${rootId}`)!}
+  const cached=this.store.get<Index>(`local-index:${rootId}`);if(cached?.version===3&&!refresh)return cached
   const work=this.scan(rootId).finally(()=>this.scans.delete(rootId));this.scans.set(rootId,work);return work
  }
  async favorite(rootId:string,fileId:string,favorite:boolean){await this.local.path(rootId,fileId);const ids=new Set(this.store.get<string[]>(`local-favorites:${rootId}`)??[]);favorite?ids.add(fileId):ids.delete(fileId);this.store.set(`local-favorites:${rootId}`,[...ids])}
@@ -42,9 +50,10 @@ export class LocalLibrary {
   if(!this.local.roots().some(r=>r.id===input.rootId))throw Error('Choose a local source.')
   const key=`local-playlists:${input.rootId}`,lists=this.store.get<LocalPlaylist[]>(key)??[]
   if(input.action==='delete'){this.store.set(key,lists.filter(p=>p.id!==input.id));return}
-  if(lists.length>=100)throw Error('This source already has 100 playlists.')
+  if(input.action==='create'&&lists.length>=100)throw Error('This source already has 100 playlists.')
   for(const file of input.files)await this.local.path(input.rootId,file)
-  this.store.set(key,[...lists,{id:randomUUID(),name:input.name,files:input.files}])
+  if(input.action==='update'){if(!lists.some(p=>p.id===input.id))throw Error('This playlist no longer exists.');this.store.set(key,lists.map(p=>p.id===input.id?{...p,name:input.name,files:input.files}:p))}
+  else this.store.set(key,[...lists,{id:randomUUID(),name:input.name,files:input.files}])
  }
  async query(input:LocalQuery):Promise<LocalPageData>{
   const index=await this.index(input.rootId,input.refresh),favorites=new Set(this.store.get<string[]>(`local-favorites:${input.rootId}`)??[])

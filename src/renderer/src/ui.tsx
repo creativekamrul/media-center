@@ -1,6 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 const api = window.mediaCenter
-const coverCache = new Map<string, string | null>()
+const coverCache = new Map<string, Promise<string | null>>()
+function serverArtwork(serverId:string,itemId:string) {
+ const key=JSON.stringify([serverId,itemId]);let pending=coverCache.get(key)
+ if(!pending){pending=api.cover({serverId,itemId}).catch(e=>{coverCache.delete(key);throw e});coverCache.set(key,pending);if(coverCache.size>128)coverCache.delete(coverCache.keys().next().value!)}
+ return pending
+}
 export function duration(seconds: number) { const n = Math.floor(Math.max(0, seconds)); return n >= 3600 ? `${Math.floor(n / 3600)}:${String(Math.floor(n / 60) % 60).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}` : `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}` }
 export function hours(seconds: number) { return `${Math.floor(seconds / 3600)} hr ${Math.round(seconds % 3600 / 60)} min` }
 export function plain(text: string) { return text.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim() }
@@ -12,8 +17,8 @@ export function Art({ item, small = false }: { item: { id: string; serverId: str
   useEffect(() => {
     setCover(null)
     if (item.serverId === 'sample' || !ref.current) return
-    let live = true; const key = `${item.serverId}:${item.cover ?? item.id}`
-    const observer = new IntersectionObserver(entries => { if (!entries.some(e => e.isIntersecting)) return; observer.disconnect(); if (coverCache.has(key)) { setCover(coverCache.get(key)!); return }; void api.cover({ serverId: item.serverId, itemId: item.cover ?? item.id }).then(data => { coverCache.set(key, data); if (live) setCover(data) }).catch(() => {}) }, { rootMargin: '160px' })
+    let live = true
+    const observer = new IntersectionObserver(entries => { if (!entries.some(e => e.isIntersecting)) return; observer.disconnect(); void serverArtwork(item.serverId,item.cover ?? item.id).then(data => { if (live) setCover(data) }).catch(() => {}) }, { rootMargin: '160px' })
     observer.observe(ref.current); return () => { live = false; observer.disconnect() }
   }, [item.id, item.serverId, item.cover])
   return <div ref={ref} className={`art tone-${hash} ${item.kind === 'audiobook' ? 'book-art' : ''} ${small ? 'small-art' : ''}`}>

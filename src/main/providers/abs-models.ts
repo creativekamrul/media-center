@@ -7,7 +7,7 @@ const track = z.object({ index: z.number(), title: z.string().default('Audio fil
 const metadata = z.object({ title: z.string(), subtitle: z.string().nullish(), description: z.string().nullish() }).passthrough()
 const base = { id: z.string(), libraryId: z.string(), mediaType: z.string() }
 const bookSchema = z.object({ ...base, mediaType: z.literal('book'), media: z.object({
-  metadata: metadata.extend({ authors: z.array(z.object({ name: z.string() })).default([]), authorName: z.string().optional(), narrators: z.array(z.string()).default([]), series: z.array(z.object({ name: z.string() })).default([]) }),
+  metadata: metadata.extend({ authors: z.array(z.object({ name: z.string() })).default([]), authorName: z.string().optional(), narrators: z.array(z.string()).default([]), series: z.array(z.object({ id:z.string().optional(),name: z.string(),sequence:z.union([z.string(),z.number()]).nullish() })).default([]) }),
   duration: number.default(0), chapters: z.array(chapter).default([]), tracks: z.array(track).default([])
 }) })
 const podcastSchema = z.object({ ...base, mediaType: z.literal('podcast'), media: z.object({
@@ -22,7 +22,7 @@ export function parseAbsItem(raw: unknown, serverId: string): Audiobook | Podcas
   if (discriminator.mediaType === 'book') {
     const item = bookSchema.parse(raw), m = item.media.metadata
     const authors = m.authors.length ? m.authors.map(a => a.name) : m.authorName ? [m.authorName] : []
-    return { kind: 'audiobook', id: item.id, serverId, libraryId: item.libraryId, title: m.title, subtitle: authors.join(', '), description: m.description ?? '', authors, narrators: m.narrators, series: m.series.map(s => s.name), duration: item.media.duration, chapters: item.media.chapters, tracks: item.media.tracks }
+    return { kind: 'audiobook', id: item.id, serverId, libraryId: item.libraryId, title: m.title, subtitle: authors.join(', '), description: m.description ?? '', authors, narrators: m.narrators, series: m.series.map(s => s.name),seriesOrder:m.series.map(s=>({id:s.id,name:s.name,sequence:s.sequence==null?'':String(s.sequence)})), duration: item.media.duration, chapters: item.media.chapters, tracks: item.media.tracks }
   }
   const item = podcastSchema.parse(raw), m = item.media.metadata
   return { kind: 'podcast-show', id: item.id, serverId, libraryId: item.libraryId, title: m.title, subtitle: m.author ?? '', description: m.description ?? '', author: m.author ?? '', episodeCount: item.media.numEpisodes ?? item.media.episodes.length,

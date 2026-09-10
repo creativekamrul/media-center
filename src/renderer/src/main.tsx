@@ -13,4 +13,8 @@ import './customization.css'
 import './polish.css'
 import './lyrics-style.css'
 import './home-library.css'
+import './refinement.css'
+import './studio.css'
+import './collection-headers.css'
+import './release-polish.css'
 createRoot(document.getElementById('root')!).render(<React.StrictMode>{new URLSearchParams(location.search).get('mini') === '1' ? <MiniPlayer/> : <App/>}</React.StrictMode>)

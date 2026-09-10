@@ -29,7 +29,7 @@ export function UpdatePanel() {
     <p role="status" aria-live="polite">{text[state.status]}</p>
     {state.error && <p role="alert" className="update-error">{state.error}</p>}
     {state.status === 'downloading' && <progress aria-label="Update download progress" value={state.percent ?? 0} max={100}/>}
-    <div className="listen-actions">
+    <div className="listen-actions"><button className="secondary" onClick={()=>window.dispatchEvent(new Event('show-release-news'))}>What’s new</button>
       {state.status === 'ready' || state.status === 'installing'
         ? <button className="primary" disabled={busy} onClick={() => void act('installUpdate')}><RotateCcw size={17}/>Restart and install</button>
         : <><button className="secondary" disabled={busy || state.status === 'unavailable'} onClick={() => void act('checkForUpdates')}><RefreshCw size={17} className={state.status === 'checking' ? 'spin' : undefined}/>Check for updates</button>

@@ -17,7 +17,7 @@ Connect **Navidrome** and **Audiobookshelf**, and listen through **native MPV**.
 
 </div>
 
-![The Media Center music library, with album artwork, search, and a persistent player](site/assets/music.png)
+![Media Center 1.0 — a home for everything you listen to](site/assets/social-preview.png)
 
 <p align="center"><sub>Real Windows app screenshots with sample collections and controlled playback test data. Media is not bundled.</sub></p>
 
@@ -32,12 +32,18 @@ Move from a favorite album to the next chapter without switching players. Media 
 | **Audiobookshelf podcasts** | Browse shows and independent episodes, filter listening status, search, sort, and catch up through the podcast inbox. |
 | **Local music library** | Browse tagged albums, songs, artists and genres; keep local favorites and playlists, or explore the original folder structure. Files stay untouched. |
 
-## New in 0.7.7
+## Meet Media Center 1.0
 
-- **A Home built around your listening.** Browse shelves with arrow controls, return to unfinished books and episodes, play mixes from your favorites or recent music, and see your daily listening at a glance.
-- **A proper local music collection.** Nine library tabs, recursive tag indexing, search, rescanning, favorites, playlists, and the folder view you already know.
-- **Lyrics that feel personal.** Customize both player views with fonts, colors, backgrounds, glow and smooth centered word emphasis. Real word timestamps take priority; line-only lyrics use approximate visual timing.
-- **More comfortable controls.** Larger bottom-player artwork, a clearer volume slider with a percentage, fullscreen, and organized Settings that follow your theme. Import your own local theme CSS with preview and one-click removal.
+A milestone release that brings the recent local previews together:
+
+- **A more comfortable interface.** Consistent controls, square artwork that fills its space, tidy collection headers, and layouts checked at 100%, 125%, 150% and 200% interface scaling.
+- **Find your settings.** Search by name or topic, jump to the highlighted control, and keep every unsaved change. Loading, empty and connection-error screens now offer a useful next step.
+- **A Home shaped around you.** Reorder shelves, pin playlists, preview collection-based mixes and see today's listening at a glance.
+- **Your listening, beautifully remembered.** Export Recaps for your chosen dates in **12 distinct layouts and 12 palettes**, with rankings, activity, streaks and previous-period comparisons.
+- **More personal playback.** Listening profiles, output memory, optional music crossfade, a command palette, undo, lyric import and timing editing, and a playlist-cover designer.
+- **Stay oriented after updates.** A once-per-version **What's new** screen links directly to features and can be reopened from Settings → Updates.
+
+[Read the 1.0.0 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.0.0) · [Full changelog](CHANGELOG.md)
 
 ## A closer look
 
@@ -52,10 +58,19 @@ Move from a favorite album to the next chapter without switching players. Media 
 </tr>
 <tr>
 <td width="50%"><a href="site/assets/immersive-player.png"><img src="site/assets/immersive-player.png" alt="Immersive player with test lyrics, cover, controls, and current queue"></a><strong>A little closer to the music.</strong><br>Lyrics, soft backgrounds, and the current queue.</td>
-<td width="50%"><a href="site/assets/customization.png"><img src="site/assets/customization.png" alt="Custom theme colors, font selectors, and live preview"></a><strong>Make it feel like yours.</strong><br>Color and font controls with preview and reset. Local CSS import for deeper changes.</td>
+<td width="50%"><a href="site/assets/customization.png"><img src="site/assets/customization.png" alt="Custom theme colors, font selectors, and live preview"></a><strong>Make it feel like yours.</strong><br>Color and font controls with preview and reset. Solid or gradient surfaces, optional translucency and local CSS import.</td>
 </tr>
 <tr><td colspan="2"><a href="site/assets/lyrics-appearance.png"><img src="site/assets/lyrics-appearance.png" alt="Lyric appearance popup with typography, colors and animation controls"></a><strong>The words, your way.</strong><br>Live preview for normal and immersive lyric views.</td></tr>
 </table>
+
+<details>
+<summary><strong>Twelve ways to remember your listening</strong></summary>
+
+![Twelve Recap layouts with illustrative listening data](site/assets/recap-styles.png)
+
+Each layout has its own composition. Choose the design, palette, title and dates independently; your data stays local until you export and share it.
+
+</details>
 
 Browse full-size screenshots on the **[landing page](https://creativekamrul.github.io/media-center/#explore)**. [Screenshot provenance](site/assets/README.md).
 
@@ -63,10 +78,10 @@ Browse full-size screenshots on the **[landing page](https://creativekamrul.gith
 
 - **Original audio, native playback.** MPV handles your streams and local files, including FLAC, WAV, and MP3. ReplayGain, EQ, and exclusive output are optional.
 - **A player that stays close.** An always-on-top mini player, editable queue, saved queues, sleep timer, fullscreen, and an immersive playing screen.
-- **Lyrics you can keep.** Synchronized LRCLIB lyrics, manual search and preview, and a saved per-song match that stays in SQLite for offline use.
+- **Lyrics you can keep.** Synchronized LRCLIB lyrics, manual search and preview, and a saved per-song match that stays in SQLite for offline use. Import LRC/TXT files or edit line timing locally.
 - **Your own atmosphere.** Thirteen themes including Glass and Black Glass, custom colors, system font choices, a full lyric appearance popup, local CSS import, and reduced-motion support.
 - **Make time for a good listen.** Listen Later plans, timestamped notes, listening history, and original-quality offline downloads.
-- **Your listening, wrapped.** Local listening statistics and a downloadable recap image for dates you choose.
+- **Your listening, wrapped.** Local listening statistics and 12 distinct Recap designs, 12 palettes, rankings, streaks and date-range comparisons, exported as a PNG.
 - **Share when you want to.** Optional Discord Rich Presence with public cover art from Last.fm. Sharing is configurable by media type.
 - **Updates on your terms.** Check GitHub for a stable release, choose when to download, and restart to install from inside the app.
 
@@ -94,12 +109,13 @@ Optional lyric and cover lookups send relevant metadata to LRCLIB and Last.fm. E
 
 ## Develop
 
-Built with **Electron · React · TypeScript · SQLite · MPV**. Requires Windows, Node.js 22+, and npm.
+Built with **Electron · React · TypeScript · SQLite · MPV**. Requires Windows, Node.js 22+, npm, and the .NET 10 SDK for the Windows media-controls helper. Packaged users do not need .NET installed.
 
 ```powershell
 git clone https://github.com/creativekamrul/media-center.git
 cd media-center
 npm ci
+npm run build:media-controls
 npm run dev
 ```
 

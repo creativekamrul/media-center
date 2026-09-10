@@ -22,12 +22,12 @@ export class LocalFiles {
     return path
   }
   async metadata(rootId: string, fileId: string): Promise<LocalFile> {
-    const path = await this.path(rootId, fileId), info = await stat(path), key = `metadata-v2:${rootId}:${fileId}`
-    const cached = this.store.get<LocalFile>(key); if (cached && cached.size === info.size && cached.modified === info.mtimeMs) return cached
-    const file: LocalFile = { id: fileId, name: basename(path), title: basename(path, extname(path)), artist: '', album: '', duration: 0, size: info.size, modified: info.mtimeMs, hasCover: false }
+    const path = await this.path(rootId, fileId), info = await stat(path), key = `metadata-v3:${rootId}:${fileId}`
+    const cached = this.store.get<LocalFile>(key); if (cached && cached.fileIdentity && cached.size === info.size && cached.modified === info.mtimeMs) return cached
+    const file: LocalFile = { id: fileId, name: basename(path), title: basename(path, extname(path)), artist: '', album: '', duration: 0, size: info.size, modified: info.mtimeMs, fileIdentity: info.ino?`${info.dev}:${info.ino}`:undefined, hasCover: false }
     try {
       const { parseFile } = await import('music-metadata')
-      const { common, format } = await parseFile(path, { duration: true, skipCovers: true })
+      const { common, format } = await parseFile(path, { duration: true, skipCovers: false })
       Object.assign(file, { title: common.title || file.title, artist: common.artist || common.artists?.join(', ') || '', album: common.album || '', duration: format.duration || 0, codec: format.codec || format.container, sampleRate: format.sampleRate, bitDepth: format.bitsPerSample, bitRate: format.bitrate ? Math.round(format.bitrate / 1000) : undefined, year: common.year, albumArtist:common.albumartist, genre:common.genre?.join(', '), discNumber:common.disk.no ?? undefined, trackNumber: common.track.no ?? undefined, hasCover: !!common.picture?.length })
     } catch { file.error = 'Tags could not be read. MPV can still try playback.' }
     this.store.set(key, file); return file

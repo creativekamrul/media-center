@@ -14,7 +14,11 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
       - run: npm ci
+      - run: npm run build:media-controls
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:updater

@@ -16,6 +16,8 @@ module.exports=async({page,artifacts})=>{
  await page.getByRole('tab',{name:'Playlists',exact:true}).click()
  await page.getByRole('button',{name:'Open Local test playlist',exact:true}).click()
  await page.locator('.local-library-track').waitFor()
+ assert.equal(await page.locator('.local-library-track .track-artwork').count(),await page.locator('.local-library-track').count(),'All local tracks have artwork or an explicit fallback')
+ await require('./collection-header-smoke.cjs')(page,artifacts,'local-playlist')
  await page.screenshot({path:resolve(artifacts,'local-library-playlist.png')})
  await page.getByRole('tab',{name:'Songs',exact:true}).click()
  await page.getByLabel('Search local library',{exact:true}).fill('no such music')

@@ -52,7 +52,7 @@ Podcast inbox combines episodes across connected podcast libraries. Search by ep
 
 ## Downloads and offline progress
 
-Use Download beside an album/playlist selection, book, or episode. The original files are streamed to this computer in a single-worker queue. Downloads shows progress, quota, individual Pause/Resume, and Pause all/Resume all. Check individual downloads or Select all, then Remove selected and confirm. Partial selection is shown on the Select all checkbox. The default quota is 20 GB; change it in Settings. Resume restarts that item’s download from the beginning; byte-range continuation is not yet implemented. An interrupted app exit leaves unfinished downloads paused. Removing a download deletes only this app's cached copy. Stop that item before removing it.
+Use Download beside an album/playlist selection, book, or episode. The original files are streamed to this computer in a single-worker queue. Downloads shows progress, quota, individual Pause/Resume, and Pause all/Resume all. Check individual downloads or Select all, then Remove selected and confirm. Partial selection is shown on the Select all checkbox. The default quota is 20 GB; change it in Settings. Resume continues saved bytes when the server supports validated range requests. Changed files or servers without resume support restart safely. An interrupted app exit leaves unfinished downloads paused. Removing a download deletes only this app's cached copy. Stop that item before removing it.
 
 Ready downloads are preferred automatically for playback. Up to 32 recent cover images (at most 1 MB each) are cached separately from the audio quota; older offline items may show generated artwork. Books retain physical-file offsets and whole-book chapters; podcasts download only the chosen episode. Offline book/episode positions are checkpointed separately. The app does not replay uncertain listening-time deltas or automatically overwrite server progress.
 
@@ -121,19 +121,21 @@ Use the Settings rail to jump to Updates, Servers, Playback, Appearance, Listeni
 
 Appearance previews your theme while you edit. **Save theme** and **Save audio preferences** each save the full current shared preferences draft, including edits in the other section. Leaving Settings without saving restores the saved appearance.
 
+Choose **Solid** (the default) or **Gradient** under Customize this theme to control decorative surfaces throughout the app. Both modes use your selected palette and custom colors. Glass palettes retain translucent blur; lyric backgrounds and playback progress fills remain separate. The choice previews in both windows, saves with **Save theme**, and travels in preference backups. Imported CSS can intentionally override these built-in styles.
+
+Library continuation cards wrap to fit the window. Horizontal scrollbar tracks are hidden throughout the app; Home shelves retain Previous/Next arrows and support trackpad or Shift+wheel scrolling. Vertical scrollbars remain visible.
+
 In Appearance, **Import theme CSS** opens a native picker for a local `.css` file (UTF-8, at most 512 KB). A leading UTF-8 BOM is accepted; NUL characters, embedded BOMs, invalid encoding, and oversized files are rejected. CSS text is stored with preferences, not the original file path. Changes preview in the main and already-open mini player, and persist with Save theme. **Remove custom CSS** previews removal; save to keep it removed. Preference backups include CSS and validate it on restore. The existing Content Security Policy still restricts external resources.
 
 F11 toggles true fullscreen anywhere in the main window. The immersive player also has a Fullscreen button. Escape exits fullscreen. These controls do not change the mini player.
 
 Synced lyrics use real per-word timing when LRCLIB supplies enhanced LRC. For ordinary line-timed records, Flow estimates word progression from word lengths within each line. This is a visual guide, not recorded word alignment; other styles use a smooth line sweep. Plain lyrics stay static. Pausing or buffering stops interpolation; seeking updates the fill. Reduced-motion settings use playback updates without continuous animation. Existing saved matches with line-only data keep working; search and bind the record again to retrieve newly available word timing.
 
-
 ## Immersive lyric styling (0.7.2)
 
 Open Immersive view, then **Appearance**. The popup previews your changes immediately: choose background/shade, font, weight, size, line spacing, alignment, upcoming and sung text colors, current-word color, surrounding-line opacity and glow. Save appearance keeps the choices on this computer; Cancel or Escape restores the previous appearance. Reset appearance previews the defaults until you save.
 
 Choose Flow · word emphasis to enlarge the active word smoothly from its center without moving it upward, Focus for softened surrounding lines, Gentle fade for quiet line transitions, or No lyric animation. Smooth motion also controls the background; system reduced-motion settings take priority. Real word highlights require enhanced-LRC timestamps. For line-only records, Flow uses approximate word emphasis while other styles use a line sweep; plain lyrics remain untimed. The queue stays on the right. Styling is independently implemented with visual inspiration from [Spicy Lyrics](https://github.com/Spikerko/spicy-lyrics); its Spotify extension code is not bundled.
-
 
 ## Home and local music (0.7.3)
 
@@ -146,3 +148,53 @@ Use **Rescan library** after adding, changing, moving or deleting files. The fir
 In the normal Now playing screen, choose Lyrics, then **Lyrics appearance**. It shares saved typography, colors, word glow, backgrounds and animation settings with the immersive view. Exact word timing depends on the record. Line-only records use approximate word motion in Flow and a line sweep in other styles. Changes made in either player apply the next time the other view opens.
 
 Home shelves hide their horizontal scrollbars. Use the arrow buttons, horizontal trackpad gestures, or keyboard focus to browse each shelf.
+
+## Track artwork, more mixes and translucent panels (0.7.9)
+
+Music and local-library track rows, playlists, both queues, listening history, downloads, notes and Listen later show compact cover thumbnails. Podcast inbox rows use show artwork. Missing covers keep a fallback; local files use embedded artwork. Cover loading stays in the main process and waits until rows approach the viewport. Repeated covers share bounded caches.
+
+Home adds an **Album sampler** from up to four recently played albums, **All together**, **Short & sweet** (up to four minutes), **Take your time** (seven minutes or longer), and up to three artist spotlights. These use your favorites, available listening history and album sample, not invented recommendations. Conditional mixes appear only when enough matching tracks exist; each mix contains at most 50 unique tracks. Music sources keep separate identities. Refresh Home updates the available pool; Play shuffles a mix.
+
+Under Settings → Appearance → Customize this theme, **Translucent panels** adds a blurred, see-through finish within the app. It works independently of Solid / Gradient and previews in both windows. Save theme persists it, including in preference backups. Glass palettes keep their built-in blur. This does not make the native window transparent to your desktop wallpaper.
+
+## Daily-use controls (0.8 local preview)
+
+Use the top-bar search button or Ctrl+K to search your collections. Right-click a track (or focus its control and press Shift+F10) to open playback, queue, favorite, playlist and details actions. Choose a playlist in this menu to pin it to Home.
+
+On Home, choose **Customize Home** to reorder or hide sections and choose visible mixes. **Preview & edit** on a mix lets you exclude artists, shorten it, reshuffle and save it. A mix from one source saves as a playlist; one spanning sources saves in Play queue as a named queue.
+
+Local music supports M3U/M3U8 import through the native file picker. Files must be inside the selected source. Open a local playlist to rename, reorder, remove tracks or export it. Track menus add songs. Folder watching is on by default and can be disabled under Settings → Listening.
+
+Settings → Appearance includes Compact and Comfortable density. Settings → Listening includes music-only automatic queue continuation, keyboard shortcuts, per-show automatic podcast downloads and data removal. Podcast rules copy audio already available on Audiobookshelf, check every ten minutes while the app runs, and never clean up manually downloaded copies.
+
+In either lyrics view, change **Timing offset** to save a correction for that song. Positive values show lyrics later; negative values show them earlier. Manual bindings and offsets are included in personal backups, along with local playlists/favorites, listening history/statistics and Home/shortcut preferences. Backups exclude credentials, media and server progress. Older bindings without a known source identity retain their original identity; opening their song once records that identity for remapping in future backups.
+
+Windows media controls show the current track and accept pause, play, next, previous, stop and seek requests while MPV remains the audio engine. The installer bundles the helper runtime; a separate .NET installation is not needed.
+
+**Remove app data** offers three scopes. Cache cleanup rebuilds metadata/indexes. Personal cleanup removes history, stats, notes, queues, local favorites/playlists and lyric matches. Full reset additionally removes saved accounts, keys, settings and downloaded copies, then restarts. Every choice requires a native confirmation. Original source folders and server data are kept. Export a personal backup before cleanup if you want to retain those collections.
+
+## Library tools, profiles and Recap (local 0.9)
+
+Open **Library tools** in the sidebar for Rediscover, Book series, Podcast subscriptions, Library health, Listening profiles and Connections. These views use your connected sources and saved device history.
+
+Press **Ctrl+Shift+P** for the command palette. Search for a destination, theme, timer or action. Collection edits offer **Undo** briefly; the palette also exposes the last undo after its notification closes. If the collection changed again, undo refuses to overwrite that newer edit.
+
+In **Settings > Playback**, save a listening profile after saving your desired audio/theme/lyric settings. A profile captures current volume and spoken speed too. Applying a profile preserves your current scrobbling and close-to-tray choices. Use **Remember volume & EQ** for the selected output device. Crossfade is off by default; set a duration and save transitions to enable it for music in shared-output mode. Keep the album preference checked to preserve gapless album neighbors.
+
+In either lyrics view, choose **Import lyrics**, **Read embedded lyrics** (local music), or **Edit lyrics & timing**. The editor lets you edit LRC directly or stamp one selected line with the current playback time. Saving binds the result to this song locally; future opens use that saved binding. Originals are never modified.
+
+Open a local or server playlist and choose **Design playlist cover**. Generate a grid or stacked collage, or choose your own PNG/JPEG. Customize the title, size and colors, then save the cover. PNG export is separate from saving the local override. **Restore default cover** removes only that override.
+
+For podcast subscriptions, select an Audiobookshelf podcast library/folder, search by show name or paste RSS, select the results and subscribe. OPML import shows a review list first. Audiobookshelf processes subscription requests in the background, so refresh Podcasts shortly afterward. Audio downloads remain off until you enable them separately. This requires the server's podcast-management permission.
+
+For Recap, open **Listening stats**, choose inclusive dates and create a preview. Pick from **12 different compositions** and **12 independent palettes**, add your own title, and save PNG. Detailed insights below the poster compare the preceding equal-length period, including artist listening. Each design emphasizes different information; changing dates invalidates the previous image until you create a fresh recap.
+
+Connection tools can retry source checks, retry failed playback, open Downloads for offline progress review, and export a redacted diagnostics report. The export excludes connection addresses, file paths, credentials and listening titles.
+
+## Finding your way in 1.0
+
+Use **Settings → Search settings** to find controls by name or topic (for example, “equalizer”, “Discord” or “downloads”). Choose a result to reveal and highlight the setting. Enter chooses the first result; Escape clears the search. Searching does not discard unsaved preferences.
+
+**What's new** appears on the first launch of each version. Close it or follow a feature link to dismiss it for that version. Open it again from **Settings → Updates → What's new**. “Full changelog” opens the project's GitHub changelog in your browser.
+
+When a collection cannot load, use the nearby retry action. A refresh keeps the current library view while it checks connections. Empty-source screens offer setup or folder selection; an unavailable server is not presented as an empty collection.

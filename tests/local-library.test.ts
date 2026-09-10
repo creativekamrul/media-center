@@ -1,5 +1,5 @@
 import {afterEach,beforeEach,describe,it,expect,vi} from 'vitest'
-import {mkdtemp,mkdir,writeFile,rm,symlink,unlink} from 'node:fs/promises'
+import {mkdtemp,mkdir,writeFile,rm,symlink,unlink,rename} from 'node:fs/promises'
 import {tmpdir} from 'node:os'
 import {join} from 'node:path'
 import {LocalFiles} from '../src/main/local'
@@ -31,4 +31,8 @@ describe('Indexed local collection',()=>{
   await symlink(join(path,'outside'),join(path,'allowed','escape'),'junction');await symlink(join(path,'allowed'),join(path,'allowed','loop'),'junction')
   const root=await local.add(join(path,'allowed'));const result=await library.query(localQuerySchema.parse({rootId:root.id,view:'songs',page:0,search:''}));expect(result.tracks.map(t=>t.id)).toEqual(['own.wav']);expect(result.warnings.length).toBeGreaterThan(0)
  })
+ it('follows file identity after a rename and edits playlists without losing duplicate order',async()=>{
+  await writeFile(join(path,'before.wav'),'fixture');const root=await local.add(path);await library.query(localQuerySchema.parse({rootId:root.id,view:'songs',page:0,search:''}));await library.favorite(root.id,'before.wav',true);await library.playlist({action:'create',rootId:root.id,name:'Old',files:['before.wav','before.wav']});await rename(join(path,'before.wav'),join(path,'after.wav'));await library.index(root.id,true);expect(values.get('local-favorites:'+root.id)).toEqual(['after.wav']);const lists=values.get('local-playlists:'+root.id) as {id:string;files:string[]}[];expect(lists[0].files).toEqual(['after.wav','after.wav']);await library.playlist({action:'update',rootId:root.id,id:lists[0].id,name:'New',files:['after.wav']});expect(values.get('local-playlists:'+root.id)).toEqual([{id:lists[0].id,name:'New',files:['after.wav']}])
+ })
+
 })

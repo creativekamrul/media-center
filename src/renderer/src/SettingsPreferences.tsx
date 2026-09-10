@@ -21,6 +21,6 @@ export function ThemePreferences(){
   async function importCss(){try{const css=await api.importThemeCss();if(css!==null)setPrefs(p=>({...p,customCss:css}))}catch(e){error(message(e))}}
   return <section className="settings-panel theme-preferences"><ThemePicker value={prefs.theme} onChange={theme=>setPrefs(p=>({...p,theme}))}/><AppearanceEditor value={prefs} onChange={setPrefs}/>
     <div className="css-import"><h3>Custom theme CSS</h3><p className="muted">Import a local UTF-8 .css file, up to 512 KB. Preview it here, then save your theme. Remote assets remain blocked by the app.</p><div className="listen-actions"><button className="secondary" disabled={busy} onClick={()=>void importCss()}>Import theme CSS</button>{prefs.customCss!==undefined&&<button className="text-button" onClick={()=>setPrefs(p=>({...p,customCss:undefined}))}>Remove custom CSS</button>}</div><p className="muted">{prefs.customCss!==undefined?`${new TextEncoder().encode(prefs.customCss).length.toLocaleString()} bytes of custom CSS loaded`:'No custom CSS loaded'}</p></div>
-    <button className="primary" disabled={busy} onClick={()=>void save('Theme saved')}>Save theme</button>{notice&&<span className="action-notice" role="status">{notice}</span>}
+    <div className="settings-actions"><button className="primary" disabled={busy} onClick={()=>void save('Theme saved')}>Save theme</button></div>{notice&&<span className="action-notice" role="status">{notice}</span>}
   </section>
 }

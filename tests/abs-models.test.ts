@@ -11,6 +11,9 @@ describe('Audiobookshelf media boundaries', () => {
   it('classifies multiple libraries using mediaType, never their names', () => {
     expect(parseAbsLibraries({ libraries: [{ id: 'a', name: 'Podcasts (actually books)', mediaType: 'book' }, { id: 'b', name: 'Audiobooks (actually shows)', mediaType: 'podcast' }, { id: 'c', name: 'Other books', mediaType: 'book' }] }, 'server').map(l => l.kind)).toEqual(['audiobooks', 'podcasts', 'audiobooks'])
   })
+  it('retains series identity and fractional sequence only on books',()=>{
+    const parsed=parseAbsItem({...book,media:{...book.media,metadata:{...book.media.metadata,series:[{id:'series-id',name:'Series',sequence:2.5}]}}},'server');expect(parsed.kind).toBe('audiobook');if(parsed.kind==='audiobook')expect(parsed.seriesOrder).toEqual([{id:'series-id',name:'Series',sequence:'2.5'}]);expect(parseAbsItem(podcast,'server')).not.toHaveProperty('seriesOrder')
+  })
   it('keeps chapters and physical files separate', () => {
     const item = parseAbsItem(book, 'server')
     expect(item.kind).toBe('audiobook')

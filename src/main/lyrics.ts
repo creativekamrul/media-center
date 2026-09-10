@@ -35,8 +35,8 @@ export class LyricsClient {
     }).finally(()=>this.pending.delete(key))
     this.pending.set(key,work);return work
   }
-  saved(key:string){return this.store.get<LyricsRecord|null>(bindingKey(key))??undefined}
-  save(key:string,record:LyricsRecord){this.store.set(bindingKey(key),record)}
+  saved(key:string){const record=this.store.get<LyricsRecord|null>(bindingKey(key))??undefined;if(record)this.store.set(bindingKey(key).replace('lyrics-binding:','lyrics-identity:'),key);return record}
+  save(key:string,record:LyricsRecord){this.store.set(bindingKey(key),record);this.store.set(bindingKey(key).replace('lyrics-binding:','lyrics-identity:'),key)}
   clear(key:string){this.store.set(bindingKey(key),null)}
   search(query:string):Promise<LyricsRecord[]>{
     return this.schedule(async()=>{const url=new URL('https://lrclib.net/api/search');url.searchParams.set('q',query);const data=await this.request(url,4194304);return data===null?[]:z.array(recordSchema).max(100).parse(data).slice(0,20).map(recordOf)})

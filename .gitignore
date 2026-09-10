@@ -9,3 +9,6 @@ artifacts/
 *.sqlite-*
 *.db
 *.db-*
+
+native/**/bin/
+native/**/obj/

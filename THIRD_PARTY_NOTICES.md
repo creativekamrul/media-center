@@ -11,6 +11,7 @@ Media Center is GPL-3.0-only. Dependencies retain their own licenses; distribute
 | Zod | Validation | MIT — https://github.com/colinhacks/zod |
 | music-metadata | Audio metadata | MIT — https://github.com/Borewit/music-metadata |
 | Node.js / SQLite | Runtime/storage | Node MIT with bundled notices; SQLite public domain — https://github.com/nodejs/node |
+| .NET runtime / Windows Forms / Windows SDK projections | Windows SMTC helper | MIT and bundled notices — https://github.com/dotnet/runtime, https://github.com/dotnet/winforms, https://github.com/microsoft/CsWinRT |
 | MPV | User-supplied engine | Separate GPL/LGPL installation depending on build — https://mpv.io/ |
 
 Build/test dependencies include TypeScript, Vite, electron-vite, Vitest, Playwright and electron-builder under their upstream package licenses. The lockfile records versions. Electron distributions retain Chromium notices. Preserve required notices and provide corresponding application source when distributing GPL binaries.
