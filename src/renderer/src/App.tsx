@@ -1,5 +1,6 @@
 import {SettingsSearch} from './SettingsSearch'
 import {WhatsNew} from './WhatsNew'
+import {DesktopFrame} from './DesktopFrame'
 import {PageState} from './PageState'
 import {CollectionHeader} from './CollectionHeader'
 import {StudioPage,AudioExtras,Profiles,UndoToast,studioTabs,type StudioTab} from './Studio'
@@ -95,7 +96,7 @@ export function App() {
   useEffect(()=>{const key=(e:KeyboardEvent)=>{if(e.repeat||e.defaultPrevented||(e.target as HTMLElement).closest('input,textarea,select,[contenteditable=true],[role=dialog]'))return;const action=Object.entries(experience.shortcuts).find(([,v])=>v&&v.toLowerCase()===shortcutName(e).toLowerCase())?.[0];if(!action)return;if(action==='toggle'&&shortcutName(e)==='Space'&&(e.target as HTMLElement).closest('button,a,summary'))return;e.preventDefault();if(action==='search')setGlobalSearch(true);else if(action==='queue')setView('queue');else if(action==='lyrics'){setLyricRequest(n=>n+1);setView('now')}else if(action==='mini')void api.miniPlayer({action:'open'});else if(action==='favorite'){const item=player.queue[player.queueIndex];if(item)void toggleFavorite(item).catch(e=>setError(message(e)))}else if(action==='toggle'||action==='next'||action==='previous')command({action})};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key)},[experience,player.queue,player.queueIndex])
 
   useEffect(()=>{const go=(e:Event)=>{const target=(e as CustomEvent).detail;if(target==='settings'||target==='home')setView(target)};window.addEventListener('app-navigate',go);return()=>window.removeEventListener('app-navigate',go)},[])
-  return <div className="app-shell"><WhatsNew navigate={setView} error={setError}/>
+  return <DesktopFrame error={setError}><div className="app-shell"><WhatsNew navigate={setView} error={setError}/>
     <aside className="sidebar">
       <button className="brand" onClick={() => { setView('library'); setDetail(null) }}><span className="brand-mark"><AudioLines size={23}/></span><span>media<span className="brand-light">center</span><small>YOUR OWN FREQUENCY</small></span></button>
       <div className="sidebar-scroll"><button className={`nav-item ${view === 'home' ? 'selected' : ''}`} onClick={() => setView('home')}><Headphones size={19}/><span>Home</span></button><div className="nav-caption">YOUR COLLECTION</div>
@@ -149,7 +150,7 @@ export function App() {
       {label:'Search collections',run:()=>setGlobalSearch(true)},{label:'Play / pause',run:()=>api.command({action:'toggle'})},{label:'Undo last collection action',run:async()=>{await api.undo();setRevision(n=>n+1)}},{label:'Export diagnostics report',run:()=>api.exportDiagnostics()}
     ]}/>}<TrackMenu error={setError}/>{globalSearch&&<GlobalSearch close={()=>setGlobalSearch(false)} error={setError}/>}
     <PlayerBar player={player} command={command} showQueue={() => setView('queue')} expand={() => setView('now')} error={setError}/>
-  </div>
+  </div></DesktopFrame>
 }
 
 function DetailPage({ detail, sample, play, back }: { detail: ItemDetail; sample: boolean; play: (queue: QueueItem[], index: number, position?: number) => Promise<void>; back: () => void }) {

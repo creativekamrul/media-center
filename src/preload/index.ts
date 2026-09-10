@@ -2,6 +2,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopAPI, PlaybackState, UpdateState } from '../shared/types'
 
 const api: DesktopAPI = {
+ windowControl:action=>ipcRenderer.invoke('window:controls',action),
+ onWindowState:listener=>{const cb=(_e:unknown,state:import('../shared/types').WindowState)=>listener(state);ipcRenderer.on('window:state',cb);return()=>ipcRenderer.removeListener('window:state',cb)},
  releaseNews:action=>ipcRenderer.invoke('release:news',action),
  profiles:()=>ipcRenderer.invoke('profiles:get'),profileSave:n=>ipcRenderer.invoke('profiles:save',n),profileApply:id=>ipcRenderer.invoke('profiles:apply',id),profileDelete:id=>ipcRenderer.invoke('profiles:delete',id),
  outputProfile:a=>ipcRenderer.invoke('output:profile',a),transitions:i=>ipcRenderer.invoke('transitions:prefs',i),libraryHealth:id=>ipcRenderer.invoke('library:health',id),rediscover:()=>ipcRenderer.invoke('home:rediscover'),seriesShelves:()=>ipcRenderer.invoke('books:series'),recovery:()=>ipcRenderer.invoke('connections:recovery'),exportDiagnostics:()=>ipcRenderer.invoke('diagnostics:export'),

@@ -122,8 +122,9 @@ async function main() {
       throw new Error(`Playback state did not settle: ${JSON.stringify(state)}`)
     }
     page.on('pageerror', error => errors.push(error.message))
-    await page.getByRole('dialog',{name:'What’s new in Media Center 1.0.0',exact:true}).waitFor()
+    await page.getByRole('dialog',{name:'What’s new in Media Center '+require('../package.json').version,exact:true}).waitFor()
     await page.getByRole('button',{name:'Keep listening',exact:true}).click()
+    await require('./window-chrome-smoke.cjs')({desktop,page,artifacts})
     assert.equal((await page.evaluate(()=>window.mediaCenter.releaseNews('get'))).unread,false)
     if(process.env.MEDIA_CENTER_STUDIO_ONLY){
       const root=resolve(artifacts,'studio-audio');mkdirSync(root,{recursive:true});const wav=Buffer.alloc(44+8000*2*90);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(8000,24);wav.writeUInt32LE(16000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);writeFileSync(resolve(root,'studio.wav'),wav)
@@ -328,7 +329,7 @@ async function main() {
       await desktop.evaluate(({ BrowserWindow }, visible) => { for (const window of BrowserWindow.getAllWindows()) { window.webContents.setBackgroundThrottling(false); if (visible) window.showInactive() } }, !!(process.env.MEDIA_CENTER_EXECUTABLE || process.env.MEDIA_CENTER_VISIBLE_SMOKE))
       await restoredPage.waitForFunction(()=>getComputedStyle(document.body).fontFamily.includes('Verdana'))
       assert.equal((await restoredPage.evaluate(()=>window.mediaCenter.releaseNews('get'))).unread,false,'Release dismissal survives restart')
-      assert.equal(await restoredPage.getByRole('dialog',{name:'What’s new in Media Center 1.0.0',exact:true}).count(),0)
+      assert.equal(await restoredPage.getByRole('dialog',{name:'What’s new in Media Center '+require('../package.json').version,exact:true}).count(),0)
       const localSaved=await restoredPage.evaluate(async()=>{const r=(await window.mediaCenter.localRoots())[0];return {favorites:await window.mediaCenter.localLibrary({rootId:r.id,view:'favorites',page:0,search:''}),playlists:await window.mediaCenter.localLibrary({rootId:r.id,view:'playlists',page:0,search:''})}});assert.equal(localSaved.favorites.total,1);assert.equal(localSaved.playlists.groups[0].title,'Local test playlist')
       const persistedLyrics=await restoredPage.evaluate(()=>window.mediaCenter.lyrics({}));assert.equal(persistedLyrics.recordId,42);assert.equal(persistedLyrics.saved,true)
       const restored = await restoredPage.evaluate(async () => ({ playback: await window.mediaCenter.playback(), plans: await window.mediaCenter.laterList(), roots: await window.mediaCenter.localRoots(), prefs: await window.mediaCenter.preferences() }))

@@ -212,3 +212,13 @@ Home actions remain adjacent at 1008, 1440 and 1920 pixels. Listening panels use
 - Website checks passed at 1440, 768 and 390 pixels, including local assets, ten gallery tabs, keyboard navigation, image dialog/Escape and no-JavaScript access.
 - Local installer: `release/Media-Center-1.0.0-win-x64.exe`. SHA-256: `4887796301f6de8969ed5d98441734d49bc2d72252f4f9a8ccbb6299bc5f2889`.
 - This installer was built with `--publish never` and verified before the authorized GitHub publication. GitHub Actions builds its own installer from the tagged source; that asset has its own checksum.
+
+## 1.0.1 window polish validation — 2026-09-10
+
+- Typecheck, all 160 unit tests, production build and release metadata checks passed.
+- Source and final packaged Electron suites passed with muted native MPV and zero renderer errors. The packaged no-MPV path used by GitHub Actions also passed.
+- Native window checks cover minimize, maximize/restore, fullscreen visibility, close-to-tray and the close event lifecycle. Invalid commands and all main-window control commands from the mini player are rejected.
+- The title bar follows all 13 palettes. Native drag regions exclude control buttons; interface scaling checks pass at 100%, 125%, 150% and 200%.
+- Reviewed the packaged Now Playing screenshot: Back to library and the view controls share a header above the artwork and queue. Existing lyric, seeking, download, book/episode identity, persistence and crossfade checks pass.
+- Local installer: `release/Media-Center-1.0.1-win-x64.exe`. SHA-256: `3c93376998f16ed2fa685d95e0f24d255799b68255fc91e7fb4050febbd5126f`.
+- Built with `--publish never` and verified before the authorized GitHub publication. GitHub Actions builds a separate installer from the release tag with its own checksum.

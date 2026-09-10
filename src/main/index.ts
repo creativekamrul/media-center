@@ -68,7 +68,11 @@ function handle<T extends z.ZodTypeAny>(channel: string, schema: T, action: (inp
   })
 }
 function createWindow() {
-  window = new BrowserWindow({ width: 1440, height: 940, minWidth: 1024, minHeight: 720, backgroundColor: '#121416', title: 'Media Center', show: process.env.MEDIA_CENTER_SMOKE !== '1', autoHideMenuBar: true, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true } })
+  window = new BrowserWindow({ width: 1440, height: 940, minWidth: 1024, minHeight: 720, frame: false, backgroundColor: '#121416', title: 'Media Center', show: process.env.MEDIA_CENTER_SMOKE !== '1', autoHideMenuBar: true, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true } })
+  window.removeMenu()
+  // On Windows, fullscreen events fire before Electron updates isFullScreen().
+  const publishWindowState=()=>setImmediate(()=>{if(window&&!window.isDestroyed())window.webContents.send('window:state',windowState())})
+  window.on('maximize',publishWindowState).on('unmaximize',publishWindowState).on('enter-full-screen',publishWindowState).on('leave-full-screen',publishWindowState).on('focus',publishWindowState).on('blur',publishWindowState)
   window.webContents.on('before-input-event', (event, input) => {
     if (input.type !== 'keyDown' || input.isAutoRepeat) return
     if (input.key === 'F11') { event.preventDefault(); window?.setFullScreen(!window.isFullScreen()) }
@@ -80,6 +84,9 @@ function createWindow() {
   else void window.loadFile(join(__dirname, '../renderer/index.html'))
   window.on('closed', () => { window = undefined })
   window.on('close', event => { if (!quitting && store.preferences().closeToTray && tray) { event.preventDefault(); window?.hide() } })
+}
+function windowState() {
+  return {maximized:window?.isMaximized()??false,fullscreen:window?.isFullScreen()??false,focused:window?.isFocused()??false}
 }
 function createMini() {
   if (miniWindow && !miniWindow.isDestroyed()) { miniWindow.show();return }
@@ -170,6 +177,14 @@ else {
     handle('updates:download', z.undefined(), () => updates.download())
     handle('updates:install', z.undefined(), () => updates.install())
     handle('window:fullscreen', z.enum(['toggle','exit']), action => { if(window && !window.isDestroyed()) window.setFullScreen(action === 'toggle' ? !window.isFullScreen() : false) })
+    handle('window:controls',z.enum(['get','minimize','maximize','close']),action=>{
+      if(window&&!window.isDestroyed()){
+        if(action==='minimize')window.minimize()
+        if(action==='maximize'&&!window.isFullScreen()){if(window.isMaximized())window.unmaximize();else window.maximize()}
+        if(action==='close')window.close()
+      }
+      return windowState()
+    })
     handle('theme:preview', preferenceSchema.nullable(), prefs => { if(miniWindow && !miniWindow.isDestroyed()) miniWindow.webContents.send('theme:state', prefs ?? store.preferences()) })
     handle('theme:import-css', z.undefined(), async () => {
       const result = await dialog.showOpenDialog(window!, {title:'Import custom theme CSS', filters:[{name:'CSS theme', extensions:['css']}], properties:['openFile']})
@@ -216,7 +231,7 @@ else {
     mediaAvailable(false)
     windowsMedia=new WindowsMedia(player,async item=>{const t=item.target;if(t.kind==='local-file')return local.cover(t.rootId,t.fileId);const id=item.cover??(t.kind==='music-track'?t.trackId:t.kind==='audiobook'?t.bookId:t.kind==='podcast-episode'?t.showId:'');return id?downloads.cover(t.serverId,id)??await provider(t.serverId).cover(id):null},mediaAvailable)
     createWindow()
-    const icon = nativeImage.createFromPath(app.isPackaged ? join(process.resourcesPath, 'icon.ico') : join(app.getAppPath(), 'build/icon.ico'))
+    const icon = nativeImage.createFromPath(app.isPackaged ? join(process.resourcesPath, 'icon.ico') : join(__dirname, '../../build/icon.ico'))
     if (!icon.isEmpty()) {
       tray = new Tray(icon); tray.setToolTip('Media Center')
       const show = () => { if (!window) createWindow(); window?.show(); window?.focus() }

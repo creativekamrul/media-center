@@ -39,6 +39,8 @@ export interface UpdateState {
   version?: string; percent?: number; transferred?: number; total?: number; checkedAt?: number; error?: string
 }
 export interface DesktopAPI extends DailyAPI, ExperienceAPI, importStudioAPI {
+  windowControl(action:'get'|'minimize'|'maximize'|'close'):Promise<WindowState>
+  onWindowState(listener:(state:WindowState)=>void):()=>void
   releaseNews(action:'get'|'seen'|'changelog'):Promise<{version:string;unread:boolean}>
   importThemeCss(): Promise<string | null>
   previewTheme(preferences: Preferences | null): Promise<void>
@@ -93,6 +95,7 @@ export interface DesktopAPI extends DailyAPI, ExperienceAPI, importStudioAPI {
   preferences(): Promise<Preferences>
   savePreferences(input: Preferences): Promise<void>
 }
+export interface WindowState {maximized:boolean;fullscreen:boolean;focused:boolean}
 export const emptyPlayback: PlaybackState = { status: 'idle', title: 'Nothing playing yet', subtitle: 'Find something worth listening to', position: 0, duration: 0, speed: 1, volume: 80, chapters: [], queue: [], queueIndex: 0, repeat: 'off', shuffle: false, crossfading:false }
 
 export type MusicView = 'albums' | 'newest' | 'recent' | 'frequent' | 'random' | 'songs' | 'artists' | 'playlists' | 'favorites' | 'genres' | 'radio'

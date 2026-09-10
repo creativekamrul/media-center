@@ -211,3 +211,9 @@ Limits: local watching requires an available source; identity matching is strong
 - Consistent focus indicators, wrapped action groups and responsive Settings/player/modal layouts. Automated Chromium interface-zoom checks cover 100%, 125%, 150% and 200%; actual Windows monitor/DPI combinations still benefit from user testing.
 - Home, server libraries and the local collection distinguish loading, empty and failed requests. Connection retries preserve existing views during successful refreshes; missing-source screens link to setup.
 - What's new opens once for each app version, persists dismissal locally and can be reopened from Updates. Feature links navigate within the app; the changelog opens a fixed GitHub URL from the main process. Mini-player IPC cannot invoke this route.
+
+## 1.0.1 window polish
+
+- Main-window-only validated controls for minimize, maximize/restore and close; native close/tray lifecycle preserved.
+- Theme-aware frameless title bar with a native draggable area and explicit non-draggable controls. Fullscreen hides the title bar and restores it on exit.
+- Classic Now Playing uses a compact, wrapping header for Back to library and Queue/Lyrics/Immersive navigation.

@@ -198,3 +198,9 @@ Use **Settings → Search settings** to find controls by name or topic (for exam
 **What's new** appears on the first launch of each version. Close it or follow a feature link to dismiss it for that version. Open it again from **Settings → Updates → What's new**. “Full changelog” opens the project's GitHub changelog in your browser.
 
 When a collection cannot load, use the nearby retry action. A refresh keeps the current library view while it checks connections. Empty-source screens offer setup or folder selection; an unavailable server is not presented as an empty collection.
+
+## Window controls (1.0.1)
+
+The main window uses a title bar that follows the active theme. Drag the title area to move the window; the buttons at the upper right minimize, maximize/restore and close it. Close honors the existing close-to-tray preference. F11 enters fullscreen and hides the title bar; Escape restores the normal window.
+
+In the classic Now Playing screen, **Back to library** sits above the artwork beside the Queue, Lyrics and Immersive view controls.

@@ -70,6 +70,7 @@ module.exports=async({desktop,page,artifacts})=>{
   await page.waitForFunction(async()=>!!(await window.mediaCenter.preferences()).customCss)
   assert.equal((await page.evaluate(()=>window.mediaCenter.preferences())).customCss,css)
   assert.equal(await mini.evaluate(()=>window.mediaCenter.fullscreen('toggle').then(()=>false,()=>true)),true,'Mini cannot request fullscreen')
+  for(const action of ['get','minimize','maximize','close'])assert.equal(await mini.evaluate(action=>window.mediaCenter.windowControl(action).then(()=>false,()=>true),action),true,'Mini cannot control the main window')
   // The main test window starts hidden; native keyboard input requires focus after
   // opening the visible mini player. Real users already have a focused main window.
   await desktop.evaluate(({BrowserWindow})=>{const main=BrowserWindow.getAllWindows().find(w=>!w.webContents.getURL().includes('mini=1'));main.showInactive();main.focus();main.webContents.focus()})

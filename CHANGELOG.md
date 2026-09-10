@@ -2,6 +2,12 @@
 
 
 
+## 1.0.1
+
+- Replaced the native main-window title bar with theme-aware minimize, maximize/restore and close controls, plus a draggable title region. Fullscreen hides the title bar; close-to-tray retains its existing behavior.
+- Moved the floating Now Playing close icon into a compact header with a labeled Back to library action and the Queue, Lyrics and Immersive controls.
+- Window operations use a validated main-window-only IPC route; the mini player cannot control the main window.
+
 ## 1.0.0
 
 The first major Media Center release brings together music, audiobooks, podcasts and local libraries.

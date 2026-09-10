@@ -1,0 +1,24 @@
+.desktop-window { --window-titlebar:36px; height:100%; min-height:0; display:flex; flex-direction:column; background:var(--bg); }
+.desktop-window>.app-shell { flex:1; height:auto; min-height:0; }
+.window-titlebar { height:var(--window-titlebar); flex:none; display:flex; align-items:stretch; background:var(--panel); color:var(--text); border-bottom:1px solid var(--line); user-select:none; position:relative; z-index:300; }
+.window-drag-area { flex:1; min-width:0; display:flex; align-items:center; gap:9px; padding:0 14px; -webkit-app-region:drag; app-region:drag; }
+.window-drag-area>svg { color:var(--accent); }
+.window-drag-area>span { font-size:12px; font-weight:600; letter-spacing:.1px; white-space:nowrap; }
+.is-unfocused .window-drag-area { color:var(--muted); }
+.window-controls { display:flex; align-items:stretch; -webkit-app-region:no-drag; app-region:no-drag; }
+.window-controls>button { width:46px; height:100%; min-height:0; padding:0; display:grid; place-items:center; border:0; border-radius:0; background:transparent; color:var(--text); box-shadow:none; -webkit-app-region:no-drag; app-region:no-drag; transition:background .12s,color .12s; }
+.window-controls>button:hover { background:var(--control-hover); transform:none; }
+.window-controls>button:active { background:color-mix(in srgb,var(--accent) 24%,var(--panel)); }
+.window-controls>button:focus-visible { outline:2px solid var(--accent); outline-offset:-4px; }
+.window-controls>.window-close:hover { background:#c42b32; color:white; }
+.window-controls>.window-close:active { background:#a72329; color:white; }
+.desktop-window.is-fullscreen { --window-titlebar:0px; }
+.is-fullscreen>.window-titlebar { display:none; }
+.desktop-window .immersive-player { top:var(--window-titlebar); }
+.desktop-window .modal-shade { top:var(--window-titlebar); }
+.desktop-window .modal { max-height:calc(100dvh - var(--window-titlebar) - 48px); }
+.now-playing-header { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding-bottom:16px; border-bottom:1px solid var(--line); }
+.now-playing-header .now-tabs { margin:0; flex-wrap:wrap; }
+.now-playing-header .now-back { min-height:40px; display:inline-flex; gap:8px; align-items:center; }
+.expanded-player { row-gap:24px; }
+@media(prefers-reduced-motion:reduce) { .window-controls>button { transition:none; } }
