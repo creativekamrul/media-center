@@ -43,11 +43,13 @@ export function PlaylistDesigner({
   id,
   name,
   close,
+  embedded = false,
 }: {
   source: string
   id: string
   name: string
-  close: () => void
+  close?: () => void
+  embedded?: boolean
 }) {
   const [title, setTitle] = useState(name),
     [color, setColor] = useState('#142d32'),
@@ -137,8 +139,8 @@ export function PlaylistDesigner({
     }
     setPng(canvas.toDataURL('image/png'))
   }
-  return (
-    <Modal title="Design playlist cover" close={close}>
+  const content = (
+    <section className="playlist-designer">
       <p className="muted">
         Create a collage or choose a picture. Covers are saved locally for this
         playlist. Export PNG to share or upload elsewhere.
@@ -267,6 +269,7 @@ export function PlaylistDesigner({
         </button>
       </div>
       {notice && <p role="status">{notice}</p>}
-    </Modal>
+    </section>
   )
+  return embedded ? content : <Modal title="Design playlist cover" close={close!}>{content}</Modal>
 }

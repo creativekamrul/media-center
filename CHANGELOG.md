@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.1
+
+Consistent library controls and a calmer listening workspace.
+
+- Consolidate album, playlist, audiobook and podcast actions in their collection headers; show selection tools only for selected tracks.
+- Keep More options menus opaque and above surrounding controls, with keyboard navigation and viewport-aware placement.
+- Integrate playlist cover generation into customization and fix generated-cover preview proportions.
+- Use one playback row per podcast episode, with progress and personal actions in More options.
+- Redesign Saved queues with a named save form and organized resume, load, replace and delete actions.
+- Keep Now Playing artwork stationary while its queue scrolls independently on desktop layouts.
+
 ## 1.2.0
 
 Custom mixes and collection refresh.

@@ -266,3 +266,7 @@ Limits: local watching requires an available source; identity matching is strong
 
 - Podcast libraries now include a Finished episodes tab, backed by the existing expanded-show podcast index with library filtering before pagination. Missing audio is shown as unavailable; completion actions retain show/episode identity. Index refresh warnings remain visible.
 - Artwork selections preview in a contained square at the top of the editor. Library action toolbars and track menus group related controls; album Explore artist is a primary action and Download is in More options.
+
+### 1.2.1 local UI follow-up
+
+Collection and episode controls share compact playback rows with personal/progress tools under More options. Dropdowns use an opaque top-layer surface. Playlist customization includes cover generation. Saved queues use a dedicated panel; desktop Now Playing scrolls the right-hand queue independently of artwork.

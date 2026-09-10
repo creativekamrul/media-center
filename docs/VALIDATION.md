@@ -312,3 +312,15 @@ This installer supersedes the earlier 1.2.0 local build recorded above.
 - Reviewed `artifacts/cover-preview-top-1008.png`, `track-actions-grouped-1008.png`, `library-track-toolbar.png` and `finished-podcast-episodes.png`.
 - Installer: `release/Media-Center-1.2.0-win-x64.exe`, 154,432,294 bytes; SHA-256: `68d1ab2de763485393a67ab648a4b08b31802a739101eb31df8e75dcea844ff6`.
 - This replaces the previous local 1.2.0 installer. Publishing was disabled; no GitHub push, release or Pages deployment was performed.
+
+
+## 1.2.1 local collection consistency — 2026-09-11
+
+- `npm run typecheck`, `npm test` (188 tests across 32 files), `npm run build`, `npm run release:check` and `git diff --check` passed.
+- Built `release/Media-Center-1.2.1-win-x64.exe` with `npm run package:win` (`--publish never`), 154,434,812 bytes. SHA-256: `ecfa3db4f27dba3d79196a098bd1a9ef5a504033b20b89b641d640c5b8cfd956`.
+- Full native-MPV desktop suite passed, followed by the full suite against `release/win-unpacked/Media Center.exe`: music, books, podcasts, seeking, offline progress, artwork, customization and shared UI flows, with zero renderer errors.
+- New `scripts/consistency-smoke.cjs` verifies top-layer menu hit testing, monochrome opaque menu rendering with translucency disabled and missing-theme-variable fallback, playlist generation within one customization dialog, book/show header tools, episode action rows and reset confirmation, independent right-hand queue scrolling at 1008/1440px, and saved-queue save/load/delete flows.
+- Reviewed screenshots from isolated fixture collections: `opaque-more-menu.png`, `playlist-customization-integrated.png`, `episode-actions-consistent-1008.png`, `collection-consistent-Podcasts.png`, and `saved-queues-consistent.png` in ignored `artifacts/`.
+- This is a local installer only; no commit, tag, push or GitHub release was published for 1.2.1.
+
+- Final visual review caught an invalid menu background when theme variables were absent. Added an unconditional opaque backing color, rebuilt the installer above, then reran the targeted packaged UI suite successfully. The full native playback suite had passed before this isolated CSS correction.

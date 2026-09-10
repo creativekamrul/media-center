@@ -266,3 +266,9 @@ Audiobook and podcast **Continue listening** tabs show resume cards in a grid. *
 In Podcasts, **Finished episodes** shows completed episodes from the selected library. Search by show or episode title, sort the results, replay an available episode, or choose **More options → Mark unfinished**. **Refresh progress** reads the latest server completion state.
 
 Selecting an artwork search result previews it in the top cover box. Choose **Use this cover** to save it or **Cancel preview** to return to the current image. Portrait images are fitted inside the square without stretching. Album headers include **Explore artist** alongside playback, while downloads are under **More options**. Right-click menus separate playback/favorite, customization, and playlist actions.
+
+### Collection and queue controls (1.2.1)
+
+Use the collection header’s **More options** for shelf, offline and customization tools. Selecting tracks reveals **Selection options** for those tracks. For a server playlist, open **Customize details & cover → Generate cover**; local playlists use **Customize playlist → Cover art**. Each episode keeps playback in its footer; mark finished/unfinished, reset and customization are in its More menu.
+
+Expand **Saved queues**, enter a name and choose **Save current queue**. Each saved entry offers Resume; More options contains Load queue, Replace with current and Delete. On desktop Now Playing layouts, scroll the queue on the right while artwork and song details remain on the left.

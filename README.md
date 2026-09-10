@@ -43,7 +43,9 @@ Move from a favorite album to the next chapter without switching players. Media 
 
 Personal shelves, metadata customization, offline plans, per-show podcast preferences, private listening and the themed mini player remain available.
 
-[Read the 1.2.0 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.2.0) · [Full changelog](CHANGELOG.md)
+**1.2.1 refinements:** consistent collection and episode actions, opaque More menus, playlist cover generation inside customization, redesigned Saved queues and independent queue scrolling in Now Playing.
+
+[Read the 1.2.1 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.2.1) · [Full changelog](CHANGELOG.md)
 
 ## A closer look
 

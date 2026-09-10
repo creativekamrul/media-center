@@ -25,4 +25,5 @@ import './library-redesign.css'
 import './mix-builder.css'
 import './layout-followup.css'
 import './library-actions.css'
+import './collection-consistency.css'
 createRoot(document.getElementById('root')!).render(<React.StrictMode>{new URLSearchParams(location.search).get('mini') === '1' ? <MiniPlayer/> : <App/>}</React.StrictMode>)

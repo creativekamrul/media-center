@@ -128,10 +128,11 @@ async function main() {
     await page.getByRole('button',{name:'Keep listening',exact:true}).click()
     await require('./window-chrome-smoke.cjs')({desktop,page,artifacts})
     assert.equal((await page.evaluate(()=>window.mediaCenter.releaseNews('get'))).unread,false)
-    if(process.env.MEDIA_CENTER_STUDIO_ONLY||process.env.MEDIA_CENTER_PERSONAL_ONLY||process.env.MEDIA_CENTER_MIXES_ONLY||process.env.MEDIA_CENTER_BUGS_ONLY||process.env.MEDIA_CENTER_POLISH_ONLY){
+    if(process.env.MEDIA_CENTER_CONSISTENCY_ONLY||process.env.MEDIA_CENTER_STUDIO_ONLY||process.env.MEDIA_CENTER_PERSONAL_ONLY||process.env.MEDIA_CENTER_MIXES_ONLY||process.env.MEDIA_CENTER_BUGS_ONLY||process.env.MEDIA_CENTER_POLISH_ONLY){
       const root=resolve(artifacts,'studio-audio');mkdirSync(root,{recursive:true});const wav=Buffer.alloc(44+8000*2*90);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(8000,24);wav.writeUInt32LE(16000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);writeFileSync(resolve(root,'studio.wav'),wav)
       await page.getByRole('button',{name:'Explore sample library'}).click();await desktop.evaluate(({dialog},data)=>{dialog.showOpenDialog=async(_w,o)=>({canceled:false,filePaths:[o.properties.includes('openDirectory')?data.root:data.mpv]})},{root,mpv:mpvPath});
       await page.evaluate(async url=>{const a=window.mediaCenter;await a.saveConnection({provider:'navidrome',name:'Fixture Music',url,username:'test-user',secret:'test-password'});await a.saveConnection({provider:'audiobookshelf',name:'Fixture Books',url,username:'',secret:'test-token'});await a.chooseMpv();const root=await a.localAdd();await a.localPlaylist({action:'create',rootId:root.id,name:'Local test playlist',files:['studio.wav']});await a.command({action:'volume',value:0});await a.play({queue:[{target:{kind:'local-file',serverId:'local',rootId:root.id,fileId:'studio.wav'},title:'Local studio fixture',subtitle:'Fixture artist'}],index:0})},url);await new Promise(r=>setTimeout(r,1500));await page.evaluate(()=>window.mediaCenter.command({action:'toggle'}));
+      if(process.env.MEDIA_CENTER_CONSISTENCY_ONLY){await page.reload();await require('./consistency-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);return}
       if(process.env.MEDIA_CENTER_POLISH_ONLY){await page.reload();await require('./library-actions-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);return}
       if(process.env.MEDIA_CENTER_BUGS_ONLY){await page.reload();await require('./interaction-bugs-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);return}
       if(process.env.MEDIA_CENTER_MIXES_ONLY){await page.reload();await require('./mixes-smoke.cjs')({desktop,page,artifacts});await require('./layout-followup-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);writeFileSync(resolve(artifacts,'mixes-smoke.json'),JSON.stringify({passed:true,rendererErrors:errors},null,2));return}
@@ -214,7 +215,7 @@ async function main() {
     await page.locator('.song-row').first().scrollIntoViewIfNeeded()
     await page.screenshot({path:resolve(artifacts,'playlist-artwork.png')})
     await page.locator('.detail-heading').getByRole('button',{name:'More options',exact:true}).click()
-    assert.equal(await page.locator('.collection-management button').count(),4)
+    await page.locator('.collection-management').waitFor();assert.equal(await page.locator('.collection-management button').count(),6)
     await page.keyboard.press('Escape')
     await require('./collection-header-smoke.cjs')(page,artifacts,'playlist')
     await page.screenshot({ path: resolve(artifacts,'playlist-v021.png') })
@@ -246,16 +247,16 @@ async function main() {
     await page.getByLabel('Episode sort', { exact: true }).selectOption('title')
     const searchStyle=await page.locator('.search input').first().evaluate(el=>({background:getComputedStyle(el).backgroundColor,border:getComputedStyle(el).borderTopWidth}))
     assert.equal(searchStyle.background,'rgba(0, 0, 0, 0)','Search input must share its outer surface');assert.equal(searchStyle.border,'0px')
-    const statusStyle = await page.locator('.episode-card .status-control button').first().evaluate(b=>({height:b.getBoundingClientRect().height,font:parseFloat(getComputedStyle(b).fontSize)}))
-    assert.ok(statusStyle.height>=36 && statusStyle.font>=13, 'Episode status controls need visible button targets')
+    await page.locator('.episode-card').first().getByRole('button',{name:'More options',exact:true}).click()
+    const statusStyle = await page.locator(':popover-open').getByRole('button',{name:'Reset progress',exact:true}).evaluate(b=>({height:b.getBoundingClientRect().height,font:parseFloat(getComputedStyle(b).fontSize)}))
+    assert.ok(statusStyle.height>=36 && statusStyle.font>=12, 'Episode status controls need visible button targets')
+    await page.keyboard.press('Escape')
     for (const width of [1024,1440,1920]) {
       await page.setViewportSize({width,height:900})
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Episode screen must fit the viewport')
-      const actions=await page.locator('.episode-card').first().evaluate(el=>{const status=el.querySelector('.status-control').getBoundingClientRect(),actions=el.querySelector('.listen-actions').getBoundingClientRect();return Math.abs(status.left-actions.left)})
-      assert.ok(actions<4,'Episode status and playback actions should stay grouped')
-      const layout=await page.locator('.episode-card').first().evaluate(el=>{const copy=el.querySelector('.episode-copy').getBoundingClientRect(),controls=el.querySelector('.episode-bottom').getBoundingClientRect(),card=el.getBoundingClientRect();return{copyRight:copy.right,copyBottom:copy.bottom,controlsLeft:controls.left,controlsTop:controls.top,controlsRight:controls.right,cardRight:card.right}})
-      if(width>=1250){assert.ok(layout.controlsLeft>=layout.copyRight+15,'Wide episodes put controls beside the description');assert.ok(layout.cardRight-layout.controlsRight<30,'Episode controls use the right edge')}
-      else assert.ok(layout.controlsTop>=layout.copyBottom,'Narrow episodes stack without overlap')
+      const layout=await page.locator('.episode-card').first().evaluate(el=>{const copy=el.querySelector('.episode-copy').getBoundingClientRect(),controls=el.querySelector('.episode-bottom').getBoundingClientRect(),card=el.getBoundingClientRect();return{copyBottom:copy.bottom,controlsTop:controls.top,controlsRight:controls.right,cardRight:card.right}})
+      assert.ok(layout.controlsTop>=layout.copyBottom,'Episode actions sit in one footer below the description')
+      assert.ok(layout.cardRight-layout.controlsRight<30,'Episode controls use the card width')
       await page.locator('.episode-card').first().evaluate(el=>el.scrollIntoView({block:'start'}))
       await page.screenshot({path:resolve(artifacts,'episodes-v021-'+width+'.png')})
     }
@@ -352,6 +353,7 @@ async function main() {
       await require('./layout-followup-smoke.cjs')({desktop,page:restoredPage,artifacts})
       await require('./interaction-bugs-smoke.cjs')({desktop,page:restoredPage,artifacts})
       await require('./library-actions-smoke.cjs')({desktop,page:restoredPage,artifacts})
+      await require('./consistency-smoke.cjs')({desktop,page:restoredPage,artifacts})
     }
     writeFileSync(resolve(artifacts, process.env.MEDIA_CENTER_EXECUTABLE ? 'packaged-smoke.json' : 'desktop-smoke.json'), JSON.stringify({ passed: true, version: require('../package.json').version, packagedExecutable: process.env.MEDIA_CENTER_EXECUTABLE || null, nativeMpvTested: !!mpvPath, nativeAudioRequests: audioRequests.length, checks: ['production Electron/preload/SQLite', 'sample music/books/podcasts', 'book chapters distinct from podcast episodes', 'episode availability filter', 'Navidrome authentication and album browsing', 'Audiobookshelf authentication and separate libraries', 'credentials excluded from renderer settings', 'missing MPV error', 'minimum window layout', 'readable aligned action buttons', 'navigation resets inherited scroll', 'grouped episode controls at 1024 and 1920 pixels', 'playlist creation and replacement with ordered duplicate tracks', 'episode status search and sorting', 'server completion mutation', ...(mpvPath ? ['real MPV 24-bit/96 kHz 300+ MB virtual WAV streaming', 'authenticated episode playback', 'resume second book file and seek backward to first while paused', 'server progress sync', 'raw Navidrome audio and music speed reset', 'editable queue and expanded player', 'SQLite listen-later save reschedule completion', 'local WAV metadata and native playback', 'live ReplayGain and equalizer', 'restart persistence without autoplay','native gapless transition','mini-window pin and restricted IPC','original offline book/episode downloads and cross-file seeks','offline progress preview and commit','saved queue load without autoplay','timestamped notes','cross-show inbox and Home','listening statistics','credential-free backup preview/restore and schema rejection','mixed personal shelves and ordering','local metadata and custom artwork persistence','MusicBrainz and Cover Art Archive transport fixtures','offline plan readiness and missing-file detection','show playback preferences','shared Continue Listening geometry','saved list views and creator profiles','private listening control','saved custom mixes with native playback and restart persistence','recent album pagination beyond 60','four responsive collection headers'] : [])], requestCount: requests.length, rendererErrors: errors }, null, 2))
     console.log('Desktop smoke passed: production Electron, 2 fixture servers, 3 media types, 0 renderer errors.')
