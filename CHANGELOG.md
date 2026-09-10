@@ -1,6 +1,22 @@
 # Changelog
 
+## 1.2.0
 
+Custom mixes and collection refresh.
+
+- Create saved music mixes using artist, genre, album, title, format, release year, duration, favorite status, and available Navidrome ratings/play counts. Combine AND/OR/NOT condition groups, choose multiple music sources, sort or shuffle, limit tracks per artist, and preview before playing or queueing.
+- Manage and duplicate mixes from Library tools; open saved mixes directly on Home. Recipes are included in validated personal backups with source remapping.
+- Remove the eight-album limit on Home. Load a full page per Navidrome server and request more without replacing the albums already shown.
+- Refresh music, local music, audiobook, podcast and Library tools headers with collection icons, custom names, compact actions and underlined navigation. Books and podcasts have dedicated Continue listening views; books also have a Finished view.
+- Keep mix scans in the main process, with bounded catalogs, explicit partial-result warnings and no writes to original music files or server tags.
+- Keep collection header actions in one row with a More options menu. Show Continue listening as a dedicated book/podcast grid, widen Settings search, align People search controls, and optionally pin Playlists directly below Home.
+- Fix artist playback in the music browser and playback/queue actions after local metadata edits. Show action errors within dialogs instead of hiding them behind overlays.
+- Enable mouse and keyboard context actions on artist, album and playlist cards and missing track rows, including People results. Keep actions bound to the correct item.
+- Add paced, cached Apple iTunes artwork search when MusicBrainz cannot connect or returns no releases. Save selected covers for tracks/albums and retain validated public image sources in personal backups and Discord.
+- Reset track pagination when the displayed collection changes to avoid empty later pages. Clear stale artwork previews on failed requests and keep continuation progress bars inside their grid cards.
+- Preview selected artwork in the original square cover box above search, with contained portrait images and an explicit Cancel preview action.
+- Group library selection/view tools and separate right-click playback, customization and playlist actions. Favorite joins playback actions; Explore artist joins album header actions; Download moves into More options.
+- Browse Finished episodes in each podcast library, with search, sorting, playback and Mark unfinished. Completion is scoped to server, library, show and episode.
 
 ## 1.1.1
 

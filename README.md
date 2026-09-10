@@ -32,16 +32,18 @@ Move from a favorite album to the next chapter without switching players. Media 
 | **Audiobookshelf podcasts** | Browse shows and independent episodes, filter listening status, search, sort, and catch up through the podcast inbox. |
 | **Local music library** | Browse tagged albums, songs, artists and genres; keep local favorites and playlists, or explore the original folder structure. Files stay untouched. |
 
-## New in Media Center 1.1
+## New in Media Center 1.2
 
-- **Build personal shelves.** Bring albums, playlists, books, shows and tracks together, then choose their order and cover.
-- **Make your library yours.** Edit titles and metadata on this device, find artwork through MusicBrainz and Cover Art Archive, explore creator pages and save column layouts. Original files and server metadata stay untouched.
-- **Prepare for offline listening.** Save download plans, check missing or damaged files and see storage estimates before downloading.
-- **Set up each podcast once.** Keep a show's preferred speed, intro/outro skips and episode order.
-- **Choose a private listen.** Pause history, statistics, music scrobbles and Discord sharing for the session while keeping spoken resume positions.
-- **A tidier workspace.** Rename collections, choose their icons, collapse the sidebar and enjoy consistent Continue Listening cards across Home, books and podcasts.
+- **Make your own mixes.** Combine artists, genres, years, favorites and grouped rules across music sources. Preview, save, duplicate and play your recipes.
+- **Rediscover more music.** Browse beyond eight recently played albums and load more as you explore.
+- **A cleaner collection.** Refreshed headers, compact action rows, organized right-click menus and optional Playlists below Home keep common actions close.
+- **Keep every story in order.** Dedicated Continue listening grids for books and podcasts, plus searchable Finished episodes with replay and Mark unfinished.
+- **Find the right cover.** MusicBrainz/Cover Art Archive searches fall back to Apple iTunes when needed. Preview covers in a square box before applying device-local changes.
+- **More reliable everyday actions.** Fixes for artist playback, context menus, playback after metadata edits and collection pagination.
 
-[Read the 1.1.1 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.1.1) · [Full changelog](CHANGELOG.md)
+Personal shelves, metadata customization, offline plans, per-show podcast preferences, private listening and the themed mini player remain available.
+
+[Read the 1.2.0 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.2.0) · [Full changelog](CHANGELOG.md)
 
 ## A closer look
 

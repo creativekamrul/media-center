@@ -26,6 +26,8 @@ module.exports = async function dailySmoke({desktop,page,waitPlayback,artifacts}
   await waitPlayback(p=>p.status==='paused'&&Math.abs(p.position-miniDuration/2)<.2)
   assert.equal(await desktop.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().includes('mini=1')).isAlwaysOnTop()),true)
   assert.equal(await mini.evaluate(()=>window.mediaCenter.settings().then(()=>false,()=>true)),true)
+  assert.equal(await mini.evaluate(()=>window.mediaCenter.mixSources().then(()=>false,()=>true)),true)
+  assert.equal(await mini.evaluate(()=>window.mediaCenter.homeAlbums({serverId:'any',page:0}).then(()=>false,()=>true)),true)
   await mini.getByRole('button',{name:'Unpin mini player',exact:true}).click()
   assert.equal(await desktop.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().includes('mini=1')).isAlwaysOnTop()),false)
   await mini.getByRole('button',{name:'Keep mini player on top',exact:true}).click()

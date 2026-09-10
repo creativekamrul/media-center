@@ -1,3 +1,5 @@
+import {MixLibrary} from './MixBuilder'
+import {LibraryHeader,TabIcon} from './LibraryHeader'
 import {PersonalShelves,OfflinePreparation,PeoplePage} from './PersonalLibrary'
 import { useEffect, useState } from 'react'
 import { api, Modal, ListenActions } from './actions'
@@ -14,7 +16,7 @@ import type {
 } from '../../shared/studio'
 import type { LocalRoot } from '../../shared/types'
 export type StudioTab =
-  | 'shelves' | 'offline' | 'people'
+  | 'mixes' | 'shelves' | 'offline' | 'people'
   | 'discover'
   | 'series'
   | 'podcasts'
@@ -22,7 +24,7 @@ export type StudioTab =
   | 'profiles'
   | 'recovery'
 export const studioTabs: Record<StudioTab, string> = {
-  shelves:'Personal shelves',offline:'Offline preparation',people:'People',
+  mixes:'Custom mixes',shelves:'Personal shelves',offline:'Offline preparation',people:'People',
   discover: 'Rediscover',
   series: 'Book series',
   podcasts: 'Podcast subscriptions',
@@ -43,8 +45,7 @@ export function StudioPage({
 }) {
   return (
     <div className="studio-page">
-      <p className="eyebrow">YOUR COLLECTION, A LITTLE CLOSER</p>
-      <h1>Library tools.</h1>
+      <LibraryHeader collection="tools" subtitle="Organize, discover and make your collection yours."/>
       <div className="browse-tabs" role="tablist" aria-label="Library tools">
         {Object.entries(studioTabs).map(([id, name]) => (
           <button
@@ -54,11 +55,11 @@ export function StudioPage({
             key={id}
             onClick={() => setTab(id as StudioTab)}
           >
-            {name}
+            <TabIcon id={id}/>{name}
           </button>
         ))}
       </div>
-      {tab === 'shelves' ? <PersonalShelves error={error}/> : tab === 'offline' ? <OfflinePreparation error={error}/> : tab === 'people' ? <PeoplePage error={error}/> : tab === 'discover' ? (
+      {tab === 'mixes' ? <MixLibrary error={error}/> : tab === 'shelves' ? <PersonalShelves error={error}/> : tab === 'offline' ? <OfflinePreparation error={error}/> : tab === 'people' ? <PeoplePage error={error}/> : tab === 'discover' ? (
         <Discovery error={error} />
       ) : tab === 'series' ? (
         <Series error={error} />

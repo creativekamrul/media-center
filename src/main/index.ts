@@ -1,3 +1,4 @@
+import {registerMixes} from './mixes'
 import {decoratePersonal} from './personal-display'
 import {registerPersonal} from './personal-library'
 import {registerPodcastDiscovery} from './podcast-discovery'
@@ -154,6 +155,7 @@ else {
       undo.clear();resetting=true;try{podcastAutomation?.stop();await player.command({action:'stop'});await player.edit({action:'clear'});const result=await downloads.batch(downloads.snapshot().entries.map(e=>e.id),'remove');if(result.failed.length)throw Error('Some downloads are in use. Close other players and try again.');localWatcher?.stop();windowsMedia?.stop();discord.stop();await downloads.stop();await player.shutdown();await session.defaultSession.clearCache();await session.defaultSession.clearStorageData();store.resetData('all');setTimeout(()=>{app.relaunch();app.exit(0)},150)}catch(e){resetting=false;throw e}
     },undo)
     registerPodcastDiscovery(handle,store,provider,()=>window!)
+    registerMixes(handle,store,local,localIndex,provider)
     registerPersonal(handle,store,player,local,downloads,provider,()=>window!,()=>{for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('personal:changed')})
     registerStudio(handle,store,player,local,localIndex,lyrics,provider,()=>window!,()=>{for(const w of [window,miniWindow])if(w&&!w.isDestroyed()){w.webContents.send('theme:state',store.preferences());w.webContents.send('studio:changed')}},()=>downloads.snapshot().entries.length)
     localWatcher=new LocalWatcher(local,localIndex,store,experienceChanged)

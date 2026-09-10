@@ -1,3 +1,4 @@
+import {coverSource} from '../shared/artwork-source'
 import {personalStateSchema,type MediaRef} from '../shared/personal-library'
 import {validateArtwork} from './artwork-image'
 import { profileSchema, outputSchema } from './studio-preferences'
@@ -43,7 +44,7 @@ const lyric = z
 export const personalExtraSchema = z
   .object({
     personal:personalStateSchema.default({}),
-    covers:z.array(z.object({key:z.string().min(1).max(10000),source:z.string().regex(/^https:\/\/coverartarchive\.org\/release\/[0-9a-f-]{36}\/front-500$/i).optional(),image:z.string().max(7*1024*1024).regex(/^data:image\/png;base64,[A-Za-z0-9+/=]+$/).refine(v=>{try{validateArtwork(Buffer.from(v.split(',')[1],'base64'),true);return true}catch{return false}})}).strict()).max(250).default([]),
+    covers:z.array(z.object({key:z.string().min(1).max(10000),source:z.string().max(2048).refine(coverSource).optional(),image:z.string().max(7*1024*1024).regex(/^data:image\/png;base64,[A-Za-z0-9+/=]+$/).refine(v=>{try{validateArtwork(Buffer.from(v.split(',')[1],'base64'),true);return true}catch{return false}})}).strict()).max(250).default([]),
     experience: experienceSchema,
     playingScreen: playingScreenSchema,
     profiles: z.array(profileSchema).max(30).default([]),
@@ -207,7 +208,7 @@ export function restoreExtra(
   }
   const ref=(r:MediaRef):MediaRef=>r.kind==='playable'?{...r,item:remap(r.item)}:{...r,serverId:server(r.serverId)}
   const personalKey=(value:string)=>value.startsWith('shelf:')?value:key(value)
-  const personal={...extra.personal,shelves:extra.personal.shelves.map(s=>({...s,entries:s.entries.map(ref)})),trips:extra.personal.trips.map(t=>({...t,items:t.items.map(remap)})),shows:Object.fromEntries(Object.entries(extra.personal.shows).map(([k,v])=>{const [source,show]=z.tuple([z.string(),z.string()]).parse(JSON.parse(k));return [JSON.stringify([server(source),show]),v]})),metadata:Object.fromEntries(Object.entries(extra.personal.metadata).map(([k,v])=>[personalKey(k),v]))}
+  const personal={...extra.personal,mixes:extra.personal.mixes.map(m=>({...m,sources:m.sources.map(s=>s.kind==='local'?{...s,rootId:folder(s.rootId)}:{...s,serverId:server(s.serverId)})})),shelves:extra.personal.shelves.map(s=>({...s,entries:s.entries.map(ref)})),trips:extra.personal.trips.map(t=>({...t,items:t.items.map(remap)})),shows:Object.fromEntries(Object.entries(extra.personal.shows).map(([k,v])=>{const [source,show]=z.tuple([z.string(),z.string()]).parse(JSON.parse(k));return [JSON.stringify([server(source),show]),v]})),metadata:Object.fromEntries(Object.entries(extra.personal.metadata).map(([k,v])=>[personalKey(k),v]))}
   const values: Record<string, unknown> = {
     'personal-library':personal,
     listeningProfiles: extra.profiles,

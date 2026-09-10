@@ -1,3 +1,4 @@
+import {inPodcastLibrary} from '../shared/daily'
 import type {UndoJournal} from './undo'
 import {personalExtraSchema,exportExtra,restoreExtra} from './personal-backup'
 import {homeMixes} from './home-mixes'
@@ -109,7 +110,7 @@ export function registerDaily(handle: Handle, store: Store, player: Player, down
             const batch = await Promise.allSettled(result.items.slice(i,i+4).map(async summary => {
               const show = parseAbsItem(await p.get(`api/items/${encodeURIComponent(summary.id)}?expanded=1`),c.id)
               if (show.kind !== 'podcast-show') throw new Error('Unexpected media type in podcast library.')
-              return show.episodes.map(episode => ({ episode: { ...episode, progress: progress.get(JSON.stringify([show.id,episode.id])) }, showTitle: show.title, item: { target:{kind:'podcast-episode' as const,serverId:c.id,showId:show.id,episodeId:episode.id},title:episode.title,subtitle:show.title,cover:show.id,duration:episode.duration } }))
+              return show.episodes.map(episode => ({ libraryId:library.id, episode: { ...episode, progress: progress.get(JSON.stringify([show.id,episode.id])) }, showTitle: show.title, item: { target:{kind:'podcast-episode' as const,serverId:c.id,showId:show.id,episodeId:episode.id},title:episode.title,subtitle:show.title,cover:show.id,duration:episode.duration } }))
             }))
             for (const r of batch) if (r.status === 'fulfilled') episodes.push(...r.value); else inboxWarnings.push(`${c.name}: a show could not be refreshed.`)
           }
@@ -122,8 +123,9 @@ export function registerDaily(handle: Handle, store: Store, player: Player, down
     return episodes
   })().finally(() => { inboxWork = undefined })
   const inbox = async (refresh=false) => { const cached=store.cache<InboxEpisode[]>('podcast-inbox'); if (!cached || refresh) return refreshInbox(); if (Date.now()-cached.updated>300000) void refreshInbox().catch(()=>{}); return cached.value.filter(e => store.connections().some(c=>c.id===e.item.target.serverId)) }
-  handle('inbox:list', z.object({ page:z.number().int().min(0),search:z.string().max(500),status:z.enum(['all','unfinished','in-progress','finished']),sort:z.enum(['newest','oldest','show']),refresh:z.boolean().optional() }).strict(), async i => {
-    const rows=(await inbox(i.refresh)).filter(e => `${e.episode.title} ${e.showTitle}`.toLowerCase().includes(i.search.toLowerCase()) && (i.status==='all' || (i.status==='unfinished' ? e.episode.progress?.status!=='finished' : e.episode.progress?.status===i.status)))
+  handle('inbox:list', z.object({ library:z.object({serverId:z.string().min(1).max(2048),libraryId:z.string().min(1).max(2048)}).strict().optional(), page:z.number().int().min(0),search:z.string().max(500),status:z.enum(['all','unfinished','in-progress','finished']),sort:z.enum(['newest','oldest','show']),refresh:z.boolean().optional() }).strict(), async i => {
+    let source=await inbox(i.refresh);if(i.library&&source.some(e=>!e.libraryId))source=await inbox(true)
+    const rows=source.filter(e => inPodcastLibrary(e,i.library) && `${e.episode.title} ${e.showTitle}`.toLowerCase().includes(i.search.toLowerCase()) && (i.status==='all' || (i.status==='unfinished' ? e.episode.progress?.status!=='finished' : e.episode.progress?.status===i.status)))
     rows.sort((a,b)=>i.sort==='show'?a.showTitle.localeCompare(b.showTitle)||(b.episode.publishedAt??0)-(a.episode.publishedAt??0):((b.episode.publishedAt??0)-(a.episode.publishedAt??0))*(i.sort==='oldest'?-1:1))
     return { items:rows.slice(i.page*60,(i.page+1)*60),total:rows.length,page:i.page,updatedAt:store.cache('podcast-inbox')?.updated??Date.now(),warnings:inboxWarnings }
   })
@@ -132,9 +134,10 @@ export function registerDaily(handle: Handle, store: Store, player: Player, down
     for (const target of i.targets) try { const p=provider(target.serverId); if (!(p instanceof Audiobookshelf)) throw new Error(); const current=player.state.queue[player.state.queueIndex]; if(current && progressKey(current.target)===progressKey(target)) await player.command({action:'stop'}); await p.setProgress(target,i.finished?'finished':'unfinished'); updated++ } catch { failed++ }
     store.cacheClear(); return {updated,failed}
   })
+  handle('home:albums',z.object({serverId:id,page:z.number().int().min(0).max(10000)}).strict(),async i=>{const result=await nav(i.serverId).catalog({...i,libraryId:'all',view:'recent',search:''});return {...i,albums:result.items.filter((a):a is MusicAlbum=>a.kind==='album'),hasMore:result.hasMore}})
   handle('home:get', z.boolean().optional(), async refresh => {
-    const data:HomeData={mixes:[],continuing:[],albums:[],episodes:[],warnings:[]}
-    const results=await Promise.allSettled(store.connections().map(async c => { const p=provider(c.id); if(p instanceof Audiobookshelf) data.continuing.push(...await p.continuing()); else { const result=await p.catalog({serverId:c.id,libraryId:'all',view:'recent',page:0,search:''}); data.albums.push(...result.items.filter((i):i is MusicAlbum=>i.kind==='album').slice(0,8)) } }))
+    const data:HomeData={albumPages:[],mixes:[],continuing:[],albums:[],episodes:[],warnings:[]}
+    const results=await Promise.allSettled(store.connections().map(async c => { const p=provider(c.id); if(p instanceof Audiobookshelf) data.continuing.push(...await p.continuing()); else { const result=await p.catalog({serverId:c.id,libraryId:'all',view:'recent',page:0,search:''}); data.albums.push(...result.items.filter((i):i is MusicAlbum=>i.kind==='album'));data.albumPages!.push({serverId:c.id,page:0,hasMore:result.hasMore}) } }))
     results.forEach((r,i)=>{if(r.status==='rejected') data.warnings.push(`${store.connections()[i]?.name}: could not refresh Home.`)})
     data.continuing.sort((a,b)=>(b.progress.updatedAt??0)-(a.progress.updatedAt??0))
     data.episodes=(await inbox(refresh)).filter(e=>e.episode.progress?.status!=='finished').sort((a,b)=>(b.episode.publishedAt??0)-(a.episode.publishedAt??0)).slice(0,12);data.warnings.push(...inboxWarnings)

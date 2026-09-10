@@ -7,10 +7,11 @@ export interface ListeningNote { id: string; item: QueueItem; position: number; 
 export interface SmartPlaylist { id: string; name: string; serverId: string; libraryId: string; favorite: boolean; minRating: number; genre: string; artist: string; neverPlayed: boolean; minYear: number; maxYear: number; order: 'title' | 'artist' | 'random'; limit: number }
 export interface DownloadEntry { id: string; item: QueueItem; status: 'queued' | 'downloading' | 'paused' | 'ready' | 'error'; bytes: number; total: number; error?: string; createdAt: number; duration: number; chapters: Chapter[] }
 export interface DownloadState { entries: DownloadEntry[]; limitBytes: number; usedBytes: number }
-export interface InboxEpisode { episode: PodcastEpisode; showTitle: string; item: QueueItem }
+export interface InboxEpisode { libraryId?:string; episode: PodcastEpisode; showTitle: string; item: QueueItem }
 export interface InboxPage { items: InboxEpisode[]; total: number; page: number; updatedAt: number; warnings: string[] }
 export interface HomeMix {id:string;title:string;subtitle:string;items:QueueItem[]}
-export interface HomeData { mixes:HomeMix[]; continuing: ContinueItem[]; albums: MusicAlbum[]; episodes: InboxEpisode[]; warnings: string[] }
+export interface HomeAlbumPage { albums: MusicAlbum[]; serverId: string; page: number; hasMore: boolean }
+export interface HomeData { albumPages?: {serverId:string;page:number;hasMore:boolean}[]; mixes:HomeMix[]; continuing: ContinueItem[]; albums: MusicAlbum[]; episodes: InboxEpisode[]; warnings: string[] }
 export interface ListeningStats { days: { day: string; seconds: number; music: number; books: number; podcasts: number; local: number }[]; totalSeconds: number; finishedBooks: number; finishedEpisodes: number; top: { title: string; subtitle: string; seconds: number; item?:QueueItem }[] }
 export interface BackupPreview { token: string; queues: number; notes: number; plans: number; rules: number; unmatchedServers: number; unmatchedFolders: number }
 export interface DiscordSettings { defaultCoverAsset?:boolean; enabled: boolean; applicationId: string; music: boolean; books: boolean; podcasts: boolean; local: boolean; showPaused: boolean; hasLastfmKey: boolean }
@@ -23,8 +24,9 @@ export interface DailyAPI {
   seekLyric(input:{key:string;time:number}):Promise<void>
   dailySettings(): Promise<DailySettings>
   saveDailySettings(input: DailySettings): Promise<void>
+  homeAlbums(input:{serverId:string;page:number}):Promise<HomeAlbumPage>
   home(refresh?: boolean): Promise<HomeData>
-  podcastInbox(input: { page: number; search: string; status: 'all' | 'unfinished' | 'in-progress' | 'finished'; sort: 'newest' | 'oldest' | 'show'; refresh?: boolean }): Promise<InboxPage>
+  podcastInbox(input: { library?:{serverId:string;libraryId:string}; page: number; search: string; status: 'all' | 'unfinished' | 'in-progress' | 'finished'; sort: 'newest' | 'oldest' | 'show'; refresh?: boolean }): Promise<InboxPage>
   inboxStatus(input: { targets: PlayTarget[]; finished: boolean }): Promise<{ updated: number; failed: number }>
   downloadList(): Promise<DownloadState>
   downloadAdd(items: QueueItem[]): Promise<void>
@@ -61,4 +63,9 @@ export interface DailyAPI {
   retryDiscordArtwork(): Promise<void>
   discordStatus(): Promise<DiscordStatus>
   correctDiscordArtwork(input: { artist: string; album: string }): Promise<void>
+}
+
+/** Scope before pagination; a completed book is never a completed episode. */
+export function inPodcastLibrary(row:InboxEpisode,library?:{serverId:string;libraryId:string}) {
+ return row.item.target.kind==='podcast-episode'&&(!library||(row.item.target.serverId===library.serverId&&row.libraryId===library.libraryId))
 }

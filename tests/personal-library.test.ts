@@ -1,8 +1,10 @@
+import {queueItemSchema} from '../src/main/features'
+import type {QueueItem} from '../src/shared/types'
 import {describe,it,expect,vi} from 'vitest'
 vi.mock('electron',()=>({safeStorage:{},nativeImage:{},dialog:{}}))
 import {randomUUID} from 'node:crypto'
 import {personalStateSchema,mediaKey,personalCommandSchema,episodeStart,episodeOutro,showPreferenceSchema,type MediaRef} from '../src/shared/personal-library'
-import {changePersonal,applyMetadata} from '../src/shared/personal-state'
+import {changePersonal,applyMetadata,applyQueueMetadata} from '../src/shared/personal-state'
 import {Store} from '../src/main/store'
 import {exportExtra,restoreExtra} from '../src/main/personal-backup'
 import {decoratePersonal} from '../src/main/personal-display'
@@ -48,4 +50,15 @@ describe('personal library',()=>{
   const state={...emptyPlayback,status:'playing' as const,kind:'music-track' as const,title:'Track',subtitle:'Artist'},settings={...discordDefaults,enabled:true,defaultCoverAsset:true}
   expect(presence(state,settings)?.assets?.large_image).toContain('/v1.1.0/src/renderer/public/assets/default-cover.png');expect(presence(state,{...settings,defaultCoverAsset:false})?.assets?.large_image).toContain('/default-cover.png');expect(presence({...state,privateListening:true},settings)).toBeNull()
  })
+})
+
+it('keeps metadata-decorated queues valid for playback, context menus and backups for every media kind',()=>{
+ const items:QueueItem[]=[book.item,episode.item,{title:'Song',subtitle:'Artist',target:{kind:'music-track',serverId:'s',trackId:'song'}},{title:'Local',subtitle:'Artist',target:{kind:'local-file',serverId:'local',rootId:'root',fileId:'file'}},{title:'Radio',subtitle:'Station',target:{kind:'radio',serverId:'s',stationId:'radio'}}]
+ const store=new Store(':memory:')
+ try {for(const metadata of [{},{title:'Custom',artist:'Artist',album:'Album',year:2026,genre:'Pop',author:'Author',narrator:'Narrator',description:'Description'}]){
+  let state=personalStateSchema.parse({});for(const item of items)state=changePersonal(state,{action:'metadata-save',ref:{kind:'playable',item},metadata});store.set('personal-library',state)
+  const decorated=decoratePersonal(items,store) as QueueItem[]
+  decorated.forEach((q,i)=>{expect(queueItemSchema.parse(q)).toEqual(q);expect(q.target).toEqual(items[i].target);expect(applyQueueMetadata(items[i],metadata)).toEqual(q)})
+  expect(items[0].title).toBe('Book')
+ }}finally{store.close()}
 })

@@ -1,4 +1,4 @@
-.settings-search { position:relative; margin:0 0 24px; max-width:760px; }
+.settings-search { position:relative; margin:0 0 24px; max-width:none; width:100%; }
 .settings-search>.search { min-height:48px; width:100%; max-width:none; margin:0; background:var(--panel); }
 .settings-search .search input { width:100%; min-width:0; }
 .settings-search-results { position:relative; margin-top:8px; max-height:min(360px,40dvh); overflow:auto; background:var(--panel); border:1px solid var(--line); border-radius:14px; box-shadow:0 12px 30px #0003; padding:8px; }

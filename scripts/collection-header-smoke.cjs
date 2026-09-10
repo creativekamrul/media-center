@@ -15,10 +15,11 @@ module.exports = async (page,artifacts,name) => {
     assert.ok(Math.abs(art.y-frame.top)<2&&Math.abs(art.y+art.height-frame.bottom)<2,'Square artwork fills the entire inner header height')
     assert.ok(copy.x>=art.x+art.width+16,'Growing artwork cannot overlap the title or controls')
     assert.equal(await hero.evaluate(el=>el.scrollWidth>el.clientWidth),false,'Header has no horizontal overflow')
-    const rows=await hero.locator('.detail-heading > .listen-actions, .detail-heading > .collection-management, .detail-heading > .local-playlist-management').evaluateAll(groups=>groups.map(group=>({bounds:group.getBoundingClientRect().toJSON(),buttons:[...group.children].filter(b=>b.tagName==='BUTTON').map(b=>b.getBoundingClientRect().toJSON())})))
+    const rows=await hero.locator('.detail-heading > .listen-actions, .detail-heading > .collection-management, .detail-heading > .local-playlist-management').evaluateAll(groups=>groups.map(group=>({bounds:group.getBoundingClientRect().toJSON(),buttons:[...group.children].filter(b=>b.tagName==='BUTTON'||b.classList.contains('more-options')).map(b=>b.getBoundingClientRect().toJSON())})))
     for(const {bounds,buttons} of rows) {
       const lines=new Map()
       for(const b of buttons) {const y=Math.round(b.y);if(!lines.has(y))lines.set(y,[]);lines.get(y).push(b);assert.ok(b.height>=42,'Header buttons keep usable targets')}
+      if(buttons.length)assert.equal(lines.size,1,'Header actions remain in a single row')
       for(const line of lines.values()) {
         assert.ok(Math.abs(line[0].left-bounds.left)<2,'Action row starts at the content edge')
         assert.ok(Math.abs(line.at(-1).right-bounds.right)<2,'Action row fills the available width')

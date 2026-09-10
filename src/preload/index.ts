@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopAPI, PlaybackState, UpdateState } from '../shared/types'
 
 const api: DesktopAPI = {
+ mixPreview:i=>ipcRenderer.invoke('mix:preview',i),mixSources:()=>ipcRenderer.invoke('mix:sources'),
  exportDefaultCover:()=>ipcRenderer.invoke('personal:default-cover-export'),
  personalMetadata:r=>ipcRenderer.invoke('personal:metadata',r),
  personalState:()=>ipcRenderer.invoke('personal:get'),personalChange:i=>ipcRenderer.invoke('personal:change',i),
@@ -36,6 +37,7 @@ const api: DesktopAPI = {
   offlineProgressSync: token => ipcRenderer.invoke('offline:sync',token),
   dailySettings: () => ipcRenderer.invoke('daily:get'),
   saveDailySettings: input => ipcRenderer.invoke('daily:save', input),
+  homeAlbums:input=>ipcRenderer.invoke('home:albums',input),
   home: input => ipcRenderer.invoke('home:get', input),
   podcastInbox: input => ipcRenderer.invoke('inbox:list', input),
   inboxStatus: input => ipcRenderer.invoke('inbox:status', input),

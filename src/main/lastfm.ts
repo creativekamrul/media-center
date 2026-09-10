@@ -1,9 +1,11 @@
+import {appleArtwork} from '../shared/artwork-source'
 import { createHash } from 'node:crypto'
 import { z } from 'zod'
 import type { Store } from './store'
 
 export function publicArtwork(value:string):string|undefined {
   try {
+    const apple=appleArtwork(value);if(apple)return apple
     const url=new URL(value)
     if(url.protocol==='https:'&&url.hostname==='coverartarchive.org'&&!url.username&&!url.password&&!url.port&&!url.search&&!url.hash&&/^\/release\/[0-9a-f-]{36}\/front-500$/i.test(url.pathname))return url.href
     if(url.protocol==='https:'&&!url.username&&!url.password&&!url.port&&!url.search&&!url.hash&&

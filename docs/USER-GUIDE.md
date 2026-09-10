@@ -223,9 +223,9 @@ Choose **Prepare offline** on a selection or shelf, give the plan a name, then o
 
 Open a track's context menu, or the controls on a collection header, and choose **Customize details & cover**. Enter the metadata you want to replace, then save. **Restore original details** removes those overrides. They stay in Media Center's database and do not rewrite files or edit the server. Local search and album/artist grouping follow your edits; server search still uses the original server metadata.
 
-Use **Choose image** for a local PNG/JPEG, or search an artist and album under **Find album artwork**. Search results identify MusicBrainz releases; preview a release's Cover Art Archive image and choose **Use this cover**. There is no additional API key. Remove a custom cover to return to the original artwork or the bundled Media Center fallback.
+Use **Choose image** for a local PNG/JPEG, or search an artist and album under **Find album artwork**. Search results identify MusicBrainz releases, with Apple iTunes used if MusicBrainz cannot connect or finds no releases. Preview the image and choose **Use this cover**; the preview identifies its provider. There is no additional API key. Remove a custom cover to return to the original artwork or the bundled Media Center fallback.
 
-For Discord, a selected public Cover Art Archive match can be shared directly. In 1.1.1, missing music artwork automatically uses the branded default cover from the project's published GitHub image. No manual asset upload or Last.fm key is needed for this fallback. Your private server and local artwork are never uploaded.
+For Discord, a selected public Cover Art Archive or Apple iTunes match can be shared directly. In 1.1.1, missing music artwork automatically uses the branded default cover from the project's published GitHub image. No manual asset upload or Last.fm key is needed for this fallback. Your private server and local artwork are never uploaded.
 
 ## Show defaults, people and list views (1.1.0)
 
@@ -248,3 +248,21 @@ In music's immersive view, **Show Now Playing** hides lyrics and uses the same t
 ### Refreshed mini player (1.1.1)
 
 Open the mini player from the main playback bar. Its app-icon header is draggable; pin, restore and close stay at the top right. Song artwork and two-line titles sit above centered playback controls. The themed seek bar uses the same click, drag and keyboard behavior as the main player, with elapsed and total time always shown. Minimum size is 360 × 232 pixels.
+
+## Custom mixes (1.2.0)
+
+Choose **Create mix** on Home, Music or Local music. Select your music sources and give the mix a name. A recipe with no rules considers every scanned song. Add a rule group to narrow it by genre, artist, release year, duration, favorites or other available tags. Use “All conditions” for AND, “Any condition” for OR, and “No conditions” to exclude matches. Multiple groups can also be combined with AND or OR.
+
+Choose the order, track limit and optional maximum per artist. **Preview mix** loads a catalog and shows matching songs with cover art and total duration; artist/genre suggestions become available after the first preview. Read any source warnings before playing. **Refresh sources** reloads the catalog instead of using the two-minute cache. **Save mix** keeps the recipe locally. Open it later from Home or **Library tools → Custom mixes**, preview fresh matches and play or queue them. Personal backups include your recipes.
+
+On Home, **Load more albums** expands Recently played albums. In each collection, use the underlined views below the header; Audiobooks and Podcasts include a dedicated Continue listening view.
+
+### Collection shortcuts and actions
+
+In **Settings → Collection controls**, enable **Show Playlists directly below Home** to browse server or local playlists from the sidebar. Collection headers keep primary actions together and place editing, export and other secondary commands under **More options**. Right-click a track, artist, album or playlist for its actions; focused track controls and collection cards also support **Shift+F10**.
+
+Audiobook and podcast **Continue listening** tabs show resume cards in a grid. **All books / All shows** remain focused on browsing the library; Home keeps its continuation slider.
+
+In Podcasts, **Finished episodes** shows completed episodes from the selected library. Search by show or episode title, sort the results, replay an available episode, or choose **More options → Mark unfinished**. **Refresh progress** reads the latest server completion state.
+
+Selecting an artwork search result previews it in the top cover box. Choose **Use this cover** to save it or **Cancel preview** to return to the current image. Portrait images are fitted inside the square without stretching. Album headers include **Explore artist** alongside playback, while downloads are under **More options**. Right-click menus separate playback/favorite, customization, and playlist actions.

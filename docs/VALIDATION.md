@@ -278,3 +278,37 @@ Home actions remain adjacent at 1008, 1440 and 1920 pixels. Listening panels use
 - Mini-player checks cover the icon-only header, elapsed/total time, centered transport and visible seek thumb at 360 × 232, 440 × 248 and 560 × 300; theme synchronization, seek/play/pause, native pin state, persistence and restricted IPC also passed.
 - Reviewed `artifacts/mini-player-360.png` and `mini-player-440.png`. Website checks passed at desktop/tablet/mobile widths, including lazy-loaded images, dialogs and keyboard access.
 - Final local installer SHA-256: `8f0880e9abe0b7a33531d28cf780cfa332d146e513a61d6e829e1642b176fd89`. GitHub Actions will rebuild from the committed release tag and publish separate checksums.
+
+## 1.2.0 local release verification — 2026-09-10
+
+- Typecheck, all 183 unit tests, production build and release metadata checks passed.
+- Added rule-engine coverage for AND/OR/NOT groups, normalized metadata, unknown numeric values, favorite exclusions, identity deduplication, sorting/shuffling and artist limits. Main-process fixtures cover pagination, repeated pages, source failures, cache reuse, local favorites and metadata overrides. Recipe backup source remapping and personal reset passed.
+- Real Electron fixtures verified artist-rule editing, preview, native MPV playback, saved recipes after restart, recently played album pagination from 60 to 65, and all four collection headers at 1024 and 1440 pixels.
+- Built the local Windows installer using `npm run package:win` with publishing disabled. The full packaged Electron suite passed with muted native MPV, two fixture servers, three explicit media types and zero renderer errors. Existing playback/seek, offline book/episode, lyrics, settings/themes, mini-player restrictions and backup checks also passed.
+- Reviewed the mix builder and music/podcast header screenshots in `artifacts/`. Build outputs, test profiles and fixture screenshots remain ignored.
+- Installer: `release/Media-Center-1.2.0-win-x64.exe` (154,426,189 bytes). SHA-256: `52defc38ef70807094a127d35d85a0b3756be4749cea691f6c91a3e399fd7515`.
+- This is a local test release. No GitHub push, release tag, GitHub release or Pages deployment was performed.
+
+## 1.2.0 refreshed local build — interaction fixes, 2026-09-10
+
+This installer supersedes the earlier 1.2.0 local build recorded above.
+
+- Typecheck, all 187 unit tests across 31 files, production build, release metadata and diff-whitespace checks passed.
+- The final Windows build passed the full packaged Electron suite with real muted MPV, two isolated fixture servers, music/books/podcasts and zero renderer errors (`artifacts/packaged-smoke.json`). This includes native playback, cross-file book seeking, independent podcast progress, downloads, settings/themes, lyric timing, mini-window restrictions, backups, studio tools and saved mixes.
+- `scripts/interaction-bugs-smoke.cjs` uses real mouse and Shift+F10 gestures on track rows; plays customized tracks from People artist dialogs, main artist headers, artist albums and album context menus; saves both song and album fallback artwork; checks failed-preview clearing and saved artwork after renderer reload.
+- Metadata regressions preserve strict playback schemas and identities for music, local files, audiobooks, episodes and radio. Artwork tests cover failed-primary fallback, paced requests/cache reuse and restricted public image hosts/IDs.
+- Live public checks for `Sharib Sabri 1920 London` loaded a real MusicBrainz/Cover Art Archive image and a real Apple iTunes image. The optional `scripts/artwork-network-probe.cjs --fallback` simulates only an unavailable primary service and fetches the actual Apple catalog/image. These checks do not use the user's server credentials or guarantee every album edition exists.
+- Layout checks verify one-row header actions and More options, full-width Settings search, aligned People controls, the saved Playlists shortcut and dedicated book/podcast continuation grids at narrow and wide sizes. A conflicting legacy carousel rule exposed by the suite was fixed; grid progress bars remain inside their cards.
+- Reviewed `artifacts/library-compact.png`, `artist-playback-fixed.png` and artwork fallback screenshots. Test profiles and generated outputs stay ignored.
+- Installer: `release/Media-Center-1.2.0-win-x64.exe` (154,429,821 bytes). SHA-256: `92b1d9327e9771782e17b5dfb3b0e05b1cda96816d3f81f5ada3556f4a0a8aa8`.
+- Built with `npm run package:win` / `--publish never`. No GitHub commit, push, tag, release or Pages deployment was made.
+
+## 1.2.0 local library action polish — 2026-09-10
+
+- Typecheck, all 188 unit tests across 32 files, production build, release metadata checks and diff-whitespace validation passed.
+- The final packaged Electron suite passed with muted real MPV, two fixture servers, explicit music/book/podcast identities and zero renderer errors. Existing playback, seeking, offline, backups, lyrics, settings, mini-player, mixes and interaction regressions also passed.
+- `scripts/library-actions-smoke.cjs` checks a deliberately portrait-shaped image in the top square artwork preview at 1008 and 1440 pixels, preview cancellation, primary Explore artist, Download under More, grouped favorite/playback actions and modal overflow. It also checks library-scoped finished episodes, exclusion of completed books and successful Mark unfinished updates.
+- A pure identity regression checks server/library scoping, legacy index entries without a library ID, and exclusion of audiobook targets. Legacy inbox caches rebuild before scoped filtering; filtering happens before pagination.
+- Reviewed `artifacts/cover-preview-top-1008.png`, `track-actions-grouped-1008.png`, `library-track-toolbar.png` and `finished-podcast-episodes.png`.
+- Installer: `release/Media-Center-1.2.0-win-x64.exe`, 154,432,294 bytes; SHA-256: `68d1ab2de763485393a67ab648a4b08b31802a739101eb31df8e75dcea844ff6`.
+- This replaces the previous local 1.2.0 installer. Publishing was disabled; no GitHub push, release or Pages deployment was performed.

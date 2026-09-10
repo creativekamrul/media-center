@@ -1,3 +1,4 @@
+import {useCollectionContext} from './media-context'
 import { useSyncExternalStore, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 const api = window.mediaCenter
 let coverRevision=0;const coverListeners=new Set<()=>void>();api.onPersonal(()=>{coverCache.clear();coverRevision++;coverListeners.forEach(l=>l())});const subscribeCover=(l:()=>void)=>{coverListeners.add(l);return()=>{coverListeners.delete(l)}}
@@ -15,6 +16,7 @@ export function IconButton({ label, children, onClick, active, disabled }: { lab
 export function Art({ item, small = false, personalKey }: { item: { id: string; serverId: string; title: string; subtitle?: string; cover?: string; kind: string }; small?: boolean; personalKey?:string }) {
   const revision=useSyncExternalStore(subscribeCover,()=>coverRevision)
   const [cover, setCover] = useState<string | null>(null); const ref = useRef<HTMLDivElement>(null)
+  useCollectionContext(ref,item.serverId!=='sample'&&['album','artist','playlist','podcast-show'].includes(item.kind)?{kind:item.kind as 'album'|'artist'|'playlist'|'podcast-show',id:item.id,serverId:item.serverId,title:item.title,subtitle:item.subtitle??'',cover:item.cover}:undefined)
   const hash = [...item.title].reduce((n, c) => n + c.charCodeAt(0), 0) % 8
   useEffect(() => {
     setCover(null)

@@ -1,6 +1,7 @@
+import type {QueueItem} from '../shared/types'
 import type {PersonalState,MediaRef} from '../shared/personal-library'
 import {mediaKey,personalTargetSchema} from '../shared/personal-library'
-import {applyMetadata} from '../shared/personal-state'
+import {applyMetadata,applyQueueMetadata} from '../shared/personal-state'
 import type {Store} from './store'
 /** Display-only overlay; transport identities and original media remain untouched. */
 export function decoratePersonal(value:unknown,store:Store,input?:unknown):unknown{
@@ -19,7 +20,7 @@ export function decoratePersonal(value:unknown,store:Store,input?:unknown):unkno
    else if(v.kind==='podcast-episode'&&typeof v.showId==='string')ref={kind:'playable',item:{title:shared.title,subtitle:shared.subtitle,target:{kind:'podcast-episode',serverId:v.serverId,showId:v.showId,episodeId:v.id}}}
    else if(['album','playlist','artist','podcast-show'].includes(String(v.kind)))ref={...shared,kind:v.kind as 'album'|'playlist'|'artist'|'podcast-show'}
   }else if(typeof context.rootId==='string'&&typeof v.id==='string'&&'hasCover' in v)ref={kind:'playable',item:{title:String(v.title??''),subtitle:String(v.artist??''),target:{kind:'local-file',serverId:'local',rootId:context.rootId,fileId:v.id}}}
-  if(ref&&typeof v.title==='string')return applyMetadata(v as {title:string},overrides[mediaKey(ref)])
+  if(ref&&typeof v.title==='string')return v.target?applyQueueMetadata(v as unknown as QueueItem,overrides[mediaKey(ref)]):applyMetadata(v as {title:string},overrides[mediaKey(ref)])
   return v
  }
  const result=walk(value) as Record<string,unknown>

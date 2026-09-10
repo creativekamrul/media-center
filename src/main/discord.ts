@@ -74,7 +74,7 @@ export class DiscordPresence {
   private async artwork(state:PlaybackState):Promise<ArtworkResult>{
     const item=state.queue[state.queueIndex]
     if(!item||!['music-track','local-file'].includes(item.target.kind))return {message:'Audiobooks and podcasts use text-only Discord presence.'}
-    const custom=this.store.get<string>('personal-cover-source:'+progressKey(item.target));if(custom&&publicArtwork(custom))return {url:custom,message:'Using your chosen Cover Art Archive artwork.'}
+    const custom=this.store.get<string>('personal-cover-source:'+progressKey(item.target));if(custom&&publicArtwork(custom))return {url:custom,message:'Using your chosen album artwork.'}
     if(!this.store.secret('lastfm'))return {message:'Add a Last.fm API key to look up album covers.'}
     const targetKey=progressKey(item.target),generation=this.generation
     let metadata=this.metadataKey===targetKey?this.metadata:undefined

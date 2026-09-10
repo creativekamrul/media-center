@@ -6,7 +6,7 @@ import {exportExtra,restoreExtra,personalExtraSchema} from '../src/main/personal
 
 describe('collection navigation preferences',()=>{
  it('keeps older preferences and backups usable with default navigation',()=>{
-  expect(experienceSchema.parse({}).navigation).toEqual({collections:collectionDefaults,collectionOrder:[...orderedCollectionKeys],queueBelowHome:false,listeningCollapsed:false,sidebarCollapsed:false})
+  expect(experienceSchema.parse({}).navigation).toEqual({collections:collectionDefaults,collectionOrder:[...orderedCollectionKeys],queueBelowHome:false,playlistsBelowHome:false,listeningCollapsed:false,sidebarCollapsed:false})
   const store=new Store(':memory:')
   try{const backup=exportExtra(store);delete (backup.experience as Partial<typeof backup.experience>).navigation;expect(personalExtraSchema.parse(backup).experience.navigation.collections).toEqual(collectionDefaults)}finally{store.close()}
  })
@@ -22,7 +22,7 @@ describe('collection navigation preferences',()=>{
  it('round-trips local names, icons and collapse state through personal backups',()=>{
   const store=new Store(':memory:'),restored=new Store(':memory:')
   try{
-   const prefs=experienceSchema.parse({navigation:{collections:{...collectionDefaults,podcasts:{name:'My shows',icon:'radio'}},collectionOrder:['local','podcasts','music','audiobooks'],queueBelowHome:true,listeningCollapsed:true,sidebarCollapsed:true}})
+   const prefs=experienceSchema.parse({navigation:{collections:{...collectionDefaults,podcasts:{name:'My shows',icon:'radio'}},collectionOrder:['local','podcasts','music','audiobooks'],queueBelowHome:true,playlistsBelowHome:true,listeningCollapsed:true,sidebarCollapsed:true}})
    store.set('experience',prefs)
    const {values,stats}=restoreExtra(exportExtra(store),{servers:new Map(),folders:new Map()},q=>q)
    restored.restorePersonal(values,stats)

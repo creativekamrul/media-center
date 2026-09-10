@@ -1,5 +1,5 @@
 import {showKey,showPreferenceSchema,episodeStart,episodeOutro,targetKey} from '../shared/personal-library'
-import {applyMetadata} from '../shared/personal-state'
+import {applyQueueMetadata} from '../shared/personal-state'
 import { assertUnchanged } from './undo'
 import { canCrossfade, crossfadeGains } from './crossfade'
 import { transitionSchema } from '../shared/studio'
@@ -209,7 +209,7 @@ export class Player extends EventEmitter {
   snapshot() {
     const state=structuredClone(this.state), metadata=this.store.get<import('../shared/personal-library').PersonalState>('personal-library')?.metadata??{}
     state.privateListening=this.privateMode
-    state.queue=state.queue.map(q=>applyMetadata(q,metadata[targetKey(q.target)]))
+    state.queue=state.queue.map(q=>applyQueueMetadata(q,metadata[targetKey(q.target)]))
     const item=state.queue[state.queueIndex]
     if(item){const m=metadata[targetKey(item.target)];if(m?.title)state.title=m.title;if(m?.artist||m?.author)state.subtitle=m.artist??m.author??state.subtitle}
     return state
