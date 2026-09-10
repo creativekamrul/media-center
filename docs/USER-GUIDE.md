@@ -225,7 +225,7 @@ Open a track's context menu, or the controls on a collection header, and choose 
 
 Use **Choose image** for a local PNG/JPEG, or search an artist and album under **Find album artwork**. Search results identify MusicBrainz releases; preview a release's Cover Art Archive image and choose **Use this cover**. There is no additional API key. Remove a custom cover to return to the original artwork or the bundled Media Center fallback.
 
-For Discord, a selected public Cover Art Archive match can be shared directly. To use the branded default when a match is missing, go to **Settings → Sharing → Default cover when artwork is missing**, export it, upload it to your Discord application's Rich Presence art assets as **media_center_default**, then enable the fallback and save. A local image cannot be shown by Discord without this upload.
+For Discord, a selected public Cover Art Archive match can be shared directly. In 1.1.1, missing music artwork automatically uses the branded default cover from the project's published GitHub image. No manual asset upload or Last.fm key is needed for this fallback. Your private server and local artwork are never uploaded.
 
 ## Show defaults, people and list views (1.1.0)
 
@@ -238,3 +238,13 @@ Use **Customize columns** in a music or local track list to choose and reorder c
 ## Private listening (1.1.0)
 
 The shield button in the top bar toggles **Private listening**. While enabled, new listening is excluded from device history/statistics, music scrobbles and Discord presence. Audiobook and episode positions still sync so you can resume later, with no listening-time increment from the app. Your server can still log media requests. The mode ends when the application closes; explicitly saved shelves, plans and downloads are kept.
+
+## Navigation and immersive controls (1.1.1)
+
+Settings → Appearance → Collection controls lets you move collections up/down, rename them and choose icons. Enable **Show Play queue directly below Home** to move the queue out of Listening Space. Library tools now belongs to Listening Space. The collection Customize shortcut is hidden in the collapsed sidebar; Settings remains available.
+
+In music's immersive view, **Show Now Playing** hides lyrics and uses the same title/creator stage as podcasts. **Show lyrics** switches back; the choice is saved. **Lyrics tools** beside Fullscreen and Appearance opens search, import, editing, refresh, saved-match and timing/follow controls. The main stage contains the track title and lyrics. Books and podcasts keep their current Now Playing/chapter view.
+
+### Refreshed mini player (1.1.1)
+
+Open the mini player from the main playback bar. Its app-icon header is draggable; pin, restore and close stay at the top right. Song artwork and two-line titles sit above centered playback controls. The themed seek bar uses the same click, drag and keyboard behavior as the main player, with elapsed and total time always shown. Minimum size is 360 × 232 pixels.

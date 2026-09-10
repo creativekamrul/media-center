@@ -2,7 +2,7 @@
 
 Asset: `src/renderer/public/assets/default-cover.png`.
 
-Generated with the built-in imagegen edit tool from the user's supplied `cover-art.png`. The original was kept unchanged. The record, grooves and overlapping note preserve the reference composition; peach/champagne and forest charcoal match the app's branding. This bundled asset is used for missing music artwork and can be exported for manual Discord application-asset upload.
+Generated with the built-in imagegen edit tool from the user's supplied `cover-art.png`. The original was kept unchanged. The record, grooves and overlapping note preserve the reference composition; peach/champagne and forest charcoal match the app's branding. This bundled asset is used for missing music artwork and can be exported. Local preview 1.1.1 sends its existing public v1.1.0 GitHub URL for Discord fallback artwork, so users do not need to upload their own asset.
 
 Exact edit prompt:
 
@@ -15,3 +15,5 @@ Artwork search implementation references:
 - https://musicbrainz.org/doc/Cover_Art_Archive/API
 
 No external artwork is bundled from those services. Search and selection are user initiated; selected images are cached on the user's device.
+
+Discord external-image reference: https://github.com/discord/discord-api-docs/blob/main/developers/rich-presence/using-with-the-embedded-app-sdk.mdx

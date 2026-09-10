@@ -259,3 +259,22 @@ Home actions remain adjacent at 1008, 1440 and 1920 pixels. Listening panels use
 - Local installer: `release/Media-Center-1.1.0-win-x64.exe`; SHA-256: `8829e5b61280a0917212a387953f547aeafcdea13a52a5772348a32755520588`.
 - The user explicitly authorized GitHub publication. The tag workflow builds a separate installer from committed source, reruns its checks and publishes source, checksums and in-app update metadata.
 - Earlier unreleased entries above record the development checkpoints; these changes are included in 1.1.0. Live catalog coverage and Discord fallback upload remain subject to the limitations recorded above.
+
+## 1.1.1 local preview validation — 2026-09-10
+
+- All 177 unit tests, typecheck, production build and release metadata checks passed.
+- Source and final packaged Electron suites passed with real muted MPV and zero renderer errors. Packaged navigation checks cover hidden collapsed customization, manual order, optional queue below Home, Library tools in Listening Space, persisted preferences and preservation of unsaved collection drafts.
+- Immersive checks cover a saved music Lyrics/Now Playing switch, header lyric tools, opening search without clipping, normal lyrics, appearance, queue, responsive widths and existing book/episode playback.
+- Discord transport tests assert the public fallback image URL in the outgoing activity with no API key, including legacy asset settings, rejected private artwork URLs and private-listening suppression. The published PNG returned HTTP 200 with image/png; actual Discord client rendering remains a user-side check.
+- Reviewed screenshots: `artifacts/immersive-lyric-tools.png`, `immersive-music-now-playing.png`, `playing-screen-starlight.png`, `collection-controls.png` and `sidebar-icons.png`.
+- Installer: `release/Media-Center-1.1.1-win-x64.exe`; SHA-256: `9d7d2476465219ad118349de77a1c3c984ec5817cf6ee87fe72e41463146af0c`.
+- Built locally with `--publish never`. No commit, tag, push or GitHub release was made for this preview.
+
+## 1.1.1 release: mini-player redesign — 2026-09-10
+
+- User authorized adding the mini-player redesign before publishing all 1.1.1 changes.
+- All 177 unit tests, updater integration, typecheck, production build and release metadata checks passed.
+- The final local Windows installer was built with `npm run package:win` / `--publish never`; its full packaged Electron suite passed with real muted MPV and zero renderer errors.
+- Mini-player checks cover the icon-only header, elapsed/total time, centered transport and visible seek thumb at 360 × 232, 440 × 248 and 560 × 300; theme synchronization, seek/play/pause, native pin state, persistence and restricted IPC also passed.
+- Reviewed `artifacts/mini-player-360.png` and `mini-player-440.png`. Website checks passed at desktop/tablet/mobile widths, including lazy-loaded images, dialogs and keyboard access.
+- Final local installer SHA-256: `8f0880e9abe0b7a33531d28cf780cfa332d146e513a61d6e829e1642b176fd89`. GitHub Actions will rebuild from the committed release tag and publish separate checksums.

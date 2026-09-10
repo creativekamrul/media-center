@@ -8,7 +8,7 @@ describe('Immersive appearance preferences',()=>{
   for(const patch of [{wordColor:'url(https://example.com)'},{font:'untrusted'},{textColor:'#fff'},{glow:25},{inactiveOpacity:-1},{lineHeight:5},{backdropDim:1},{animation:'unknown'},{customCss:'x'}])expect(playingScreenSchema.safeParse({...defaultPlayingScreen,...patch}).success).toBe(false)
  })
  it('round trips a fully customized appearance',()=>{
-  const prefs={...defaultPlayingScreen,font:'georgia' as const,wordColor:'#ff9900',animation:'focus' as const,alignment:'center' as const}
+  const prefs={...defaultPlayingScreen,showMusicLyrics:false,font:'georgia' as const,wordColor:'#ff9900',animation:'focus' as const,alignment:'center' as const}
   expect(playingScreenSchema.parse(JSON.parse(JSON.stringify(prefs)))).toEqual(prefs)
  })
 })

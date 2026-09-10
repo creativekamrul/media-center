@@ -1,0 +1,30 @@
+/* Compact counterpart to the main player, using the same theme and seek control. */
+.mini-player { height:100dvh; padding:12px 18px 14px; display:flex; flex-direction:column; gap:10px; border:1px solid var(--line); box-sizing:border-box; color:var(--text); }
+.mini-drag { flex:none; height:28px; margin:0; }
+.mini-brand { width:28px; height:28px; border-radius:9px; display:grid; place-items:center; background:var(--accent); color:var(--accent-text,#18201c); }
+.mini-drag .row-tools { display:flex; align-items:center; gap:4px; }
+.mini-drag .icon-button { width:28px; height:28px; min-height:28px; border-radius:8px; color:var(--muted); }
+.mini-drag .icon-button:hover { color:var(--text); background:var(--control-hover); }
+.mini-drag .mini-close:hover { background:#c4404040; color:#ffbaba; }
+.mini-body { flex:1; min-height:68px; margin:0; gap:16px; align-items:center; }
+.mini-body>.art { width:76px; height:76px; border:1px solid var(--line); border-radius:14px; box-shadow:0 5px 16px #0003; }
+.mini-copy { min-width:0; }
+.mini-copy .mini-kicker { display:block; font-size:9px; font-weight:650; letter-spacing:1.3px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; }
+.mini-copy>strong { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; white-space:normal; overflow:hidden; overflow-wrap:anywhere; font-size:16px; line-height:1.3; font-weight:650; letter-spacing:-.25px; }
+.mini-copy>small { margin-top:5px; font-size:12px; line-height:1.3; color:var(--muted); }
+.mini-controls { flex:none; justify-content:center; gap:22px; margin:0; height:42px; }
+.mini-controls .icon-button { width:34px; height:34px; min-height:34px; color:var(--muted); }
+.mini-controls .main-play { width:42px; height:42px; min-height:42px; background:var(--accent); color:var(--accent-text,#18201c); transition:transform .18s,box-shadow .18s; }
+.mini-controls .main-play:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 0 0 3px var(--control-hover),0 0 0 1px var(--accent); }
+.mini-controls .main-play:active:not(:disabled) { transform:scale(.95); }
+.mini-player .seek-row { flex:none; margin:0; height:18px; gap:8px; font-size:10px; color:var(--muted); }
+.mini-player .seek-row>span { min-width:34px; }
+.mini-player .seek-track { min-width:0; }
+.mini-player .seek-track input { height:5px; background:linear-gradient(to right,var(--accent) var(--progress),var(--line) var(--progress)); }
+.mini-player .seek-track input::-webkit-slider-thumb { opacity:1; width:10px; height:10px; background:var(--accent); box-shadow:0 0 0 2px var(--bg); }
+.mini-player .seek-track input:focus-visible { outline:2px solid var(--accent); outline-offset:5px; }
+.mini-player .mini-error { flex:none; margin:0; font-size:11px; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+@media(max-height:239px) { .mini-player { gap:7px; padding:10px 16px; } .mini-body>.art { width:68px; height:68px; } }
+@media(prefers-reduced-motion:reduce) { .mini-controls .main-play { transition:none; } .mini-controls .main-play:hover:not(:disabled),.mini-controls .main-play:active:not(:disabled) { transform:none; } }
+
+.mini-player:has(.mini-error) { gap:5px; }

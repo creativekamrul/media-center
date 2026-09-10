@@ -10,8 +10,10 @@ export const collectionIcons=['music','book','podcast','folder','sliders','disc'
 export const collectionDefaults={music:{name:'Music',icon:'music'},audiobooks:{name:'Audiobooks',icon:'book'},podcasts:{name:'Podcasts',icon:'podcast'},local:{name:'Local music',icon:'folder'},tools:{name:'Library tools',icon:'sliders'}} as const
 const collectionSchema=z.object({name:z.string().trim().min(1).max(40).refine(v=>!/[\x00-\x1f\x7f]/.test(v),'Use a name without control characters.'),icon:z.enum(collectionIcons)}).strict()
 export const collectionsSchema=z.object({music:collectionSchema,audiobooks:collectionSchema,podcasts:collectionSchema,local:collectionSchema,tools:collectionSchema}).strict()
-export const navigationSchema=z.object({collections:collectionsSchema.default(collectionDefaults),listeningCollapsed:z.boolean().default(false),sidebarCollapsed:z.boolean().default(false)}).strict()
-export const navigationChangeSchema=z.discriminatedUnion('action',[z.object({action:z.literal('collections'),collections:collectionsSchema}).strict(),z.object({action:z.literal('listening'),collapsed:z.boolean()}).strict(),z.object({action:z.literal('sidebar'),collapsed:z.boolean()}).strict()])
+export const orderedCollectionKeys=['music','audiobooks','podcasts','local'] as const
+export const collectionOrderSchema=z.array(z.enum(orderedCollectionKeys)).length(4).refine(v=>new Set(v).size===4,'Include each collection exactly once.')
+export const navigationSchema=z.object({collections:collectionsSchema.default(collectionDefaults),collectionOrder:collectionOrderSchema.default([...orderedCollectionKeys]),queueBelowHome:z.boolean().default(false),listeningCollapsed:z.boolean().default(false),sidebarCollapsed:z.boolean().default(false)}).strict()
+export const navigationChangeSchema=z.discriminatedUnion('action',[z.object({action:z.literal('collections'),collections:collectionsSchema,collectionOrder:collectionOrderSchema.optional(),queueBelowHome:z.boolean().optional()}).strict(),z.object({action:z.literal('listening'),collapsed:z.boolean()}).strict(),z.object({action:z.literal('sidebar'),collapsed:z.boolean()}).strict()])
 export const experienceSchema=z.object({
  navigation:navigationSchema.default({}),
  homeOrder:z.array(z.enum(homeSections)).length(homeSections.length).refine(v=>new Set(v).size===homeSections.length).default([...homeSections]),

@@ -57,3 +57,9 @@
  .app-shell:not(.sidebar-collapsed) .listening-disclosure-icon { display:none; }
  .topbar-location { gap:6px; }
 }
+
+.sidebar-collapsed .collection-nav-heading { display:none; }
+.collection-order-actions { display:flex; gap:4px; align-self:center; }
+.collection-control-row { grid-template-columns:42px minmax(0,1fr) minmax(0,1fr) auto; }
+.collection-controls .check-field { margin:16px 0; }
+@media(max-width:900px) { .collection-control-row { grid-template-columns:36px minmax(0,1fr); } .collection-order-actions { grid-column:2; } }

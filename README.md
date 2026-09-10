@@ -41,7 +41,7 @@ Move from a favorite album to the next chapter without switching players. Media 
 - **Choose a private listen.** Pause history, statistics, music scrobbles and Discord sharing for the session while keeping spoken resume positions.
 - **A tidier workspace.** Rename collections, choose their icons, collapse the sidebar and enjoy consistent Continue Listening cards across Home, books and podcasts.
 
-[Read the 1.1.0 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.1.0) · [Full changelog](CHANGELOG.md)
+[Read the 1.1.1 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.1.1) · [Full changelog](CHANGELOG.md)
 
 ## A closer look
 
@@ -75,7 +75,7 @@ Browse full-size screenshots on the **[landing page](https://creativekamrul.gith
 ## Built for everyday listening
 
 - **Original audio, native playback.** MPV handles your streams and local files, including FLAC, WAV, and MP3. ReplayGain, EQ, and exclusive output are optional.
-- **A player that stays close.** An always-on-top mini player, editable queue, saved queues, sleep timer, fullscreen, and an immersive playing screen.
+- **A player that stays close.** A redesigned, theme-aware mini player with centered controls and a clear seek bar, editable queue, saved queues, sleep timer, fullscreen, and an immersive playing screen.
 - **Lyrics you can keep.** Synchronized LRCLIB lyrics, manual search and preview, and a saved per-song match that stays in SQLite for offline use. Import LRC/TXT files or edit line timing locally.
 - **Your own atmosphere.** Thirteen themes including Glass and Black Glass, custom colors, system font choices, a full lyric appearance popup, local CSS import, and reduced-motion support.
 - **Make time for a good listen.** Listen Later plans, timestamped notes, listening history, and original-quality offline downloads.

@@ -14,13 +14,14 @@ import { LastfmArtwork, publicArtwork, type ArtworkMetadata, type ArtworkResult 
 export { publicArtwork } from './lastfm'
 
 export const discordDefaults: DiscordSettings = {enabled:false,applicationId:'',music:true,books:false,podcasts:false,local:false,showPaused:true,hasLastfmKey:false}
+export const defaultDiscordArtwork='https://raw.githubusercontent.com/creativekamrul/media-center/v1.1.0/src/renderer/public/assets/default-cover.png'
 export const discordSchema=z.object({defaultCoverAsset:z.boolean().optional(),enabled:z.boolean(),applicationId:z.string().regex(/^(?:\d{15,22})?$/),music:z.boolean(),books:z.boolean(),podcasts:z.boolean(),local:z.boolean(),showPaused:z.boolean(),lastfmKey:z.string().regex(/^(?:[a-fA-F0-9]{32})?$/).optional()}).strict().refine(s=>!s.enabled||!!s.applicationId,{message:'Enter a Discord Application ID to enable presence.'})
 export function rpcFrame(opcode:number,data:unknown) {const body=Buffer.from(JSON.stringify(data)),header=Buffer.alloc(8);header.writeUInt32LE(opcode,0);header.writeUInt32LE(body.length,4);return Buffer.concat([header,body])}
 export function presence(state:PlaybackState,settings:DiscordSettings,art?:string,now=Date.now()) {
   const allowed=state.kind==='music-track'?settings.music:state.kind==='audiobook'?settings.books:state.kind==='podcast-episode'?settings.podcasts:state.kind==='local-file'?settings.local:false
   if(state.privateListening||!settings.enabled||!allowed||!['playing','paused'].includes(state.status)||(state.status==='paused'&&!settings.showPaused))return null
   const clean=(value:string)=>value.replace(/[\u0000-\u001f]/g,' ').slice(0,128).padEnd(2,' ')
-  return {type:2,details:clean(state.title),state:clean(`${state.status==='paused'?'Paused · ':''}${state.subtitle}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position/state.speed),end:Math.floor(now/1000+(state.duration-state.position)/state.speed)}}:{}),...((art&&publicArtwork(art))||(!art&&settings.defaultCoverAsset&&['music-track','local-file'].includes(state.kind??''))?{assets:{large_image:art??'media_center_default',large_text:clean(state.title)}}:{})}
+  return {type:2,details:clean(state.title),state:clean(`${state.status==='paused'?'Paused · ':''}${state.subtitle}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position/state.speed),end:Math.floor(now/1000+(state.duration-state.position)/state.speed)}}:{}),...(['music-track','local-file'].includes(state.kind??'')?{assets:{large_image:(art&&publicArtwork(art))||defaultDiscordArtwork,large_text:clean(state.title)}}:{})}
 }
 
 export class DiscordPresence {
@@ -105,11 +106,11 @@ export class DiscordPresence {
       if(generation!==this.generation||this.stopped)return
       // Never publish an old lookup after the user changed or hid the current media.
       const current=this.player.state;if(JSON.stringify(current.queue[current.queueIndex]?.target)!==JSON.stringify(state.queue[state.queueIndex]?.target)||current.status!==state.status)return
-      this.status.artworkMessage=artworkMessage+(!art&&settings.defaultCoverAsset?' Using the uploaded Media Center default asset.':'')
+      this.status.artworkMessage=artworkMessage+(!art&&presence(current,settings)?.assets?' Sending the public Media Center default cover.':'')
       const activity=presence(current,settings,art),signature=JSON.stringify([activity?.details,activity?.state,art,activity===null,current.speed,current.buffering,Math.round(current.position/10)])
       const immediate=activity===null||signature!==this.signature&&Date.now()-this.sentAt>=5000
       if(signature===this.signature||(!immediate&&Date.now()-this.sentAt<15000))return
-      const nonce=randomUUID();this.pending={nonce,sent:Date.now()};this.write(1,{cmd:'SET_ACTIVITY',args:{pid:process.pid,activity},nonce});this.signature=signature;this.sentAt=Date.now();this.status.artwork=!!art
+      const nonce=randomUUID();this.pending={nonce,sent:Date.now()};this.write(1,{cmd:'SET_ACTIVITY',args:{pid:process.pid,activity},nonce});this.signature=signature;this.sentAt=Date.now();this.status.artwork=!!activity?.assets
     }catch{this.status.message='Discord integration is unavailable. Check its settings.'}finally{this.busy=false}
   }
   stop(){this.stopped=true;this.generation++;clearInterval(this.timer);this.player.removeListener('state',this.privacyChanged);this.clear();this.socket?.end();this.socket?.destroy();this.socket=undefined}

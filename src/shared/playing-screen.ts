@@ -3,6 +3,7 @@ import { fontIds } from './appearance'
 const color=z.string().regex(/^#[0-9a-f]{6}$/i)
 // Field defaults migrate older saves while preserving their background, size and motion.
 export const playingScreenSchema=z.object({
+ showMusicLyrics:z.boolean().default(true),
  background:z.enum(['aurora','artwork','midnight','sunset','stars']),
  fontSize:z.number().int().min(24).max(64),motion:z.boolean(),
  font:z.enum(['theme',...fontIds]).default('theme'),

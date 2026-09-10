@@ -40,6 +40,25 @@ module.exports = async function dailySmoke({desktop,page,waitPlayback,artifacts}
   await reopened.getByRole('button',{name:'Keep mini player on top',exact:true}).waitFor()
   assert.equal((await reopened.evaluate(()=>window.mediaCenter.miniState())).pinned,false,'Reopening preserves unpinned choice')
   await reopened.getByRole('button',{name:'Keep mini player on top',exact:true}).click()
+  const miniPrefs=await page.evaluate(()=>window.mediaCenter.preferences())
+  assert.equal(await reopened.locator('.mini-brand').getAttribute('aria-label'),'Media Center')
+  assert.equal(await reopened.locator('.mini-drag').innerText(),'')
+  assert.equal(await reopened.locator('.mini-player .seek-row>span').count(),2)
+  for(const [width,height] of [[360,232],[440,248],[560,300]]){
+    await desktop.evaluate(({BrowserWindow},size)=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().includes('mini=1')).setSize(...size),[width,height])
+    await reopened.waitForFunction(size=>innerWidth===size[0]&&innerHeight===size[1],[width,height])
+    const geometry=await reopened.evaluate(()=>{const root=document.querySelector('.mini-player'),play=document.querySelector('.mini-controls .main-play'),r=root.getBoundingClientRect(),p=play.getBoundingClientRect();return {overflow:root.scrollHeight>root.clientHeight||root.scrollWidth>root.clientWidth,center:Math.abs(p.x+p.width/2-(r.x+r.width/2)),thumb:getComputedStyle(document.querySelector('.seek-track input'),'::-webkit-slider-thumb').opacity}})
+    assert.equal(geometry.overflow,false,`Mini player fits ${width}x${height}`);assert.ok(geometry.center<2,'Transport centered across the window');assert.equal(geometry.thumb,'1')
+    await reopened.screenshot({path:resolve(artifacts,`mini-player-${width}.png`)})
+  }
+  for(const theme of ['black-glass','ocean','glass']){
+    await page.evaluate(async p=>window.mediaCenter.savePreferences(p),{...miniPrefs,theme})
+    await reopened.waitForFunction(t=>document.documentElement.dataset.theme===t,theme)
+    const colors=await reopened.evaluate(()=>{const p=document.querySelector('.mini-controls .main-play'),root=document.querySelector('.mini-player');return {button:getComputedStyle(p).backgroundColor,accent:getComputedStyle(root).getPropertyValue('--accent').trim()}})
+    assert.ok(colors.button&&colors.accent)
+  }
+  await page.evaluate(async p=>window.mediaCenter.savePreferences(p),miniPrefs)
+  await desktop.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows().find(w=>w.webContents.getURL().includes('mini=1')).setSize(440,248))
   await reopened.screenshot({path:resolve(artifacts,'mini-player-v03.png')})
   await reopened.getByRole('button',{name:'Close mini player',exact:true}).click()
   const targets=[{target:{kind:'audiobook',serverId:abs.id,bookId:'offline-book'},title:'Offline book',subtitle:'Two physical files'},{target:{kind:'podcast-episode',serverId:abs.id,showId:'offline-show',episodeId:'offline-episode'},title:'Offline episode',subtitle:'One independent episode'}]

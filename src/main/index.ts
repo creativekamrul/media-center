@@ -92,7 +92,7 @@ function windowState() {
 }
 function createMini() {
   if (miniWindow && !miniWindow.isDestroyed()) { miniWindow.show();return }
-  miniWindow = new BrowserWindow({width:440,height:200,minWidth:360,minHeight:190,maxHeight:260,frame:false,alwaysOnTop:true,backgroundColor:'#121416',title:'Media Center mini player',autoHideMenuBar:true,webPreferences:{preload:join(__dirname,'../preload/index.js'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}})
+  miniWindow = new BrowserWindow({width:440,height:248,minWidth:360,minHeight:232,maxHeight:320,frame:false,alwaysOnTop:true,backgroundColor:'#121416',title:'Media Center mini player',autoHideMenuBar:true,webPreferences:{preload:join(__dirname,'../preload/index.js'),contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}})
   // Explicit Windows level avoids the floating level's taskbar repositioning clearing topmost.
   miniWindow.setAlwaysOnTop(store.get<boolean>('miniPinned')??true,process.platform==='win32'?'normal':'floating')
   miniWindow.on('always-on-top-changed',()=>{if(miniWindow&&!miniWindow.isDestroyed())miniWindow.webContents.send('mini:state',{pinned:miniWindow.isAlwaysOnTop()})})

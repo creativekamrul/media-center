@@ -50,7 +50,7 @@ describe('Discord local transport',()=>{
       expect(JSON.parse(pipe.frames[0].subarray(8).toString())).toEqual({v:1,client_id:'123456789012345678'})
       const ready=rpcFrame(1,{evt:'READY'});pipe.emit('data',ready.subarray(0,5));expect(rpc.status.connected).toBe(false);pipe.emit('data',ready.subarray(5));await vi.advanceTimersByTimeAsync(1)
       expect(rpc.status.connected).toBe(true)
-      const activity=JSON.parse(pipe.frames.at(-1)!.subarray(8).toString());expect(activity.cmd).toBe('SET_ACTIVITY');expect(activity.args.activity.details).toBe('Listening fixture')
+      const activity=JSON.parse(pipe.frames.at(-1)!.subarray(8).toString());expect(activity.cmd).toBe('SET_ACTIVITY');expect(activity.args.activity.details).toBe('Listening fixture');expect(activity.args.activity.assets.large_image).toBe('https://raw.githubusercontent.com/creativekamrul/media-center/v1.1.0/src/renderer/public/assets/default-cover.png');expect(rpc.status.artworkMessage).toContain('Sending the public Media Center default cover.')
       pipe.emit('data',rpcFrame(1,{cmd:'SET_ACTIVITY',nonce:activity.nonce,data:{}}));pipe.emit('data',rpcFrame(3,{ping:'fixture'}));expect(pipe.frames.at(-1)!.readUInt32LE(0)).toBe(4)
       player.state={...state,privateListening:true};player.emit('state',player.state);expect(JSON.parse(pipe.frames.at(-1)!.subarray(8).toString()).args.activity).toBeNull();player.state={...state,kind:'audiobook'};await vi.advanceTimersByTimeAsync(3000);expect(JSON.parse(pipe.frames.at(-1)!.subarray(8).toString()).args.activity).toBeNull()
       pipe.destroy();await vi.advanceTimersByTimeAsync(18000);expect(pipes.length).toBe(2)

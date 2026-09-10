@@ -2,6 +2,14 @@
 
 
 
+## 1.1.1
+
+- Redesign the mini player with the app icon, larger square artwork, clear song details, centered transport controls and the main player’s themed seek bar with elapsed/total time.
+- Automatically send the published Media Center default cover to Discord when music artwork is unavailable. No manual Discord asset upload or Last.fm key is needed for the fallback.
+- Hide collection customization when the sidebar is collapsed. Move Library tools into Listening Space, add manual collection ordering and an option to place Play queue directly below Home.
+- Music can switch between lyrics and the same immersive Now Playing layout used for books and podcasts. The choice is saved.
+- Move immersive lyric search, import, editing, refresh and timing/follow options into a header popup beside Fullscreen and Appearance. The lyric stage keeps the track title and lyrics.
+
 ## 1.1.0
 
 - Create personal shelves combining albums, playlists, artists, books, podcast shows and tracks, with custom covers and manual ordering.

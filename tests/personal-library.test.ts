@@ -44,8 +44,8 @@ describe('personal library',()=>{
   for(const url of ['http://archive.org/a','https://archive.org.attacker.test/a','https://127.0.0.1/a','https://user:secret@archive.org/a','https://archive.org:444/a'])expect(artworkHost(new URL(url))).toBe(false)
   const url='https://coverartarchive.org/release/12345678-1234-1234-1234-123456789abc/front-500';expect(publicArtwork(url)).toBe(url);expect(publicArtwork(url+'?token=secret')).toBeUndefined()
  })
- it('uses only an opted-in Discord asset fallback and clears it during private listening',()=>{
+ it('uses the public Discord fallback and clears it during private listening',()=>{
   const state={...emptyPlayback,status:'playing' as const,kind:'music-track' as const,title:'Track',subtitle:'Artist'},settings={...discordDefaults,enabled:true,defaultCoverAsset:true}
-  expect(presence(state,settings)?.assets?.large_image).toBe('media_center_default');expect(presence(state,{...settings,defaultCoverAsset:false})?.assets).toBeUndefined();expect(presence({...state,privateListening:true},settings)).toBeNull()
+  expect(presence(state,settings)?.assets?.large_image).toContain('/v1.1.0/src/renderer/public/assets/default-cover.png');expect(presence(state,{...settings,defaultCoverAsset:false})?.assets?.large_image).toContain('/default-cover.png');expect(presence({...state,privateListening:true},settings)).toBeNull()
  })
 })
