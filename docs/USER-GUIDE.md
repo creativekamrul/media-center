@@ -204,3 +204,37 @@ When a collection cannot load, use the nearby retry action. A refresh keeps the 
 The main window uses a title bar that follows the active theme. Drag the title area to move the window; the buttons at the upper right minimize, maximize/restore and close it. Close honors the existing close-to-tray preference. F11 enters fullscreen and hides the title bar; Escape restores the normal window.
 
 In the classic Now Playing screen, **Back to library** sits above the artwork beside the Queue, Lyrics and Immersive view controls.
+
+## Collection navigation
+
+Use the **Customize collections** button beside **Your collection**, or open **Settings → Appearance → Collection controls**, to give Music, Audiobooks, Podcasts, Local music and Library tools their own labels and icons. The icon preview updates while editing; choose **Save collection controls** to apply your changes. **Reset collection defaults** prepares the original labels and icons, then Save applies them. These changes only affect local navigation and do not rename server libraries or change media types.
+
+Select **Listening Space** in the sidebar to collapse or expand its menu. It supports keyboard activation and remembers your choice. MPV setup and its configuration status are in **Settings → Playback → MPV audio engine**.
+
+The button at the left of the top bar switches the full sidebar to an **icons-only rail** and back. Hover an icon to see its name. The sidebar remembers your choice independently of the Listening Space disclosure, and keeps your custom collection icons and selected-page highlight.
+
+## Personal shelves and offline preparation (1.1.0)
+
+Open **Library tools → Personal shelves** to create a shelf. Use **Add to shelf** on an album, playlist, book or show, or open a track's context menu. Each shelf can mix collections and individual items. Use the arrows beside an entry to change its order. **Edit shelf** changes its name, description and cover. Deleting a shelf keeps its media.
+
+Choose **Prepare offline** on a selection or shelf, give the plan a name, then open **Library tools → Offline preparation**. Select the plan and choose **Check readiness**. The check verifies files on this computer and reports known size, unavailable sizes, missing files and remaining download budget. **Download missing items** uses the existing original-audio downloader; check again before disconnecting. Missing local files need to be restored to the selected source folder. Removing a plan keeps downloaded copies.
+
+## Customize details and artwork (1.1.0)
+
+Open a track's context menu, or the controls on a collection header, and choose **Customize details & cover**. Enter the metadata you want to replace, then save. **Restore original details** removes those overrides. They stay in Media Center's database and do not rewrite files or edit the server. Local search and album/artist grouping follow your edits; server search still uses the original server metadata.
+
+Use **Choose image** for a local PNG/JPEG, or search an artist and album under **Find album artwork**. Search results identify MusicBrainz releases; preview a release's Cover Art Archive image and choose **Use this cover**. There is no additional API key. Remove a custom cover to return to the original artwork or the bundled Media Center fallback.
+
+For Discord, a selected public Cover Art Archive match can be shared directly. To use the branded default when a match is missing, go to **Settings → Sharing → Default cover when artwork is missing**, export it, upload it to your Discord application's Rich Presence art assets as **media_center_default**, then enable the fallback and save. A local image cannot be shown by Discord without this upload.
+
+## Show defaults, people and list views (1.1.0)
+
+Open a podcast show and expand **Playback preferences for this show**. Save its speed, intro/outro seconds and preferred episode order. These are manual skip durations, not automatic ad detection. They apply on episode start; an explicit seek is kept, and a saved per-episode speed has priority.
+
+**Library tools → People** searches artists, authors or narrators across your connected collections. Books also provide author/narrator shortcuts, and album/track controls provide **Explore artist**. Open a result to see and play the items available in your libraries.
+
+Use **Customize columns** in a music or local track list to choose and reorder columns, then save a named view. The saved-view selector switches between layouts. Titles, covers and playback controls remain accessible, including at narrow widths.
+
+## Private listening (1.1.0)
+
+The shield button in the top bar toggles **Private listening**. While enabled, new listening is excluded from device history/statistics, music scrobbles and Discord presence. Audiobook and episode positions still sync so you can resume later, with no listening-time increment from the app. Your server can still log media requests. The mode ends when the application closes; explicitly saved shelves, plans and downloads are kept.

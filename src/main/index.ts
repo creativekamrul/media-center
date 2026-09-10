@@ -1,3 +1,5 @@
+import {decoratePersonal} from './personal-display'
+import {registerPersonal} from './personal-library'
 import {registerPodcastDiscovery} from './podcast-discovery'
 import {registerStudio} from './studio'
 import {outputSchema} from './studio-preferences'
@@ -56,11 +58,11 @@ function provider(id: string) { const { config, secret } = store.connection(id);
 function handle<T extends z.ZodTypeAny>(channel: string, schema: T, action: (input: z.infer<T>) => unknown) {
   ipcMain.handle(channel, async (event, raw) => {
     const owner = [window, miniWindow].find(w => w && !w.isDestroyed() && event.sender === w.webContents && event.senderFrame === w.webContents.mainFrame)
-    if (!owner || (owner === miniWindow && !['player:get','player:command','player:seek','item:cover','local:cover','preferences:get','experience:get','mini:command','mini:get'].includes(channel))) throw new Error('Untrusted desktop request.')
+    if (!owner || (owner === miniWindow && !['personal:cover','player:get','player:command','player:seek','item:cover','local:cover','preferences:get','experience:get','mini:command','mini:get'].includes(channel))) throw new Error('Untrusted desktop request.')
     if(resetting)throw Error('The application is resetting.')
     const parsed = schema.safeParse(raw)
     if (!parsed.success) throw new Error('Invalid desktop request. Please check the entered values.')
-    try { const result=await action(parsed.data);if(channel==='backup:restore'){localWatcher?.refresh();for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('experience:state',experienceSchema.parse(store.get('experience')??{}))}if(channel==='preferences:save'||channel==='backup:restore')for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('theme:state',store.preferences());return result }
+    try { const result=await action(parsed.data);if(channel==='data:reset'&&result){for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('personal:changed');player.refreshPersonal()}if(channel==='backup:restore'){for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('personal:changed');localWatcher?.refresh();for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('experience:state',experienceSchema.parse(store.get('experience')??{}))}if(channel==='preferences:save'||channel==='backup:restore')for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('theme:state',store.preferences());return ['music:browse','music:detail','spoken:browse','spoken:continue','item:detail','local:browse','local:library','daily:home','home:get','history:list','library:browse','home:pins','personal:resolve'].includes(channel)?decoratePersonal(result,store,parsed.data):result }
     catch (error) {
       if (error instanceof z.ZodError) throw new Error('The server response does not match the supported API format. Check the server version and selected library.')
       throw error instanceof Error ? error : new Error('The operation failed.')
@@ -152,6 +154,7 @@ else {
       undo.clear();resetting=true;try{podcastAutomation?.stop();await player.command({action:'stop'});await player.edit({action:'clear'});const result=await downloads.batch(downloads.snapshot().entries.map(e=>e.id),'remove');if(result.failed.length)throw Error('Some downloads are in use. Close other players and try again.');localWatcher?.stop();windowsMedia?.stop();discord.stop();await downloads.stop();await player.shutdown();await session.defaultSession.clearCache();await session.defaultSession.clearStorageData();store.resetData('all');setTimeout(()=>{app.relaunch();app.exit(0)},150)}catch(e){resetting=false;throw e}
     },undo)
     registerPodcastDiscovery(handle,store,provider,()=>window!)
+    registerPersonal(handle,store,player,local,downloads,provider,()=>window!,()=>{for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('personal:changed')})
     registerStudio(handle,store,player,local,localIndex,lyrics,provider,()=>window!,()=>{for(const w of [window,miniWindow])if(w&&!w.isDestroyed()){w.webContents.send('theme:state',store.preferences());w.webContents.send('studio:changed')}},()=>downloads.snapshot().entries.length)
     localWatcher=new LocalWatcher(local,localIndex,store,experienceChanged)
     podcastAutomation=new PodcastAutomation(store,downloads,player,()=>daily.inbox(true))
@@ -225,7 +228,7 @@ else {
     handle('player:play', z.object({ queue: z.array(queueItemSchema).min(1).max(5000), index: z.number().int().min(0), position: z.number().finite().min(0).optional() }).strict(), async input => { if (input.index >= input.queue.length) throw new Error('Queue position is out of bounds.'); await player.play(input.queue, input.index, input.position) })
     handle('player:command', commandSchema, input => player.command(input))
     handle('player:seek',z.object({key:z.string().max(10000),queueIndex:z.number().int().min(0).max(4999),time:z.number().finite().nonnegative()}).strict(), i=>player.seekTo(i))
-    handle('player:get', z.undefined(), () => player.state)
+    handle('player:get', z.undefined(), () => player.snapshot())
     const mediaKeys=[['MediaPlayPause','toggle'],['MediaNextTrack','next'],['MediaPreviousTrack','previous'],['MediaStop','stop']] as const
     const mediaAvailable=(ready:boolean)=>{for(const [key,action]of mediaKeys){globalShortcut.unregister(key);if(!ready)globalShortcut.register(key,()=>{void player.command({action}).catch(()=>{})})}}
     mediaAvailable(false)

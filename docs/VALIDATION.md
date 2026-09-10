@@ -222,3 +222,40 @@ Home actions remain adjacent at 1008, 1440 and 1920 pixels. Listening panels use
 - Reviewed the packaged Now Playing screenshot: Back to library and the view controls share a header above the artwork and queue. Existing lyric, seeking, download, book/episode identity, persistence and crossfade checks pass.
 - Local installer: `release/Media-Center-1.0.1-win-x64.exe`. SHA-256: `3c93376998f16ed2fa685d95e0f24d255799b68255fc91e7fb4050febbd5126f`.
 - Built with `--publish never` and verified before the authorized GitHub publication. GitHub Actions builds a separate installer from the release tag with its own checksum.
+
+## Unreleased collection navigation validation — 2026-09-10
+
+- Typecheck, production build and all 163 unit tests passed, including older preference/backup defaults, invalid names/icons and navigation backup round-trips.
+- The source Electron suite passed with muted native MPV and zero renderer errors. New UI checks cover all five collection labels, icon rendering, reset/save, keyboard collapse, reload persistence, invalid IPC and protection against stale preference saves.
+- Collapsing Listening Space preserves unsaved listening settings. Mini-player calls cannot change main-window navigation.
+- Collection editor overflow checks passed at 1008 and 1440 pixels. Reviewed the editor and collapsed sidebar screenshot after the settings jump finished.
+- Existing theme, native window, lyrics, seeking, download, book/episode identity, mini-player, backup and crossfade checks passed.
+- Source changes only: no version bump, installer build, commit/tag push or GitHub release was made.
+
+### Whole-sidebar collapse
+
+- Added an independently persisted sidebar state with backward-compatible defaults and backup coverage. The validated scoped update preserves collection customizations and Listening Space state.
+- Typecheck, all 163 tests, production build and source Electron/native MPV checks passed with zero renderer errors.
+- Desktop assertions cover reclaiming workspace width, hidden labels, icon tooltips, navigation/selection, keyboard expansion, independent collapse states and protection against stale preference saves. Reviewed `artifacts/sidebar-icons.png` from an isolated profile.
+- Remains unreleased; no installer or GitHub publication was created.
+
+## Unreleased personal library verification — 2026-09-10
+
+- `npm run typecheck`, `npm test` (**176 tests**) and `npm run build` passed.
+- Full `npm run test:desktop` passed using the source production build, isolated fixture servers/profile and real muted MPV (`artifacts/mpv-qa/mpv.exe`), with zero renderer errors. Existing book/episode distinction, whole-book cross-file seeking, gapless/crossfade playback, settings, themes, mini-player boundaries, backup, window controls and navigation checks also passed.
+- `scripts/personal-library-smoke.cjs` verifies mixed shelf creation/reordering, device-local title/artist overrides, native artwork import, MusicBrainz search and Cover Art Archive preview/selection through controlled main-process provider responses, default image export, ready/missing local files, saved offline plans, per-show speed/order controls, shared Continue Listening subtitle/progress geometry, named column order, author profiles and the private-mode toggle.
+- Unit regressions cover private music scrobble/history/stat suppression, zero spoken listening-time deltas with retained resume checkpoints for both books and episodes, no retroactive private elapsed time, podcast intro/outro/explicit seek boundaries, show versus existing profile speed precedence, source-remapped personal backups, typed media identities and artwork URL restrictions.
+- Screenshots: `artifacts/personal-shelves.png`, `metadata-cover-editor.png`, `offline-preparation.png`, `podcast-preferences.png`, `continue-listening-fixed.png`, `custom-list-view.png`, `creator-profile.png` and `personal-library-narrow.png`.
+- Reports: `artifacts/desktop-smoke.json` and `artifacts/personal-library-smoke.json`.
+- Live third-party catalog coverage and Discord rendering of a user's uploaded fallback asset require user-side confirmation. Provider behavior is based on the official MusicBrainz/Cover Art Archive documentation; automated artwork transport tests use controlled responses.
+- No version bump, installer packaging, commit, push, tag or GitHub release was performed. Version remains 1.0.1 with unreleased changes, as requested.
+
+## 1.1.0 release validation — 2026-09-10
+
+- All 176 unit tests, typecheck, production build, updater integration and release metadata checks passed.
+- Built the local Windows installer with `npm run package:win` (`--publish never`) before publication.
+- Full packaged Electron checks passed with real muted MPV, two fixture servers, all three server media types and zero renderer errors. Navigation, personal shelves, metadata/artwork, offline readiness, per-show preferences, list views, private listening, backups and shared Continue Listening geometry passed alongside the existing playback suites.
+- Website checks passed at 1440, 768 and 390 pixels, including local assets, gallery keyboard access, dialogs and the no-JavaScript fallback.
+- Local installer: `release/Media-Center-1.1.0-win-x64.exe`; SHA-256: `8829e5b61280a0917212a387953f547aeafcdea13a52a5772348a32755520588`.
+- The user explicitly authorized GitHub publication. The tag workflow builds a separate installer from committed source, reruns its checks and publishes source, checksums and in-app update metadata.
+- Earlier unreleased entries above record the development checkpoints; these changes are included in 1.1.0. Live catalog coverage and Discord fallback upload remain subject to the limitations recorded above.

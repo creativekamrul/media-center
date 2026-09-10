@@ -5,7 +5,15 @@ export const shortcutActions=['search','queue','favorite','mini','lyrics','toggl
 export const defaultShortcuts={search:'Ctrl+K',queue:'Ctrl+J',favorite:'Ctrl+D',mini:'Ctrl+M',lyrics:'Ctrl+L',toggle:'Space',next:'Ctrl+Right',previous:'Ctrl+Left'}
 export const pinSchema=z.object({kind:z.enum(['music','local']),source:z.string().min(1).max(2048),id:z.string().min(1).max(2048),title:z.string().max(200)}).strict()
 export const shortcutSchema=z.string().max(40).refine(v=>!v||/^(?:(?:Ctrl|Alt|Shift|Meta)\+)*(?:[A-Z0-9]|Space|Left|Right|Up|Down|F[1-9]|F1[0-2])$/.test(v),'Use a letter, number, arrow, Space or function key with optional modifiers.').refine(v=>!['F11','Alt+F4','Ctrl+W','Ctrl+R'].includes(v),'That shortcut is reserved.')
+export const collectionKeys=['music','audiobooks','podcasts','local','tools'] as const
+export const collectionIcons=['music','book','podcast','folder','sliders','disc','headphones','library','radio','star','heart','sparkles'] as const
+export const collectionDefaults={music:{name:'Music',icon:'music'},audiobooks:{name:'Audiobooks',icon:'book'},podcasts:{name:'Podcasts',icon:'podcast'},local:{name:'Local music',icon:'folder'},tools:{name:'Library tools',icon:'sliders'}} as const
+const collectionSchema=z.object({name:z.string().trim().min(1).max(40).refine(v=>!/[\x00-\x1f\x7f]/.test(v),'Use a name without control characters.'),icon:z.enum(collectionIcons)}).strict()
+export const collectionsSchema=z.object({music:collectionSchema,audiobooks:collectionSchema,podcasts:collectionSchema,local:collectionSchema,tools:collectionSchema}).strict()
+export const navigationSchema=z.object({collections:collectionsSchema.default(collectionDefaults),listeningCollapsed:z.boolean().default(false),sidebarCollapsed:z.boolean().default(false)}).strict()
+export const navigationChangeSchema=z.discriminatedUnion('action',[z.object({action:z.literal('collections'),collections:collectionsSchema}).strict(),z.object({action:z.literal('listening'),collapsed:z.boolean()}).strict(),z.object({action:z.literal('sidebar'),collapsed:z.boolean()}).strict()])
 export const experienceSchema=z.object({
+ navigation:navigationSchema.default({}),
  homeOrder:z.array(z.enum(homeSections)).length(homeSections.length).refine(v=>new Set(v).size===homeSections.length).default([...homeSections]),
  hiddenSections:z.array(z.enum(homeSections)).max(homeSections.length).default([]),hiddenMixes:z.array(z.string().max(2048)).max(100).default([]),
  pins:z.array(pinSchema).max(30).default([]),autoplay:z.boolean().default(false),watchLocal:z.boolean().default(true),
@@ -17,6 +25,7 @@ export const defaultExperience=experienceSchema.parse({})
 export interface SearchGroup {name:string;items:QueueItem[];unavailable?:string[]}
 export interface ExperienceAPI {
  experience():Promise<Experience>
+ saveNavigation(input:z.infer<typeof navigationChangeSchema>):Promise<void>
  saveExperience(input:Experience):Promise<void>
  onExperience(listener:(input:Experience)=>void):()=>void
  unifiedSearch(query:string):Promise<{groups:SearchGroup[];warnings:string[]}>

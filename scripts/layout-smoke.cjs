@@ -92,10 +92,10 @@ module.exports = async function layoutSmoke(page, artifacts) {
     await search.fill('')
     if (width === 1008) await page.screenshot({path:resolve(artifacts, 'notes-compact.png')})
     await page.getByRole('button', {name:'Audiobooks', exact:true}).click()
-    await page.locator('.continue-grid .resume-card').first().waitFor()
-    assert.equal(await page.locator('.continue-grid').evaluate(el=>el.scrollWidth<=el.clientWidth),true,'Library continuation cards wrap without horizontal overflow')
+    await page.locator('.continue-shelf .resume-card').first().waitFor()
+    assert.equal(await page.locator('.continue-shelf .home-shelf-track').evaluate(el=>getComputedStyle(el).scrollbarWidth),'none','Library continuation slider keeps arrows and hides scrollbar chrome')
     assert.equal(await page.locator('.workspace').evaluate(el=>getComputedStyle(el,'::-webkit-scrollbar').height),'0px','Horizontal scrollbar chrome is hidden')
-    assert.ok((await page.locator('.continue-grid .resume-card').first().boundingBox()).height <= 205, 'Library resume cards match the compact Home layout')
+    assert.ok((await page.locator('.continue-shelf .resume-card').first().boundingBox()).height <= 205, 'Library resume cards match the compact Home layout')
     if (width === 1440) await page.screenshot({path:resolve(artifacts, 'library-compact.png')})
   }
   await page.evaluate(t => { if(t) document.documentElement.dataset.theme=t; else delete document.documentElement.dataset.theme }, theme)

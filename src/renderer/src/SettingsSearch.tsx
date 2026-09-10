@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState} from 'react'
 import {ArrowRight,Search,X} from 'lucide-react'
 
-const aliases:Record<string,string>={updates:'version update release changelog new',servers:'server connection navidrome audiobookshelf password login',playback:'audio sound mpv output headphones device equalizer eq replaygain volume speed crossfade profiles',appearance:'theme colors colours fonts typography lyrics glass transparency translucent density css',listening:'downloads storage quota goal rewind gapless shortcuts keys podcast backup restore reset data',sharing:'discord presence lastfm artwork privacy'}
+const aliases:Record<string,string>={updates:'version update release changelog new',servers:'server connection navidrome audiobookshelf password login',playback:'audio sound mpv output headphones device equalizer eq replaygain volume speed crossfade profiles',appearance:'theme colors colours fonts typography lyrics glass transparency translucent density css collection navigation sidebar icons names',listening:'downloads storage quota goal rewind gapless shortcuts keys podcast backup restore reset data',sharing:'discord presence lastfm artwork privacy'}
 export function jumpToSetting(element:HTMLElement){
   for(let parent=element.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true
   element.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})

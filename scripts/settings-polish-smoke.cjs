@@ -70,6 +70,7 @@ module.exports=async({desktop,page,artifacts})=>{
   await page.waitForFunction(async()=>!!(await window.mediaCenter.preferences()).customCss)
   assert.equal((await page.evaluate(()=>window.mediaCenter.preferences())).customCss,css)
   assert.equal(await mini.evaluate(()=>window.mediaCenter.fullscreen('toggle').then(()=>false,()=>true)),true,'Mini cannot request fullscreen')
+  assert.equal(await mini.evaluate(()=>window.mediaCenter.saveNavigation({action:'listening',collapsed:true}).then(()=>false,()=>true)),true,'Mini cannot edit main navigation')
   for(const action of ['get','minimize','maximize','close'])assert.equal(await mini.evaluate(action=>window.mediaCenter.windowControl(action).then(()=>false,()=>true),action),true,'Mini cannot control the main window')
   // The main test window starts hidden; native keyboard input requires focus after
   // opening the visible mini player. Real users already have a focused main window.

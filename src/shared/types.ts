@@ -1,3 +1,4 @@
+import type {PersonalAPI as importPersonalAPI} from './personal-library'
 import type {StudioAPI as importStudioAPI} from './studio'
 import type {ExperienceAPI} from './experience'
 import type { DailyAPI } from './daily'
@@ -25,6 +26,7 @@ export type PlayTarget = { kind: 'music-track'; serverId: string; trackId: strin
 export type SpokenTarget = Extract<PlayTarget, { kind: 'audiobook' | 'podcast-episode' }>
 export interface QueueItem { target: PlayTarget; title: string; subtitle: string; cover?: string; context?: string; duration?: number }
 export interface PlaybackState {
+  privateListening?:boolean
   status: 'idle' | 'loading' | 'playing' | 'paused' | 'error'; title: string; subtitle: string;
   kind?: PlayTarget['kind']; position: number; duration: number; speed: number; volume: number;
   chapters: Chapter[]; queue: QueueItem[]; queueIndex: number; error?: string; syncError?: string;
@@ -38,7 +40,7 @@ export interface UpdateState {
   status: 'unavailable' | 'idle' | 'checking' | 'up-to-date' | 'available' | 'downloading' | 'ready' | 'installing' | 'error'
   version?: string; percent?: number; transferred?: number; total?: number; checkedAt?: number; error?: string
 }
-export interface DesktopAPI extends DailyAPI, ExperienceAPI, importStudioAPI {
+export interface DesktopAPI extends importPersonalAPI, DailyAPI, ExperienceAPI, importStudioAPI {
   windowControl(action:'get'|'minimize'|'maximize'|'close'):Promise<WindowState>
   onWindowState(listener:(state:WindowState)=>void):()=>void
   releaseNews(action:'get'|'seen'|'changelog'):Promise<{version:string;unread:boolean}>

@@ -32,18 +32,16 @@ Move from a favorite album to the next chapter without switching players. Media 
 | **Audiobookshelf podcasts** | Browse shows and independent episodes, filter listening status, search, sort, and catch up through the podcast inbox. |
 | **Local music library** | Browse tagged albums, songs, artists and genres; keep local favorites and playlists, or explore the original folder structure. Files stay untouched. |
 
-## Meet Media Center 1.0
+## New in Media Center 1.1
 
-A milestone release that brings the recent local previews together:
+- **Build personal shelves.** Bring albums, playlists, books, shows and tracks together, then choose their order and cover.
+- **Make your library yours.** Edit titles and metadata on this device, find artwork through MusicBrainz and Cover Art Archive, explore creator pages and save column layouts. Original files and server metadata stay untouched.
+- **Prepare for offline listening.** Save download plans, check missing or damaged files and see storage estimates before downloading.
+- **Set up each podcast once.** Keep a show's preferred speed, intro/outro skips and episode order.
+- **Choose a private listen.** Pause history, statistics, music scrobbles and Discord sharing for the session while keeping spoken resume positions.
+- **A tidier workspace.** Rename collections, choose their icons, collapse the sidebar and enjoy consistent Continue Listening cards across Home, books and podcasts.
 
-- **A more comfortable interface.** Consistent controls, square artwork that fills its space, tidy collection headers, and layouts checked at 100%, 125%, 150% and 200% interface scaling.
-- **Find your settings.** Search by name or topic, jump to the highlighted control, and keep every unsaved change. Loading, empty and connection-error screens now offer a useful next step.
-- **A Home shaped around you.** Reorder shelves, pin playlists, preview collection-based mixes and see today's listening at a glance.
-- **Your listening, beautifully remembered.** Export Recaps for your chosen dates in **12 distinct layouts and 12 palettes**, with rankings, activity, streaks and previous-period comparisons.
-- **More personal playback.** Listening profiles, output memory, optional music crossfade, a command palette, undo, lyric import and timing editing, and a playlist-cover designer.
-- **Stay oriented after updates.** A once-per-version **What's new** screen links directly to features and can be reopened from Settings → Updates.
-
-[Read the 1.0.0 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.0.0) · [Full changelog](CHANGELOG.md)
+[Read the 1.1.0 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.1.0) · [Full changelog](CHANGELOG.md)
 
 ## A closer look
 

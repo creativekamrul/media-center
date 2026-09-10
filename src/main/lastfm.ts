@@ -5,6 +5,7 @@ import type { Store } from './store'
 export function publicArtwork(value:string):string|undefined {
   try {
     const url=new URL(value)
+    if(url.protocol==='https:'&&url.hostname==='coverartarchive.org'&&!url.username&&!url.password&&!url.port&&!url.search&&!url.hash&&/^\/release\/[0-9a-f-]{36}\/front-500$/i.test(url.pathname))return url.href
     if(url.protocol==='https:'&&!url.username&&!url.password&&!url.port&&!url.search&&!url.hash&&
       ['lastfm-img.freetls.fastly.net','lastfm.freetls.fastly.net','lastfm-img2.akamaized.net'].includes(url.hostname)&&
       !url.pathname.toLowerCase().includes('2a96cbd8b46e442fc41c2b86b821562f'))return url.href

@@ -2,6 +2,16 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopAPI, PlaybackState, UpdateState } from '../shared/types'
 
 const api: DesktopAPI = {
+ exportDefaultCover:()=>ipcRenderer.invoke('personal:default-cover-export'),
+ personalMetadata:r=>ipcRenderer.invoke('personal:metadata',r),
+ personalState:()=>ipcRenderer.invoke('personal:get'),personalChange:i=>ipcRenderer.invoke('personal:change',i),
+ onPersonal:fn=>{const cb=()=>fn();ipcRenderer.on('personal:changed',cb);return()=>ipcRenderer.removeListener('personal:changed',cb)},
+ personalResolve:r=>ipcRenderer.invoke('personal:resolve',r),offlineCheck:i=>ipcRenderer.invoke('personal:offline',i),
+ personalCover:i=>ipcRenderer.invoke('personal:cover',i),importPersonalCover:i=>ipcRenderer.invoke('personal:cover-import',i),removePersonalCover:i=>ipcRenderer.invoke('personal:cover-remove',i),
+ coverSearch:q=>ipcRenderer.invoke('personal:cover-search',q),coverPreview:id=>ipcRenderer.invoke('personal:cover-preview',id),coverSelect:i=>ipcRenderer.invoke('personal:cover-select',i),
+ peopleSearch:i=>ipcRenderer.invoke('personal:people',i),privateListening:v=>ipcRenderer.invoke('personal:private',v),
+
+ saveNavigation:input=>ipcRenderer.invoke('navigation:save',input),
  windowControl:action=>ipcRenderer.invoke('window:controls',action),
  onWindowState:listener=>{const cb=(_e:unknown,state:import('../shared/types').WindowState)=>listener(state);ipcRenderer.on('window:state',cb);return()=>ipcRenderer.removeListener('window:state',cb)},
  releaseNews:action=>ipcRenderer.invoke('release:news',action),

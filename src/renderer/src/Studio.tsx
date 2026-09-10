@@ -1,3 +1,4 @@
+import {PersonalShelves,OfflinePreparation,PeoplePage} from './PersonalLibrary'
 import { useEffect, useState } from 'react'
 import { api, Modal, ListenActions } from './actions'
 import { message } from './ui'
@@ -13,6 +14,7 @@ import type {
 } from '../../shared/studio'
 import type { LocalRoot } from '../../shared/types'
 export type StudioTab =
+  | 'shelves' | 'offline' | 'people'
   | 'discover'
   | 'series'
   | 'podcasts'
@@ -20,6 +22,7 @@ export type StudioTab =
   | 'profiles'
   | 'recovery'
 export const studioTabs: Record<StudioTab, string> = {
+  shelves:'Personal shelves',offline:'Offline preparation',people:'People',
   discover: 'Rediscover',
   series: 'Book series',
   podcasts: 'Podcast subscriptions',
@@ -55,7 +58,7 @@ export function StudioPage({
           </button>
         ))}
       </div>
-      {tab === 'discover' ? (
+      {tab === 'shelves' ? <PersonalShelves error={error}/> : tab === 'offline' ? <OfflinePreparation error={error}/> : tab === 'people' ? <PeoplePage error={error}/> : tab === 'discover' ? (
         <Discovery error={error} />
       ) : tab === 'series' ? (
         <Series error={error} />

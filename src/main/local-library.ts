@@ -1,3 +1,6 @@
+import {applyMetadata} from '../shared/personal-state'
+import {progressKey} from '../shared/timeline'
+import type {PersonalState} from '../shared/personal-library'
 import {readdir,stat} from 'node:fs/promises'
 import {relative,resolve,extname,basename,dirname} from 'node:path'
 import {randomUUID} from 'node:crypto'
@@ -59,7 +62,8 @@ export class LocalLibrary {
   const index=await this.index(input.rootId,input.refresh),favorites=new Set(this.store.get<string[]>(`local-favorites:${input.rootId}`)??[])
   const recent=new Map(this.store.history().filter(h=>h.item.target.kind==='local-file'&&h.item.target.rootId===input.rootId).map(h=>[h.item.target.kind==='local-file'?h.item.target.fileId:'',h.playedAt]))
   const playlists=this.store.get<LocalPlaylist[]>(`local-playlists:${input.rootId}`)??[]
-  let files=index.files.filter(f=>`${f.title} ${f.artist} ${f.album} ${f.genre??''}`.toLowerCase().includes(input.search.toLowerCase()))
+  const overrides=this.store.get<PersonalState>('personal-library')?.metadata??{}
+  let files=index.files.map(f=>applyMetadata(f,overrides[progressKey({kind:'local-file',serverId:'local',rootId:input.rootId,fileId:f.id})])).filter(f=>`${f.title} ${f.artist} ${f.album} ${f.genre??''}`.toLowerCase().includes(input.search.toLowerCase()))
   const groupKey=(f:LocalFile)=>input.view==='albums'?localAlbumKey(f):input.view==='artists'?(f.albumArtist||f.artist||'Unknown artist'):(f.genre||'Uncategorized')
   let groups:LocalGroup[]=[]
   if(['albums','artists','genres'].includes(input.view)){

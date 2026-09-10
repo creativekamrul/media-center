@@ -8,7 +8,7 @@ import { Navidrome } from '../src/main/providers/navidrome'
 import { progressKey } from '../src/shared/timeline'
 
 describe('playback coordination', () => {
-  let player: Player, mpv: Mpv, abs: Audiobookshelf, nav: Navidrome
+  let player: Player, mpv: Mpv, abs: Audiobookshelf, nav: Navidrome, testStore:Store
   const book = { kind: 'audiobook' as const, id: 'book', serverId: 's', libraryId: 'l', title: 'Book', subtitle: '', description: '', authors: [], narrators: [], series: [], duration: 1000, chapters: [{ id: 1, title: 'Across files', start: 200, end: 800 }], tracks: [] }
   const queue = [{ target: { kind: 'audiobook' as const, serverId: 's', bookId: 'book' }, title: 'Book', subtitle: '' }]
   beforeEach(() => {
@@ -24,9 +24,42 @@ describe('playback coordination', () => {
     nav = new Navidrome({ id: 'n', provider: 'navidrome', name: 'N', url: 'https://test.invalid', username: 'u' }, 'p')
     vi.spyOn(nav, 'track').mockResolvedValue({ kind: 'music-track', id: 'song', serverId: 'n', title: 'Song', artist: 'Artist', album: '', duration: 300 })
     vi.spyOn(nav, 'scrobble').mockResolvedValue()
+    testStore=store;store.record=vi.fn();store.recordListening=vi.fn()
     player = new Player(mpv, store, id => id === 'n' ? nav : abs)
   })
   afterEach(async () => { await player.shutdown(); vi.useRealTimers() })
+  it.each(['audiobook','podcast-episode'] as const)('private listening preserves %s resume without history or listening-time deltas',async kind=>{
+    const items=kind==='audiobook'?queue:[{target:{kind:'podcast-episode' as const,serverId:'s',showId:'show',episodeId:'ep'},title:'Episode',subtitle:''}]
+    if(kind==='podcast-episode')vi.mocked(abs.detail).mockResolvedValue({kind:'podcast-show',id:'show',serverId:'s',libraryId:'p',title:'Show',subtitle:'Host',description:'',author:'Host',episodeCount:1,episodes:[{id:'ep',title:'Episode',duration:1000}]} as Awaited<ReturnType<typeof abs.detail>>)
+    await player.setPrivateListening(true);await player.play(items,0);await vi.advanceTimersByTimeAsync(16000)
+    expect(player.snapshot().privateListening).toBe(true)
+    expect(testStore.record).not.toHaveBeenCalled();expect(testStore.recordListening).not.toHaveBeenCalled()
+    expect(testStore.get('resume:'+progressKey(items[0].target))).toMatchObject({position:450})
+    expect(abs.sync).toHaveBeenCalledWith('session',450,1000,0,false)
+    expect(testStore.get('queue')).toBeUndefined()
+  })
+  it('does not scrobble private music or retroactively count private elapsed time',async()=>{
+    await player.setPrivateListening(true);await player.play([{target:{kind:'music-track',serverId:'n',trackId:'song'},title:'Song',subtitle:'Artist'}],0)
+    await vi.advanceTimersByTimeAsync(180000);expect(nav.scrobble).not.toHaveBeenCalled();expect(testStore.recordListening).not.toHaveBeenCalled()
+    await player.setPrivateListening(false);await vi.advanceTimersByTimeAsync(15000);expect(nav.scrobble).not.toHaveBeenCalled();expect(testStore.recordListening).toHaveBeenCalled()
+  })
+  it('retains the listening profile speed for podcasts without an explicit show preference',async()=>{
+    testStore.set('profileSpeed',1.75)
+    vi.mocked(abs.detail).mockResolvedValue({kind:'podcast-show',id:'show',serverId:'s',libraryId:'p',title:'Show',subtitle:'Host',description:'',author:'Host',episodeCount:1,episodes:[{id:'ep',title:'Episode',duration:1000}]} as Awaited<ReturnType<typeof abs.detail>>)
+    await player.play([{target:{kind:'podcast-episode',serverId:'s',showId:'show',episodeId:'ep'},title:'Episode',subtitle:'Host'}],0)
+    expect(player.state.speed).toBe(1.75)
+  })
+  it('applies show speed and intro, respects explicit seeking, and advances once at outro',async()=>{
+    testStore.set('personal-library',{shows:{'["s","show"]':{speed:1.6,intro:20,outro:10,order:'oldest'}}})
+    vi.mocked(abs.detail).mockResolvedValue({kind:'podcast-show',id:'show',serverId:'s',libraryId:'p',title:'Show',subtitle:'Host',description:'',author:'Host',episodeCount:1,episodes:[{id:'ep',title:'Episode',duration:120}]} as Awaited<ReturnType<typeof abs.detail>>)
+    vi.mocked(abs.start).mockResolvedValue({id:'session',duration:120,currentTime:0,playMethod:0,audioTracks:[{index:1,title:'Episode',startOffset:0,duration:120,contentUrl:'/ep'}]})
+    const item={target:{kind:'podcast-episode' as const,serverId:'s',showId:'show',episodeId:'ep'},title:'Episode',subtitle:'Host'}
+    await player.play([item],0);expect(player.state.position).toBe(20);expect(player.state.speed).toBe(1.6)
+    await player.command({action:'seek',value:0});expect(player.state.position).toBe(0)
+    await player.play([item],0,5);expect(player.state.position).toBe(5)
+    mpv.emit('event',{event:'property-change',name:'time-pos',data:111});await vi.advanceTimersByTimeAsync(1100)
+    expect(player.state.status).toBe('idle');expect(testStore.recordListening).toHaveBeenCalledWith(expect.objectContaining({title:'Episode'}),expect.any(Number),true)
+  })
   it.each(['audiobook','podcast-episode'] as const)('coalesces %s telemetry but publishes commands and errors immediately',async kind=>{
     const items=kind==='audiobook'?queue:[{target:{kind:'podcast-episode' as const,serverId:'s',showId:'show',episodeId:'ep'},title:'Episode',subtitle:''}]
     if(kind==='podcast-episode')vi.mocked(abs.detail).mockResolvedValue({kind:'podcast-show',id:'show',serverId:'s',libraryId:'p',title:'Show',subtitle:'Host',description:'',author:'Host',episodeCount:1,episodes:[{id:'ep',title:'Episode',duration:1000}]} as Awaited<ReturnType<typeof abs.detail>>)

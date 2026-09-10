@@ -13,7 +13,7 @@ export interface HomeMix {id:string;title:string;subtitle:string;items:QueueItem
 export interface HomeData { mixes:HomeMix[]; continuing: ContinueItem[]; albums: MusicAlbum[]; episodes: InboxEpisode[]; warnings: string[] }
 export interface ListeningStats { days: { day: string; seconds: number; music: number; books: number; podcasts: number; local: number }[]; totalSeconds: number; finishedBooks: number; finishedEpisodes: number; top: { title: string; subtitle: string; seconds: number; item?:QueueItem }[] }
 export interface BackupPreview { token: string; queues: number; notes: number; plans: number; rules: number; unmatchedServers: number; unmatchedFolders: number }
-export interface DiscordSettings { enabled: boolean; applicationId: string; music: boolean; books: boolean; podcasts: boolean; local: boolean; showPaused: boolean; hasLastfmKey: boolean }
+export interface DiscordSettings { defaultCoverAsset?:boolean; enabled: boolean; applicationId: string; music: boolean; books: boolean; podcasts: boolean; local: boolean; showPaused: boolean; hasLastfmKey: boolean }
 export interface DiscordStatus { connected: boolean; message: string; artwork: boolean; artworkMessage?: string }
 export interface DailyAPI {
   lyrics(input:{refresh?:boolean}):Promise<import('./lyrics').LyricsResult>

@@ -1,3 +1,5 @@
+import {showKey,showPreferenceSchema,episodeStart,episodeOutro,targetKey} from '../shared/personal-library'
+import {applyMetadata} from '../shared/personal-state'
 import { assertUnchanged } from './undo'
 import { canCrossfade, crossfadeGains } from './crossfade'
 import { transitionSchema } from '../shared/studio'
@@ -69,6 +71,8 @@ export class Player extends EventEmitter {
   private offline?: OfflineMedia
   private pausedAt = 0
   private statsSeconds = 0
+  private privateMode = false
+  private skippingOutro = false
   private fileIndex = 0
   private serial: Promise<unknown> = Promise.resolve()
   private listened = 0
@@ -184,9 +188,9 @@ export class Player extends EventEmitter {
         elapsed = Math.min(2, (now - this.lastTick) / 1000)
       this.lastTick = now
       if (this.state.status === 'playing' && !this.state.buffering) {
-        this.listened += elapsed
-        this.statsSeconds += elapsed
+        if (!this.privateMode) { this.listened += elapsed; this.statsSeconds += elapsed }
       }
+      if (!this.skippingOutro && this.target?.kind === 'podcast-episode' && this.state.status === 'playing' && episodeOutro(this.state.position,this.state.duration,this.showPreferences(this.target))) { const key=progressKey(this.target); this.skippingOutro=true; void this.enqueue(async()=>{if(this.state.status==='playing'&&this.target?.kind==='podcast-episode'&&progressKey(this.target)===key&&episodeOutro(this.state.position,this.state.duration,this.showPreferences(this.target)))await this.ended()}).catch(()=>{}).finally(()=>{this.skippingOutro=false}) }
       if (this.state.sleepAt && now >= this.state.sleepAt) {
         this.state.sleepAt = undefined
         void this.enqueue(async () => {
@@ -200,12 +204,25 @@ export class Player extends EventEmitter {
     }, 1000)
   }
   private publisher = new StatePublisher(() =>
-    this.emit('state', structuredClone(this.state)),
+    this.emit('state', this.snapshot()),
   )
+  snapshot() {
+    const state=structuredClone(this.state), metadata=this.store.get<import('../shared/personal-library').PersonalState>('personal-library')?.metadata??{}
+    state.privateListening=this.privateMode
+    state.queue=state.queue.map(q=>applyMetadata(q,metadata[targetKey(q.target)]))
+    const item=state.queue[state.queueIndex]
+    if(item){const m=metadata[targetKey(item.target)];if(m?.title)state.title=m.title;if(m?.artist||m?.author)state.subtitle=m.artist??m.author??state.subtitle}
+    return state
+  }
+  refreshPersonal(){this.publish()}
+  async setPrivateListening(enabled:boolean){await this.enqueue(async()=>{if(enabled===this.privateMode)return;if(!this.privateMode)await this.sync();this.privateMode=enabled;this.state.privateListening=enabled;this.listened=0;this.statsSeconds=0;this.lastTick=Date.now();this.publish()})}
+  private showPreferences(target:PlayTarget){return showPreferenceSchema.parse(target.kind==='podcast-episode'?this.store.get<import('../shared/personal-library').PersonalState>('personal-library')?.shows?.[showKey(target.serverId,target.showId)]??{}:{})}
   private publish(telemetry = false) {
+    this.state.privateListening=this.privateMode
     this.publisher.publish(telemetry)
   }
   private saveQueue() {
+    if(this.privateMode)return
     this.store.set('queue', {
       queue: this.state.queue,
       index: this.state.queueIndex,
@@ -298,6 +315,7 @@ export class Player extends EventEmitter {
     this.state.speed =
       item.target.kind === 'audiobook' || item.target.kind === 'podcast-episode'
         ? (this.store.get<number>(`speed:${progressKey(item.target)}`) ??
+          (item.target.kind==='podcast-episode'?this.store.get<import('../shared/personal-library').PersonalState>('personal-library')?.shows?.[showKey(item.target.serverId,item.target.showId)]?.speed:undefined) ??
           this.store.get<number>('profileSpeed') ??
           1)
         : 1
@@ -326,7 +344,7 @@ export class Player extends EventEmitter {
             this.daily(),
           )
       }
-      await this.loadAbsFile(Math.min(resume, this.state.duration))
+      await this.loadAbsFile(item.target.kind==='podcast-episode'?episodeStart(resume,this.state.duration,this.showPreferences(item.target),position!==undefined):Math.min(resume, this.state.duration))
     } else if (item.target.kind === 'local-file') {
       if (!this.local) throw new Error('Local files are unavailable.')
       const file = await this.local.metadata(
@@ -358,7 +376,7 @@ export class Player extends EventEmitter {
       this.state.position = position ?? 0
       item.cover = track.cover
       this.saveQueue()
-      if (prefs.scrobble)
+      if (prefs.scrobble && !this.privateMode)
         await provider.scrobble(track.id, false).catch(() => {
           this.state.syncError = 'Now-playing could not be sent to Navidrome.'
         })
@@ -412,7 +430,7 @@ export class Player extends EventEmitter {
             ),
         ),
       )
-      await this.loadAbsFile(resume)
+      await this.loadAbsFile(item.target.kind==='podcast-episode'?episodeStart(resume,this.state.duration,this.showPreferences(item.target),position!==undefined):resume)
     }
     await this.mpv.command(['set_property', 'pause', false])
     this.state.status = 'playing'
@@ -764,7 +782,7 @@ export class Player extends EventEmitter {
     this.saveQueue()
     this.publish()
     if (
-      this.target.kind === 'music-track' &&
+      this.target.kind === 'music-track' && !this.privateMode &&
       (this.store.get<Preferences>('preferences')?.scrobble ?? true)
     )
       try {
@@ -839,6 +857,7 @@ export class Player extends EventEmitter {
     )
       return
     this.flushStats()
+    if(this.privateMode && this.target.kind!=='audiobook' && this.target.kind!=='podcast-episode')return
     this.store.set(`resume:${progressKey(this.target)}`, {
       position: this.state.position,
       duration: this.state.duration,
@@ -857,19 +876,19 @@ export class Player extends EventEmitter {
         syncPending: true,
       })
     const item = this.state.queue[this.state.queueIndex]
-    if (item && this.state.position > 0)
+    if (item && this.state.position > 0 && !this.privateMode)
       this.store.record?.(item, this.state.position, this.state.duration)
   }
   private flushStats(finished = false) {
     const item = this.state.queue[this.state.queueIndex]
-    if (item && (this.statsSeconds > 0 || finished))
+    if (item && !this.privateMode && (this.statsSeconds > 0 || finished))
       this.store.recordListening?.(item, this.statsSeconds, finished)
     this.statsSeconds = 0
   }
   private async sync(close = false) {
     this.saveResume()
     if (this.session) {
-      const elapsed = this.listened
+      const elapsed = this.privateMode ? 0 : this.listened
       try {
         await this.session.provider.sync(
           this.session.data.id,
@@ -889,7 +908,7 @@ export class Player extends EventEmitter {
       this.saveResume()
       this.publish()
     } else if (
-      this.target?.kind === 'music-track' &&
+      this.target?.kind === 'music-track' && !this.privateMode &&
       (this.store.get<Preferences>('preferences')?.scrobble ?? true) &&
       !this.scrobbled &&
       this.listened >= Math.min(240, this.state.duration / 2) &&

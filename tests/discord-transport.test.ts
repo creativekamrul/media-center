@@ -27,7 +27,7 @@ describe('Discord local transport',()=>{
     const store={get:(key:string)=>key==='discordSettings'?settings:undefined,secret:()=> 'a'.repeat(32),cache:(key:string)=>cache.get(key),cacheSet:(key:string,value:unknown)=>cache.set(key,{value,updated:Date.now()})} as unknown as Store
     const fetcher=vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(JSON.stringify({error:10})))
     vi.stubGlobal('fetch',fetcher)
-    const rpc=new DiscordPresence(store,{state} as Player,()=>{throw new Error('No provider access expected')},{metadata:async()=>({artist:'Artist',album:'Album',title:'Track'})} as unknown as LocalFiles)
+    const rpc=new DiscordPresence(store,Object.assign(new EventEmitter(),{state}) as Player,()=>{throw new Error('No provider access expected')},{metadata:async()=>({artist:'Artist',album:'Album',title:'Track'})} as unknown as LocalFiles)
     const acknowledge=()=>{const activity=JSON.parse(pipe.frames.at(-1)!.subarray(8).toString());pipe.emit('data',rpcFrame(1,{nonce:activity.nonce,data:{}}));return activity}
     try{
       await vi.advanceTimersByTimeAsync(1);pipe.emit('data',rpcFrame(1,{evt:'READY'}));await vi.advanceTimersByTimeAsync(1)
@@ -44,7 +44,7 @@ describe('Discord local transport',()=>{
     vi.mocked(createConnection).mockImplementation((()=>{const pipe=new Pipe();pipes.push(pipe);queueMicrotask(()=>pipe.emit('connect'));return pipe}) as unknown as typeof createConnection)
     const state={...emptyPlayback,status:'playing' as const,kind:'music-track' as const,title:'Listening fixture',subtitle:'Artist',duration:90,position:3}
     const store={get:()=>({...discordDefaults,enabled:true,applicationId:'123456789012345678'}),secret:()=>''} as unknown as Store
-    const player={state} as unknown as Player,rpc=new DiscordPresence(store,player,()=>{throw new Error('No provider access expected')},{} as LocalFiles)
+    const player=Object.assign(new EventEmitter(),{state}) as unknown as Player,rpc=new DiscordPresence(store,player,()=>{throw new Error('No provider access expected')},{} as LocalFiles)
     try{
       await vi.advanceTimersByTimeAsync(1);const pipe=pipes[0]
       expect(JSON.parse(pipe.frames[0].subarray(8).toString())).toEqual({v:1,client_id:'123456789012345678'})
@@ -52,7 +52,7 @@ describe('Discord local transport',()=>{
       expect(rpc.status.connected).toBe(true)
       const activity=JSON.parse(pipe.frames.at(-1)!.subarray(8).toString());expect(activity.cmd).toBe('SET_ACTIVITY');expect(activity.args.activity.details).toBe('Listening fixture')
       pipe.emit('data',rpcFrame(1,{cmd:'SET_ACTIVITY',nonce:activity.nonce,data:{}}));pipe.emit('data',rpcFrame(3,{ping:'fixture'}));expect(pipe.frames.at(-1)!.readUInt32LE(0)).toBe(4)
-      player.state={...state,kind:'audiobook'};await vi.advanceTimersByTimeAsync(3000);expect(JSON.parse(pipe.frames.at(-1)!.subarray(8).toString()).args.activity).toBeNull()
+      player.state={...state,privateListening:true};player.emit('state',player.state);expect(JSON.parse(pipe.frames.at(-1)!.subarray(8).toString()).args.activity).toBeNull();player.state={...state,kind:'audiobook'};await vi.advanceTimersByTimeAsync(3000);expect(JSON.parse(pipe.frames.at(-1)!.subarray(8).toString()).args.activity).toBeNull()
       pipe.destroy();await vi.advanceTimersByTimeAsync(18000);expect(pipes.length).toBe(2)
     }finally{rpc.stop()}
   })

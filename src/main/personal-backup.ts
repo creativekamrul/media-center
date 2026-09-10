@@ -1,3 +1,5 @@
+import {personalStateSchema,type MediaRef} from '../shared/personal-library'
+import {validateArtwork} from './artwork-image'
 import { profileSchema, outputSchema } from './studio-preferences'
 import { transitionSchema } from '../shared/studio'
 import { z } from 'zod'
@@ -40,6 +42,8 @@ const lyric = z
   .strict()
 export const personalExtraSchema = z
   .object({
+    personal:personalStateSchema.default({}),
+    covers:z.array(z.object({key:z.string().min(1).max(10000),source:z.string().regex(/^https:\/\/coverartarchive\.org\/release\/[0-9a-f-]{36}\/front-500$/i).optional(),image:z.string().max(7*1024*1024).regex(/^data:image\/png;base64,[A-Za-z0-9+/=]+$/).refine(v=>{try{validateArtwork(Buffer.from(v.split(',')[1],'base64'),true);return true}catch{return false}})}).strict()).max(250).default([]),
     experience: experienceSchema,
     playingScreen: playingScreenSchema,
     profiles: z.array(profileSchema).max(30).default([]),
@@ -141,6 +145,8 @@ export function exportExtra(store: Store) {
     }),
   )
   return personalExtraSchema.parse({
+    personal:store.get('personal-library')??{},
+    covers:store.entries('personal-cover:').filter(r=>typeof r.value==='string').map(r=>({key:r.key.slice(15),image:r.value,source:store.get('personal-cover-source:'+r.key.slice(15))??undefined})),
     profiles: store.get('listeningProfiles') ?? [],
     transitions: store.get('transitions') ?? {
       seconds: 0,
@@ -199,7 +205,11 @@ export function restoreExtra(
     else a[0] = server(a[0])
     return JSON.stringify(a)
   }
+  const ref=(r:MediaRef):MediaRef=>r.kind==='playable'?{...r,item:remap(r.item)}:{...r,serverId:server(r.serverId)}
+  const personalKey=(value:string)=>value.startsWith('shelf:')?value:key(value)
+  const personal={...extra.personal,shelves:extra.personal.shelves.map(s=>({...s,entries:s.entries.map(ref)})),trips:extra.personal.trips.map(t=>({...t,items:t.items.map(remap)})),shows:Object.fromEntries(Object.entries(extra.personal.shows).map(([k,v])=>{const [source,show]=z.tuple([z.string(),z.string()]).parse(JSON.parse(k));return [JSON.stringify([server(source),show]),v]})),metadata:Object.fromEntries(Object.entries(extra.personal.metadata).map(([k,v])=>[personalKey(k),v]))}
   const values: Record<string, unknown> = {
+    'personal-library':personal,
     listeningProfiles: extra.profiles,
     transitions: extra.transitions,
     profileSpeed: extra.profileSpeed,
@@ -220,6 +230,7 @@ export function restoreExtra(
       return { ...h, item, id: JSON.stringify(item.target) }
     }),
   }
+  for(const cover of extra.covers){values['personal-cover:'+personalKey(cover.key)]=cover.image;if(cover.source)values['personal-cover-source:'+personalKey(cover.key)]=cover.source}
   for (const o of extra.outputs) values['output-profile:' + o.device] = o.value
   for (const r of extra.local) {
     const root = folder(r.rootId)

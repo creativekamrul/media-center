@@ -2,6 +2,21 @@
 
 
 
+## 1.1.0
+
+- Create personal shelves combining albums, playlists, artists, books, podcast shows and tracks, with custom covers and manual ordering.
+- Edit titles and metadata on this device, import artwork, or search MusicBrainz and Cover Art Archive without an additional API key. Original files and server metadata stay untouched.
+- Explore artist, author and narrator pages; save track-list column layouts.
+- Prepare named offline plans with readiness, file-integrity, storage estimates and download/retry actions.
+- Save podcast speed, intro/outro skips and episode order per show.
+- Enable session-only private listening to pause history, stats, music scrobbling and Discord sharing while retaining spoken resume positions.
+- Customize collection names and icons, collapse Listening Space or the full sidebar, and find MPV status in Settings.
+- Fix clipped Continue Listening subtitles and use consistent arrow-controlled shelves on Home, audiobooks and podcasts.
+- Add branded fallback music artwork and a Discord fallback export/setup option. Discord requires uploading the asset to your own application.
+- Include personal library settings and artwork in validated personal backups and data removal.
+
+Windows x64; MPV is installed separately. Artwork availability depends on the public catalog. Metadata edits are device-local.
+
 ## 1.0.1
 
 - Replaced the native main-window title bar with theme-aware minimize, maximize/restore and close controls, plus a draggable title region. Fullscreen hides the title bar; close-to-tray retains its existing behavior.

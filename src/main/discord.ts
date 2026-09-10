@@ -14,13 +14,13 @@ import { LastfmArtwork, publicArtwork, type ArtworkMetadata, type ArtworkResult 
 export { publicArtwork } from './lastfm'
 
 export const discordDefaults: DiscordSettings = {enabled:false,applicationId:'',music:true,books:false,podcasts:false,local:false,showPaused:true,hasLastfmKey:false}
-export const discordSchema=z.object({enabled:z.boolean(),applicationId:z.string().regex(/^(?:\d{15,22})?$/),music:z.boolean(),books:z.boolean(),podcasts:z.boolean(),local:z.boolean(),showPaused:z.boolean(),lastfmKey:z.string().regex(/^(?:[a-fA-F0-9]{32})?$/).optional()}).strict().refine(s=>!s.enabled||!!s.applicationId,{message:'Enter a Discord Application ID to enable presence.'})
+export const discordSchema=z.object({defaultCoverAsset:z.boolean().optional(),enabled:z.boolean(),applicationId:z.string().regex(/^(?:\d{15,22})?$/),music:z.boolean(),books:z.boolean(),podcasts:z.boolean(),local:z.boolean(),showPaused:z.boolean(),lastfmKey:z.string().regex(/^(?:[a-fA-F0-9]{32})?$/).optional()}).strict().refine(s=>!s.enabled||!!s.applicationId,{message:'Enter a Discord Application ID to enable presence.'})
 export function rpcFrame(opcode:number,data:unknown) {const body=Buffer.from(JSON.stringify(data)),header=Buffer.alloc(8);header.writeUInt32LE(opcode,0);header.writeUInt32LE(body.length,4);return Buffer.concat([header,body])}
 export function presence(state:PlaybackState,settings:DiscordSettings,art?:string,now=Date.now()) {
   const allowed=state.kind==='music-track'?settings.music:state.kind==='audiobook'?settings.books:state.kind==='podcast-episode'?settings.podcasts:state.kind==='local-file'?settings.local:false
-  if(!settings.enabled||!allowed||!['playing','paused'].includes(state.status)||(state.status==='paused'&&!settings.showPaused))return null
+  if(state.privateListening||!settings.enabled||!allowed||!['playing','paused'].includes(state.status)||(state.status==='paused'&&!settings.showPaused))return null
   const clean=(value:string)=>value.replace(/[\u0000-\u001f]/g,' ').slice(0,128).padEnd(2,' ')
-  return {type:2,details:clean(state.title),state:clean(`${state.status==='paused'?'Paused · ':''}${state.subtitle}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position/state.speed),end:Math.floor(now/1000+(state.duration-state.position)/state.speed)}}:{}),...(art&&publicArtwork(art)?{assets:{large_image:art,large_text:clean(state.title)}}:{})}
+  return {type:2,details:clean(state.title),state:clean(`${state.status==='paused'?'Paused · ':''}${state.subtitle}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position/state.speed),end:Math.floor(now/1000+(state.duration-state.position)/state.speed)}}:{}),...((art&&publicArtwork(art))||(!art&&settings.defaultCoverAsset&&['music-track','local-file'].includes(state.kind??''))?{assets:{large_image:art??'media_center_default',large_text:clean(state.title)}}:{})}
 }
 
 export class DiscordPresence {
@@ -40,7 +40,9 @@ export class DiscordPresence {
   private pending?:{nonce:string;sent:number}
   private timer:NodeJS.Timeout
   status:DiscordStatus={connected:false,message:'Discord presence is disabled.',artwork:false}
-  constructor(private store:Store,private player:Player,private provider:(id:string)=>Navidrome|Audiobookshelf,private local:LocalFiles) {this.artworkClient=new LastfmArtwork(store);this.timer=setInterval(()=>void this.tick(),3000);void this.tick()}
+  private wasPrivate=false
+  private privacyChanged=()=>{const enabled=!!this.player.state.privateListening;if(enabled&&!this.wasPrivate){this.generation++;this.clear();this.status.artwork=false;this.status.artworkMessage='Private listening is on.'}this.wasPrivate=enabled}
+  constructor(private store:Store,private player:Player,private provider:(id:string)=>Navidrome|Audiobookshelf,private local:LocalFiles) {this.artworkClient=new LastfmArtwork(store);player.on('state',this.privacyChanged);this.timer=setInterval(()=>void this.tick(),3000);void this.tick()}
   settings():DiscordSettings {return {...discordDefaults,...this.store.get<DiscordSettings>('discordSettings'),hasLastfmKey:!!this.store.secret('lastfm')}}
   save(input:z.infer<typeof discordSchema>) {const {lastfmKey,...settings}=input;if(lastfmKey!==undefined)this.store.setSecret('lastfm',lastfmKey);this.store.set('discordSettings',settings);this.generation++;this.clear();this.socket?.destroy();this.socket=undefined;this.status.connected=false;this.nextConnect=0;this.metadataKey='';this.refreshArtwork=true;this.artworkClient.reset();void this.tick()}
   correct(artist:string,album:string){const item=this.player.state.queue[this.player.state.queueIndex];if(!item||!['music-track','local-file'].includes(item.target.kind))throw new Error('Play a music track before correcting its artwork.');const key=progressKey(item.target),all=this.store.get<Record<string,{artist:string;album:string}>>('artworkOverrides')??{};if(!artist&&!album)delete all[key];else all[key]={artist,album};if(Object.keys(all).length>1000)throw new Error('Artwork corrections are limited to 1,000 tracks.');this.store.set('artworkOverrides',all);this.retryArtwork()}
@@ -71,6 +73,7 @@ export class DiscordPresence {
   private async artwork(state:PlaybackState):Promise<ArtworkResult>{
     const item=state.queue[state.queueIndex]
     if(!item||!['music-track','local-file'].includes(item.target.kind))return {message:'Audiobooks and podcasts use text-only Discord presence.'}
+    const custom=this.store.get<string>('personal-cover-source:'+progressKey(item.target));if(custom&&publicArtwork(custom))return {url:custom,message:'Using your chosen Cover Art Archive artwork.'}
     if(!this.store.secret('lastfm'))return {message:'Add a Last.fm API key to look up album covers.'}
     const targetKey=progressKey(item.target),generation=this.generation
     let metadata=this.metadataKey===targetKey?this.metadata:undefined
@@ -102,13 +105,13 @@ export class DiscordPresence {
       if(generation!==this.generation||this.stopped)return
       // Never publish an old lookup after the user changed or hid the current media.
       const current=this.player.state;if(JSON.stringify(current.queue[current.queueIndex]?.target)!==JSON.stringify(state.queue[state.queueIndex]?.target)||current.status!==state.status)return
-      this.status.artworkMessage=artworkMessage
+      this.status.artworkMessage=artworkMessage+(!art&&settings.defaultCoverAsset?' Using the uploaded Media Center default asset.':'')
       const activity=presence(current,settings,art),signature=JSON.stringify([activity?.details,activity?.state,art,activity===null,current.speed,current.buffering,Math.round(current.position/10)])
       const immediate=activity===null||signature!==this.signature&&Date.now()-this.sentAt>=5000
       if(signature===this.signature||(!immediate&&Date.now()-this.sentAt<15000))return
       const nonce=randomUUID();this.pending={nonce,sent:Date.now()};this.write(1,{cmd:'SET_ACTIVITY',args:{pid:process.pid,activity},nonce});this.signature=signature;this.sentAt=Date.now();this.status.artwork=!!art
     }catch{this.status.message='Discord integration is unavailable. Check its settings.'}finally{this.busy=false}
   }
-  stop(){this.stopped=true;this.generation++;clearInterval(this.timer);this.clear();this.socket?.end();this.socket?.destroy();this.socket=undefined}
+  stop(){this.stopped=true;this.generation++;clearInterval(this.timer);this.player.removeListener('state',this.privacyChanged);this.clear();this.socket?.end();this.socket?.destroy();this.socket=undefined}
 }
 export function registerDiscord(handle:Handle,rpc:DiscordPresence){handle('discord:get',z.undefined(),()=>rpc.settings());handle('discord:save',discordSchema,i=>rpc.save(i));handle('discord:status',z.undefined(),()=>rpc.status);handle('discord:retry-artwork',z.undefined(),()=>rpc.retryArtwork());handle('discord:artwork',z.object({artist:z.string().trim().max(500),album:z.string().trim().max(500)}).strict(),i=>rpc.correct(i.artist,i.album))}
