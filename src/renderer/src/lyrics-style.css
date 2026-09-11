@@ -53,3 +53,10 @@
 .standard-lyrics .lyrics-scroll { padding:60px 14px; scroll-padding-block:30px; mask-image:linear-gradient(transparent,#000 5%,#000 95%,transparent) }
 .standard-lyrics button.lyric-line.current { background:transparent; color:var(--lyric-sung); transform:none; opacity:1 }
 @media(prefers-reduced-motion:reduce){.standard-lyrics *{animation:none!important;transition:none!important;scroll-behavior:auto!important}.standard-lyrics .karaoke.word-lift [data-karaoke]{scale:.8474576271!important;translate:none!important}.standard-lyrics button.lyric-line{transform:none!important;filter:none!important}}
+
+.standard-lyrics-options{display:flex;align-items:center;gap:10px;justify-content:space-between;overflow-x:auto;padding:4px 0 12px;margin:0 0 14px;border-bottom:1px solid var(--line)}
+.standard-lyrics-tools,.standard-lyrics-tools .lyrics-tools{display:flex;align-items:center;flex-wrap:nowrap;gap:8px;margin:0}
+.standard-lyrics-options>button,.standard-lyrics-tools button{flex-shrink:0;white-space:nowrap}
+.standard-lyrics-tools .lyrics-tools>.muted{display:none}
+
+.standard-lyrics-options .secondary{font-size:11px;padding:9px 12px;gap:6px;min-height:40px}.standard-lyrics-options>button{position:sticky;right:0;background:var(--panel);margin-left:auto}

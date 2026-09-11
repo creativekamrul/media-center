@@ -3,6 +3,8 @@ import { basename, extname, isAbsolute, relative, resolve, sep } from 'node:path
 import { randomUUID } from 'node:crypto'
 import type { LocalRoot, LocalFile, LocalFolder } from '../shared/types'
 import type { Store } from './store'
+import { embeddedLyrics } from './embedded-lyrics'
+import { textLyrics } from './lyric-sources'
 
 const audio = new Set(['.mp3', '.flac', '.wav', '.wave', '.m4a', '.m4b', '.aac', '.ogg', '.opus', '.aiff', '.aif', '.ape', '.alac', '.wma', '.dsf', '.dff', '.wv', '.mka', '.ac3'])
 export function within(root: string, path: string) { const rel = relative(root, path); return rel === '' || (!isAbsolute(rel) && rel !== '..' && !rel.startsWith(`..${sep}`)) }
@@ -45,6 +47,12 @@ export class LocalFiles {
       } catch { result.warnings.push(`Could not access ${entry.name}.`) }
     }))
     result.folders.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })); result.files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })); return result
+  }
+  async lyrics(rootId: string, fileId: string) {
+    const path = await this.path(rootId, fileId)
+    const { parseFile } = await import('music-metadata')
+    const metadata = await parseFile(path, { duration: false, skipCovers: true })
+    return textLyrics(embeddedLyrics(metadata.common.lyrics ?? []))
   }
   async cover(rootId: string, fileId: string): Promise<string | null> {
     const { parseFile } = await import('music-metadata'), data = await parseFile(await this.path(rootId, fileId), { duration: false })

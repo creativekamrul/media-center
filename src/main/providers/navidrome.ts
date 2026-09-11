@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { z } from 'zod'
 import type { Connection, Library, MusicAlbum, MusicTrack, Page, MusicArtist, MusicPlaylist, MusicBrowseInput, MusicPage, MusicDetail, MusicEntity, RadioStation } from '../../shared/types'
 import { coverData, json, serverUrl } from './http'
+import { navidromeLyrics } from '../lyric-sources'
 
 const albumSchema = z.object({ id: z.string(), name: z.string(), artist: z.string().default('Unknown artist'), songCount: z.number().default(0), year: z.number().optional(), coverArt: z.string().optional(), starred: z.string().optional(), userRating: z.number().optional(), genre: z.string().optional(), duration: z.number().optional(), playCount: z.number().optional(), artistId: z.string().optional() })
 const songSchema = z.object({ id: z.string(), title: z.string(), artist: z.string().default('Unknown artist'), album: z.string().default(''), duration: z.number().default(0), suffix: z.string().optional(), bitRate: z.number().optional(), samplingRate: z.number().optional(), bitDepth: z.number().optional(), starred: z.string().optional(), userRating: z.number().optional(), coverArt: z.string().optional(), albumId: z.string().optional(), artistId: z.string().optional(), genre: z.string().optional(), year: z.number().optional(), track: z.number().optional(), discNumber: z.number().optional(), playCount: z.number().optional() })
@@ -21,6 +22,7 @@ export class Navidrome {
     if (envelope.status !== 'ok') throw new Error(`Navidrome rejected the request (code ${envelope.error?.code ?? 'unknown'}). Check credentials and permissions.`)
     return envelope
   }
+  async lyrics(trackId: string) { return navidromeLyrics((await this.get('getLyricsBySongId', { id: trackId })).lyricsList) }
   async test() { await this.get('ping') }
   async libraries(): Promise<Library[]> {
     const response = await this.get('getMusicFolders')

@@ -24,3 +24,11 @@
 .custom-mix-card h3,.custom-mix-card p{margin:0;overflow-wrap:anywhere}.custom-mix-card>svg{color:var(--accent)}.custom-mix-card>p{color:var(--muted);font-size:13px;line-height:1.6}.custom-mix-card .control-actions{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap}
 .home-mix.custom-mix-card>.secondary{position:static;margin-top:auto;width:auto;height:auto;border-radius:24px;font-size:12px}
 @media(max-width:760px){.mix-basics,.mix-output{grid-template-columns:1fr}.mix-condition{grid-template-columns:1fr 1fr 36px}.mix-condition>input{grid-column:1/3;grid-row:2}.mix-condition>.icon-button{grid-column:3;grid-row:1}.mix-builder-actions>.primary{margin-left:0}}
+
+/* Saved recipes keep their actions visible beside the generated Home mixes. */
+.home-mix.custom-mix-card{height:auto;min-height:212px;gap:10px}
+.home-mix.custom-mix-card>.eyebrow{margin:0;font-size:9px;line-height:1.5;padding:0}
+.home-mix.custom-mix-card>h3{margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.home-mix.custom-mix-card>p{margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.custom-mix-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-top:auto}
+.home-mix .custom-mix-actions>.mix-play{width:38px;height:38px;color:var(--accent-text,#17191e);background:var(--accent)}

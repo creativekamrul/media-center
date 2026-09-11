@@ -30,8 +30,33 @@ module.exports=async function({desktop,page,artifacts}){
  await dialog.getByText(/Mix saved/).waitFor()
  await page.screenshot({path:resolve(artifacts,'custom-mix-builder-1.2.png')})
  await dialog.getByRole('button',{name:'Close dialog',exact:true}).click()
+ // Saved mixes play directly without requiring the editor or an earlier preview.
+ await page.getByRole('button',{name:'Home',exact:true}).click()
+ const card=page.locator('.home-mix.custom-mix-card').filter({hasText:'Evening test mix'})
+ await card.getByRole('button',{name:'Play mix Evening test mix',exact:true}).click()
+ await page.waitForFunction(async()=>{const p=await window.mediaCenter.playback();return p.status==='playing'&&p.queue[p.queueIndex]?.target.kind==='music-track'})
+ assert.equal(await page.getByRole('dialog').count(),0)
+ for(const width of [1008,1440]){
+  await page.setViewportSize({width,height:940})
+  assert.ok(await card.evaluate(el=>{const r=el.getBoundingClientRect();return [...el.querySelectorAll('button')].every(b=>{const x=b.getBoundingClientRect();return x.top>=r.top&&x.bottom<=r.bottom})}),'Saved mix actions fit inside the Home card')
+ }
+ await page.waitForFunction(()=>document.querySelector('.home-mix.custom-mix-card .mix-play')?.getAttribute('aria-busy')==='false')
+ await card.screenshot({path:resolve(artifacts,'custom-mix-direct-play.png')})
+ const empty=await page.evaluate(async()=>{const a=window.mediaCenter,m=(await a.personalState()).mixes.find(m=>m.name==='Evening test mix'),mix={...m,id:crypto.randomUUID(),name:'No matching songs fixture',groups:[{match:'all',conditions:[{type:'text',field:'artist',operator:'equals',value:'No artist with this fixture name'}]}]};await a.personalChange({action:'mix-save',mix});return mix.id})
+ const beforeEmpty=await page.evaluate(()=>window.mediaCenter.playback())
+ await page.getByRole('button',{name:'Play mix No matching songs fixture',exact:true}).click()
+ await page.getByText('No songs match this mix. Open the mix to adjust its rules or sources.',{exact:true}).waitFor()
+ const afterEmpty=await page.evaluate(()=>window.mediaCenter.playback());assert.deepEqual(afterEmpty.queue.map(q=>q.target),beforeEmpty.queue.map(q=>q.target));assert.equal(afterEmpty.queueIndex,beforeEmpty.queueIndex);assert.equal(afterEmpty.status,'playing')
+ await page.evaluate(id=>window.mediaCenter.personalChange({action:'mix-delete',id}),empty)
+ await page.getByRole('button',{name:'Dismiss error',exact:true}).click()
+
+ await page.evaluate(()=>window.mediaCenter.command({action:'stop'}))
  await page.getByRole('button',{name:'Library tools',exact:true}).click()
  await page.getByRole('tab',{name:'Custom mixes',exact:true}).click()
+ await page.getByRole('button',{name:'Play mix Evening test mix',exact:true}).click()
+ await page.waitForFunction(async()=>{const p=await window.mediaCenter.playback();return p.status==='playing'&&p.queue[p.queueIndex]?.target.kind==='music-track'})
+ await page.evaluate(()=>window.mediaCenter.command({action:'stop'}))
+
  await page.getByRole('button',{name:'Open mix',exact:true}).click()
  assert.equal(await dialog.getByLabel('Rule 1.1 value',{exact:true}).inputValue(),'Test Artist')
  await dialog.getByRole('button',{name:'Close dialog',exact:true}).click()

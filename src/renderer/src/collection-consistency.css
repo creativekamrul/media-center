@@ -25,11 +25,23 @@
  .workspace:has(.expanded-player){display:flex;flex-direction:column;overflow:hidden}
  .workspace:has(.expanded-player)>main{flex:1;min-height:0;overflow:hidden;width:100%;margin:0 auto}
  .expanded-player{height:100%;min-height:0;grid-template-rows:auto minmax(0,1fr);grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:stretch}
- .expanded-player>.expanded-art{position:relative;top:auto;align-self:stretch;min-height:0;overflow-y:auto;overflow-x:hidden;padding-top:0;scrollbar-width:thin}
+ .expanded-player>.expanded-art{position:relative;top:auto;align-self:stretch;min-height:0;overflow-y:auto;overflow-x:hidden;padding-top:0;scrollbar-width:thin;container-type:size}
  .expanded-player>.now-content{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding-right:10px;scrollbar-gutter:stable}
- .expanded-player .expanded-art>.art{width:min(100%,32dvh);max-height:none;aspect-ratio:1}
+ .expanded-player .expanded-art>.art{width:min(100%,max(180px,calc(100cqh - 240px)));max-height:none;aspect-ratio:1}
  .expanded-art>.listen-actions{gap:6px}.expanded-art>.listen-actions>button,.expanded-art>.listen-actions>.more-options{flex:1;min-width:0}.expanded-art>.listen-actions>button,.expanded-art .more-options-trigger{font-size:11px;padding:8px 6px;white-space:nowrap}
 }
 @media(max-width:650px){.episode-card .episode-bottom>.listen-actions{flex-basis:100%;gap:4px}.episode-card .episode-bottom>.listen-actions>button{font-size:11px;padding:8px 3px}.episode-card .episode-bottom>.listen-actions>button svg{display:none}.saved-queue-form{flex-direction:column;align-items:stretch}.saved-queue-row{flex-wrap:wrap}.saved-queue-row>div:first-child{flex-basis:100%}}
 
 @media(min-width:1001px){.expanded-art>.listen-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.expanded-art>.listen-actions>.more-options{grid-column:span 2}.expanded-art>.listen-actions .more-options-trigger{width:100%}}
+
+@media(min-width:1001px){
+ .expanded-art .eyebrow{margin:14px 0 8px}
+ .expanded-art h1{margin:0 0 8px}
+ .expanded-art>p:not(.eyebrow){margin:0 0 6px}
+ .expanded-art>.listen-actions{margin:6px 0 0}
+}
+@media(min-width:1300px){
+ .expanded-player .expanded-art>.art{width:min(100%,max(180px,calc(100cqh - 192px)))}
+ .expanded-art>.listen-actions{grid-template-columns:repeat(5,minmax(0,1fr))}
+ .expanded-art>.listen-actions>.more-options{grid-column:auto}
+}

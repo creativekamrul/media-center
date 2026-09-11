@@ -326,7 +326,7 @@ This installer supersedes the earlier 1.2.0 local build recorded above.
 - Final visual review caught an invalid menu background when theme variables were absent. Added an unconditional opaque backing color, rebuilt the installer above, then reran the targeted packaged UI suite successfully. The full native playback suite had passed before this isolated CSS correction.
 
 
-## 1.2.2 local Discord artwork fallback � 2026-09-11
+## 1.2.2 local Discord artwork fallback — 2026-09-11
 
 - Restored the existing generated audiobook/podcast artwork inside the app and left Windows media artwork behavior unchanged. The new default cover applies only to Discord RPC.
 - Typecheck, 192 unit tests across 32 files, production build, release version check and whitespace checks passed.
@@ -334,3 +334,32 @@ This installer supersedes the earlier 1.2.0 local build recorded above.
 - The full packaged native-MPV suite passed with zero renderer errors, including new assertions that missing book/show covers still render the generated artwork rather than the Discord fallback. The first run exposed an incorrect test selector; correcting it required no application change.
 - Built `release/Media-Center-1.2.2-win-x64.exe` with `npm run package:win` (`--publish never`), 154,434,860 bytes. SHA-256: `cf4b3063b0e07a112fae00a3a3317ece8854478da11c390375d9ead3b47d3d74`.
 - This corrected installer replaces the earlier local 1.2.2 preview. No GitHub tag or release was published.
+
+
+## 1.2.3 local mix controls and artwork — 2026-09-11
+
+- Typecheck, all 192 unit tests, production build, version checks and whitespace checks passed.
+- Packaged Electron/native-MPV checks passed for direct Home and Library tools mix playback, rule persistence, empty-match feedback without replacing playback, visible Home card controls and rounded-square immersive artwork. The remaining playback, library, customization and offline checks also passed.
+- The final collection check initially used an incorrect music fixture ID field; after correcting the fixture to the existing `trackId` contract, the targeted packaged collection suite passed. No playback API change was required.
+- Verified larger Now Playing artwork at 1008/1440px with visible actions, a square frame and independent queue scrolling. Reviewed `custom-mix-direct-play.png`, `immersive-rounded-cover.png` and `now-playing-larger-cover-1440.png` in ignored `artifacts/`.
+- Built `release/Media-Center-1.2.3-win-x64.exe` using `npm run package:win` (`--publish never`), 154,436,184 bytes; SHA-256: `fa9a928ef11a39e5161c38ff095f01c0e1e2b7de03c49e69fe3e902f722a7cdd`.
+- Local preview only; no GitHub publication was requested for these changes.
+
+
+### 1.2.3 artist pages and UI follow-up — 2026-09-11
+
+- Typecheck, 192 unit tests, production build, release version checks and whitespace checks passed. The full native Electron suite passed with zero renderer errors, including artist-page playback and mouse/keyboard context menus.
+- Rebuilt the local installer after adding artist pages, responsive track-column alignment and a single standard-lyrics toolbar. The targeted packaged suite passed for source-aware Now Playing artist links, artist/album playback, local track-artist lookup, matching column positions at 1920/1440/1008px and same-row lyric tools.
+- Reviewed `artist-page.png`, `aligned-track-columns-1920.png`, `aligned-track-columns-1008.png` and `lyrics-toolbar-one-row.png`, using fixture media only.
+- Updated installer: `release/Media-Center-1.2.3-win-x64.exe`, 154,439,454 bytes; SHA-256: `ed179ee4f5409ec96055f40b4038b742a98ec86721d17712e66e223190bb78e9`.
+- This replaces the earlier local 1.2.3 preview. No GitHub release or push was performed.
+
+
+### 1.2.3 artwork preview and lyric priority — 2026-09-11
+
+- Typecheck, all 201 tests across 33 files, production build, release version checks and whitespace checks passed.
+- Full source Electron suite passed with muted native MPV and zero renderer errors. Added checks for automatic embedded USLT lyrics without manual import, Navidrome lyrics before LRCLIB, later server lyrics outranking an existing LRCLIB cache, safe fallback when server lyrics are unavailable, preserved saved bindings, and unsupported book/podcast lyrics.
+- Original nested track artwork fills the square editor preview at 650/1440px. Portrait search previews retain their square frame and uncropped image at 1008/1440px. Reviewed `artifacts/original-cover-preview-1440.png`.
+- Navidrome 0.60.3 source verification: `core/lyrics/lyrics.go`, `core/lyrics/sources.go`, `model/lyrics.go`, and `conf/configuration.go`. Embedded versus sidecar priority is server-configured; the documented embedded-first setting is not applied remotely by Media Center.
+- Rebuilt the local installer with `npm run package:win` (`--publish never`): `K:\media-center\release\Media-Center-1.2.3-win-x64.exe`, 154,440,158 bytes; SHA-256 `A9C673B951E3E32DEAB77C72E256E77168B00E1D00091F687397E80C0F8AF52F`.
+- The full packaged Electron suite also passed with muted native MPV, both fixture servers and zero renderer errors. This installer remains a local preview; no GitHub publication was requested.

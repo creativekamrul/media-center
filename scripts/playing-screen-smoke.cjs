@@ -22,6 +22,8 @@ module.exports=async function playingScreenSmoke({page,waitPlayback,artifacts}){
  await click(.01);await waitPlayback(p=>p.status==='paused'&&Math.abs(p.position-6)<1)
  await page.getByRole('button',{name:'Immersive view',exact:true}).click()
  await page.getByRole('region',{name:'Immersive playing screen',exact:true}).waitFor()
+ assert.ok(await page.locator('.screen-cover').evaluate(el=>{const r=el.getBoundingClientRect(),radius=parseFloat(getComputedStyle(el).borderTopLeftRadius);return Math.abs(r.width-r.height)<2&&radius>0&&radius<r.width/4}),'Immersive artwork is a rounded square')
+ await page.locator('.screen-track').screenshot({path:resolve(artifacts,'immersive-rounded-cover.png')})
  await page.getByRole('button',{name:'Second test line',exact:true}).waitFor()
  assert.equal(await page.locator('.lyrics-panel').count(),1)
  assert.equal(await page.locator('.immersive-stage .lyrics-tools').count(),0)

@@ -1,3 +1,5 @@
+import {ArtistPage} from './ArtistPage'
+import type {ArtistRequest} from './ArtistNavigation'
 import {CollectionMenu} from './CollectionMenu'
 import {PlaylistsPage} from './PlaylistsPage'
 import {MixLauncher} from './MixBuilder'
@@ -42,7 +44,9 @@ export function App() {
   },[])
 
   const [settings, setSettings] = useState<Settings>({ mpvPath: '', exclusive: false, audioDevice: 'auto', connections: [] })
-  const [view, setView] = useState<'playlists' | 'tools' | 'library' | 'settings' | 'queue' | 'local' | 'later' | 'history' | 'now' | 'home' | 'inbox' | 'downloads' | 'notes' | 'stats' | 'rules'>('library')
+  const [view, setView] = useState<'artist' | 'playlists' | 'tools' | 'library' | 'settings' | 'queue' | 'local' | 'later' | 'history' | 'now' | 'home' | 'inbox' | 'downloads' | 'notes' | 'stats' | 'rules'>('library')
+  const [artistRequest,setArtistRequest]=useState<ArtistRequest>();const artistReturn=useRef<typeof view>('now')
+  useEffect(()=>{const open=(e:Event)=>{if(view!=='artist')artistReturn.current=view;setArtistRequest((e as CustomEvent<ArtistRequest>).detail);setView('artist')};window.addEventListener('open-artist',open);return()=>window.removeEventListener('open-artist',open)},[view])
   const [studioTab,setStudioTab]=useState<StudioTab>('discover'),[palette,setPalette]=useState(false)
   useEffect(()=>{const listener=(e:KeyboardEvent)=>{if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='p'){e.preventDefault();setPalette(v=>!v)}};window.addEventListener('keydown',listener);return()=>window.removeEventListener('keydown',listener)},[])
   const [section, setSection] = useState<Section>('music')
@@ -123,12 +127,13 @@ export function App() {
       </div>
     </aside>
     <div className="workspace">
-      <header className="topbar"><div className="topbar-location"><button className="icon-button sidebar-toggle" type="button" aria-label={experience.navigation.sidebarCollapsed?'Expand sidebar':'Collapse sidebar'} title={experience.navigation.sidebarCollapsed?'Expand sidebar':'Collapse sidebar'} aria-expanded={!experience.navigation.sidebarCollapsed} aria-controls="app-sidebar" disabled={navigationSaving} onClick={()=>void toggleSidebar()}>{experience.navigation.sidebarCollapsed?<PanelLeftOpen size={20}/>:<PanelLeftClose size={20}/>}</button><div className="breadcrumb">Your collection <span>/</span> <strong>{view === 'settings' ? 'Settings' : view === 'queue' ? 'Play queue' : view === 'local' ? collections.local.name : view === 'later' ? 'Listen later' : view === 'history' ? 'Listening history' : view === 'now' ? 'Now playing' : view === 'library' ? collections[section].name : ({playlists:'Playlists',tools:collections.tools.name,home:'Home',inbox:'Podcast inbox',downloads:'Downloads',notes:'Listening notes',stats:'Listening stats',rules:'Rule playlists'}[view])}</strong></div></div><div className="topbar-right"><PrivateButton player={player} error={setError}/><IconButton label="Command palette" onClick={()=>setPalette(true)}><SlidersHorizontal size={18}/></IconButton><IconButton label="Search all collections" onClick={()=>setGlobalSearch(true)}><Search size={18}/></IconButton><span className="version-tag">DESKTOP · {APP_VERSION}</span><IconButton label="Refresh libraries" onClick={() => { setError(''); setRevision(n => n + 1) }}><RefreshCw size={16}/></IconButton></div></header>
+      <header className="topbar"><div className="topbar-location"><button className="icon-button sidebar-toggle" type="button" aria-label={experience.navigation.sidebarCollapsed?'Expand sidebar':'Collapse sidebar'} title={experience.navigation.sidebarCollapsed?'Expand sidebar':'Collapse sidebar'} aria-expanded={!experience.navigation.sidebarCollapsed} aria-controls="app-sidebar" disabled={navigationSaving} onClick={()=>void toggleSidebar()}>{experience.navigation.sidebarCollapsed?<PanelLeftOpen size={20}/>:<PanelLeftClose size={20}/>}</button><div className="breadcrumb">Your collection <span>/</span> <strong>{view === 'settings' ? 'Settings' : view === 'queue' ? 'Play queue' : view === 'local' ? collections.local.name : view === 'later' ? 'Listen later' : view === 'history' ? 'Listening history' : view === 'now' ? 'Now playing' : view === 'library' ? collections[section].name : ({artist:'Artist',playlists:'Playlists',tools:collections.tools.name,home:'Home',inbox:'Podcast inbox',downloads:'Downloads',notes:'Listening notes',stats:'Listening stats',rules:'Rule playlists'}[view])}</strong></div></div><div className="topbar-right"><PrivateButton player={player} error={setError}/><IconButton label="Command palette" onClick={()=>setPalette(true)}><SlidersHorizontal size={18}/></IconButton><IconButton label="Search all collections" onClick={()=>setGlobalSearch(true)}><Search size={18}/></IconButton><span className="version-tag">DESKTOP · {APP_VERSION}</span><IconButton label="Refresh libraries" onClick={() => { setError(''); setRevision(n => n + 1) }}><RefreshCw size={16}/></IconButton></div></header>
       {sample && <div className="sample-banner"><span><Disc3 size={14}/> You’re exploring a sample collection. Connect a server to play your own audio.</span><button onClick={() => { setSample(false); setView('settings'); setDetail(null) }}>Connect a server <ArrowRight size={14}/></button></div>}
       {error && <div role="alert" className="error-banner"><span>{error}</span><IconButton label="Dismiss error" onClick={() => setError('')}><X size={16}/></IconButton></div>}
       <main>
         {view === 'settings' ? <SettingsPage settings={settings} refresh={refreshSettings} onError={setError} onConnected={() => { setSample(false); setDetail(null) }}/>
           : view === 'queue' || view === 'now' ? <QueuePage lyricRequest={lyricRequest} player={player} error={setError} expanded={view === 'now'} close={() => setView('library')}/>
+          : view === 'artist' && artistRequest ? <ArtistPage key={JSON.stringify(artistRequest)} request={artistRequest} back={()=>setView(artistReturn.current)} error={setError}/>
           : view === 'playlists' ? <PlaylistsPage libraries={libraries.filter(l=>l.kind==='music')} error={setError} revision={revision}/>
           : view === 'tools' ? <StudioPage key={revision} tab={studioTab} setTab={setStudioTab} error={setError} downloads={()=>setView('downloads')}/>
           : view === 'home' ? <HomePage error={setError}/>

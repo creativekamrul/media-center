@@ -1,6 +1,6 @@
 .artwork-preview-box{width:112px;height:112px;flex:0 0 112px;overflow:hidden;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
 .artwork-preview-box>img,.artwork-preview-box>.art,.artwork-preview-box>.track-artwork{display:block;width:100%;height:100%;min-height:0;max-height:100%;aspect-ratio:1;object-fit:contain;flex:none;border:0;border-radius:0}
-.artwork-preview-box .art img{object-fit:contain}
+.artwork-preview-box .track-artwork>.art,.artwork-preview-box .art img{display:block;width:100%;height:100%;min-height:0;max-height:100%;aspect-ratio:1;object-fit:contain;flex:none;border:0;border-radius:0}
 .artwork-preview-copy{min-width:0;flex:1}.artwork-preview-copy strong{display:block;overflow-wrap:anywhere}.artwork-preview-copy small{color:var(--muted)}
 .artwork-preview-copy .control-actions{margin-top:12px}.cover-editor-current{align-items:center;min-height:136px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
 .cover-editor .cover-search{margin-top:18px}.cover-candidates{max-height:320px;overflow:auto;overscroll-behavior:contain}.cover-editor .cover-search .field{margin-bottom:0}.cover-editor .cover-search button{margin-bottom:0;min-height:42px}

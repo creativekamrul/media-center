@@ -270,3 +270,18 @@ Limits: local watching requires an available source; identity matching is strong
 ### 1.2.1 local UI follow-up
 
 Collection and episode controls share compact playback rows with personal/progress tools under More options. Dropdowns use an opaque top-layer surface. Playlist customization includes cover generation. Saved queues use a dedicated panel; desktop Now Playing scrolls the right-hand queue independently of artwork.
+
+
+### 1.2.3 local listening polish
+
+- Saved custom mixes have direct Play controls on Home and in Library tools, with fresh rule evaluation and empty-match feedback that preserves the current queue.
+- Immersive artwork uses a rounded square. Now Playing artwork uses the available panel height while preserving independent queue scrolling.
+
+- Artist pages provide source-aware music lookup, albums, filtered tracks and playback. Local artist links use the current root. Server track overviews cover up to 50 albums / 1,000 tracks, with albums still individually accessible; local overviews cap at 1,000 tracks and disclose limits.
+- Track metadata uses consistent column widths, with a shared wrapped layout in narrow collections. Standard lyric actions share the appearance toolbar.
+
+### Automatic lyric sources (1.2.3)
+
+- Saved/imported/edited lyrics retain priority. Otherwise local music reads embedded tags from its approved folder; Navidrome music requests `getLyricsBySongId` before LRCLIB. Existing LRCLIB cache entries do not bypass this order. Books, podcast episodes and radio never request song lyrics.
+- Navidrome 0.60.3 chooses embedded versus sidecar lyrics on the server. For embedded-first selection, set `LyricsPriority = "embedded,.lrc,.txt"` in Navidrome (environment equivalent: `ND_LYRICSPRIORITY=embedded,.lrc,.txt`) and restart the server. Its default is `.lrc,.txt,embedded`; Media Center does not change the server configuration or download remote audio to inspect tags. Verified against [v0.60.3 configuration](https://github.com/navidrome/navidrome/blob/v0.60.3/conf/configuration.go) and [source selection](https://github.com/navidrome/navidrome/blob/v0.60.3/core/lyrics/lyrics.go).
+- The lyric panel labels embedded, Navidrome, LRCLIB and saved lyrics. An unavailable preferred source falls back with a visible message. Structured server timestamps/offsets use milliseconds and convert to MPV seconds; plain lyrics remain untimed.

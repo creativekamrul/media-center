@@ -45,9 +45,9 @@ Personal shelves, metadata customization, offline plans, per-show podcast prefer
 
 **1.2.1 refinements:** consistent collection and episode actions, opaque More menus, playlist cover generation inside customization, redesigned Saved queues and independent queue scrolling in Now Playing.
 
-**1.2.2 update:** Discord activity now includes a default cover for shared audiobooks and podcasts when public artwork is unavailable. The generated covers inside the app stay as they are.
+**1.2.3 update:** Play custom mixes directly, explore dedicated artist pages, and enjoy larger artwork with aligned track columns. The artwork editor preview is fixed, and automatic lyrics check embedded local tags or Navidrome before LRCLIB.
 
-[Read the 1.2.2 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.2.2) · [Full changelog](CHANGELOG.md)
+[Read the 1.2.3 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.2.3) · [Full changelog](CHANGELOG.md)
 
 ## A closer look
 

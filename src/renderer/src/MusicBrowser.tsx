@@ -1,3 +1,4 @@
+import {openArtist} from './ArtistNavigation'
 import {MoreOptions} from './MoreOptions'
 import type {ReactNode} from 'react'
 import {LibraryHeader,TabIcon} from './LibraryHeader'
@@ -32,6 +33,7 @@ export function MusicBrowser({ libraries, error, revision, playlistOnly=false, h
   }, [library?.id, library?.serverId, view, page, query, sort, genre, refresh, revision])
   async function open(item: MusicEntity) {
     if (!library) return
+    if(item.kind==='artist'){openArtist({query:item.title,serverId:item.serverId,artistId:item.id});return}
     if (item.kind === 'genre') { setGenre(item.title); setView('albums'); setPage(0); return }
     if (!['album','artist','playlist'].includes(item.kind)) return
     const ticket = ++request.current; setBusy(true); try { const d = await api.musicDetail({ serverId: library.serverId, id: item.id, kind: item.kind as 'album' | 'artist' | 'playlist' }); if (ticket !== request.current) return; if (detail) setTrail(t => [...t, detail]); setDetail(d) } catch (e) { if (ticket === request.current) error(message(e)) } finally { if (ticket === request.current) setBusy(false) }

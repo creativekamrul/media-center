@@ -12,6 +12,7 @@ import {LocalWatcher} from './local-watch'
 import {experienceSchema} from '../shared/experience'
 import { readThemeCss } from './custom-css'
 import { LyricsClient } from './lyrics'
+import { automaticLyrics } from './lyric-sources'
 import { progressKey } from '../shared/timeline'
 import type { LyricsResult } from '../shared/lyrics'
 import { app, BrowserWindow, dialog, globalShortcut, ipcMain, session, Tray, Menu, nativeImage, shell } from 'electron'
@@ -126,19 +127,32 @@ else {
       if(!target||!['music-track','local-file'].includes(target.kind))return {...base,status:'unsupported'} satisfies LyricsResult
       const binding=lyrics.saved(key)
       if(binding)return {...binding,key,saved:true,recordId:binding.id} satisfies LyricsResult
-      let signature
-      if(target.kind==='music-track'){
-        const p=provider(target.serverId);if(!(p instanceof Navidrome))throw new Error('Choose a music source.')
-        const metadataKey='lyrics-metadata:'+key
-        try{const track=await p.track(target.trackId);signature={title:track.title,artist:track.artist,album:track.album,duration:track.duration};store.cacheSet(metadataKey,signature)}catch(e){const saved=store.cache<import('../shared/lyrics').LyricsSignature>(metadataKey);if(!saved)throw e;signature=saved.value}
-      }else if(target.kind==='local-file'){
-        const file=await local.metadata(target.rootId,target.fileId);signature={title:file.title,artist:file.artist,album:file.album,duration:file.duration}
-      }else return {...base,status:'unsupported'} satisfies LyricsResult
-      if(!signature.title.trim()||!signature.artist.trim())throw new Error('Track title and artist tags are needed to find lyrics.')
-      lyricTarget(key)
-      const content=await lyrics.lookup(signature,!!i.refresh);lyricTarget(key)
+      let signature: import('../shared/lyrics').LyricsSignature | undefined
+      const content=await automaticLyrics({
+        source:target.kind==='local-file'?'embedded':'navidrome',
+        assertCurrent:()=>lyricTarget(key),
+        preferred:async()=>{
+          if(target.kind==='local-file')return local.lyrics(target.rootId,target.fileId)
+          if(target.kind==='music-track'){
+            const p=provider(target.serverId);if(!(p instanceof Navidrome))throw new Error('Choose a music source.')
+            return p.lyrics(target.trackId)
+          }
+        },
+        fallback:async()=>{
+          if(target.kind==='music-track'){
+            const p=provider(target.serverId);if(!(p instanceof Navidrome))throw new Error('Choose a music source.')
+            const metadataKey='lyrics-metadata:'+key
+            try{const track=await p.track(target.trackId);signature={title:track.title,artist:track.artist,album:track.album,duration:track.duration};store.cacheSet(metadataKey,signature)}catch(e){const saved=store.cache<import('../shared/lyrics').LyricsSignature>(metadataKey);if(!saved)throw e;signature=saved.value}
+          }else if(target.kind==='local-file'){
+            const file=await local.metadata(target.rootId,target.fileId);signature={title:file.title,artist:file.artist,album:file.album,duration:file.duration}
+          }
+          lyricTarget(key)
+          if(!signature?.title.trim()||!signature.artist.trim())throw new Error('Track title and artist tags are needed to find lyrics on LRCLIB.')
+          return lyrics.lookup(signature,!!i.refresh)
+        },
+      })
       const saved=lyrics.saved(key)
-      return saved?{...saved,key,saved:true,recordId:saved.id}:{...base,title:signature.title,artist:signature.artist,...content} satisfies LyricsResult
+      return saved?{...saved,key,saved:true,recordId:saved.id}:{...base,title:signature?.title??base.title,artist:signature?.artist??base.artist,...content} satisfies LyricsResult
     })
     handle('lyrics:seek',z.object({key:z.string().max(10000),time:z.number().finite().nonnegative()}).strict(),async i=>{
       const target=player.state.queue[player.state.queueIndex]?.target

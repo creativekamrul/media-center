@@ -1,6 +1,6 @@
 export interface LyricWord {time:number;end?:number;text:string}
 export interface LyricLine {time:number;text:string;words?:LyricWord[]}
-export interface LyricsResult {key:string;title:string;artist:string;status:'found'|'missing'|'instrumental'|'unsupported';plain:string;lines:LyricLine[];saved?:boolean;recordId?:number}
+export interface LyricsResult {key:string;title:string;artist:string;status:'found'|'missing'|'instrumental'|'unsupported';plain:string;lines:LyricLine[];saved?:boolean;recordId?:number;source?:'embedded'|'navidrome'|'lrclib';warning?:string}
 export interface LyricsRecord {id:number;title:string;artist:string;album:string;duration:number;status:'found'|'missing'|'instrumental';plain:string;lines:LyricLine[]}
 export interface LyricsSignature {title:string;artist:string;album:string;duration:number}
 const timestamp = (tag: RegExpMatchArray) => Number(tag[1])*60+Number(tag[2])+Number('0.'+(tag[3]??'0'))

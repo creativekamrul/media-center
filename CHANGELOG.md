@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.3
+
+Artist pages, clearer artwork and smarter lyric lookup.
+
+- Play saved custom mixes directly from Home and Library tools, with loading feedback and a clear message when no tracks match.
+- Keep custom mix actions visible within their Home cards.
+- Show immersive artwork as a rounded square and enlarge Now Playing artwork while keeping the queue independently scrollable.
+- Align saved track columns with consistent spacing and responsive metadata rows.
+- Open a dedicated artist page from Now Playing, artist cards and Explore artist, with albums, playable tracks and local-artist support.
+- Group lyric tools on the same row as Lyrics appearance.
+- Fill the artwork editor preview with the original track cover instead of a tiny nested thumbnail.
+- Automatically read embedded lyrics for local music and Navidrome lyrics for server tracks before trying LRCLIB; preserve manually saved lyrics and show the active source.
+
 ## 1.2.2
 
 Discord artwork for every shared listen.
