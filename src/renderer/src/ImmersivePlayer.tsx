@@ -1,8 +1,11 @@
+import {PlaybackUtilities} from './PlaybackUtilities'
+import {SeekBar} from './SeekBar'
+import {IconButton} from './ui'
 import {PlayingBackdrop} from './PlayingBackdrop'
 import {ArtistLink} from './ArtistNavigation'
 import {TrackArtwork} from './Artwork'
-import {useEffect,useState} from 'react'
-import {Maximize,ArrowLeft,ChevronLeft,ChevronRight,Pause,Play,Settings2,SkipBack,SkipForward} from 'lucide-react'
+import {useEffect,useRef,useState} from 'react'
+import {Maximize,ArrowLeft,ChevronLeft,ChevronRight,Pause,Play,Settings2,SkipBack,SkipForward,Shuffle,Repeat} from 'lucide-react'
 import type {PlaybackState,PlayerCommand} from '../../shared/types'
 import {defaultPlayingScreen} from '../../shared/playing-screen'
 import {lyricAppearanceStyle} from './lyricAppearanceStyle'
@@ -12,12 +15,18 @@ import {LyricsPanel} from './LyricsPanel'
 import {api} from './actions'
 import {duration,message} from './ui'
 
-export function ImmersivePlayer({player,close}:{player:PlaybackState;close:()=>void}){
+export function ImmersivePlayer({player,close,onExitError}:{player:PlaybackState;close:()=>void;onExitError:(error:string)=>void}){
  const [toolbar,setToolbar]=useState<HTMLDivElement|null>(null),[prefs,setPrefs]=useState(defaultPlayingScreen),[ready,setReady]=useState(false),[options,setOptions]=useState(false),[error,setError]=useState(''),[page,setPage]=useState(0),[queueOpen,setQueueOpen]=useState(false)
  useEffect(()=>{const reload=()=>void api.playingScreenPreferences().then(setPrefs).catch(e=>setError(message(e)));window.addEventListener('profile-applied',reload);return()=>window.removeEventListener('profile-applied',reload)},[])
+ const mounted=useRef(false),exitError=useRef(onExitError);exitError.current=onExitError
+ useEffect(()=>{
+  mounted.current=true
+  return()=>{mounted.current=false;queueMicrotask(()=>{if(!mounted.current)void api.fullscreen('exit').catch(e=>exitError.current(message(e)))})}
+ },[])
+ const spoken=player.kind==='audiobook'||player.kind==='podcast-episode',active=player.status==='playing'||player.status==='paused'
  const item=player.queue[player.queueIndex],canLyrics=item?.target.kind==='music-track'||item?.target.kind==='local-file'
  useEffect(()=>{let live=true;void api.playingScreenPreferences().then(p=>{if(live)setPrefs(p)}).catch(e=>{if(live)setError(message(e))}).finally(()=>{if(live)setReady(true)});return()=>{live=false}},[])
- useEffect(()=>{const elements=[...document.querySelectorAll<HTMLElement>('.sidebar,.topbar')],previous=elements.map(el=>el.inert);elements.forEach(el=>el.inert=true);return()=>elements.forEach((el,i)=>el.inert=previous[i])},[])
+ useEffect(()=>{const elements=[...document.querySelectorAll<HTMLElement>('.sidebar,.topbar,.player-bar')],previous=elements.map(el=>el.inert);elements.forEach(el=>el.inert=true);return()=>elements.forEach((el,i)=>el.inert=previous[i])},[])
  useEffect(()=>setPage(Math.floor(player.queueIndex/50)),[player.queueIndex,player.queue.length])
  const command=(input:PlayerCommand)=>void api.command(input).catch(e=>setError(message(e)))
  const jump=(index:number)=>void api.queueEdit({action:'jump',index}).catch(e=>setError(message(e)))
@@ -30,7 +39,12 @@ export function ImmersivePlayer({player,close}:{player:PlaybackState;close:()=>v
   {options&&<LyricsAppearance value={prefs} preview={setPrefs} close={()=>setOptions(false)}/>}
   {error&&<p className="screen-error" role="alert">{error}<button className="text-button" onClick={()=>setError('')}>Dismiss</button></p>}
   <div className="immersive-layout"><div className="immersive-stage">{canLyrics&&prefs.showMusicLyrics?<LyricsPanel player={player} toolbar={toolbar} immersive motion={prefs.motion&&prefs.animation!=='none'} wordLift={prefs.animation==='flow'}/>:<div className="spoken-stage"><p className="eyebrow">{player.kind==='audiobook'?'IN THIS CHAPTER':'NOW PLAYING'}</p><h1>{player.chapters.find(c=>player.position>=c.start&&player.position<c.end)?.title??player.title}</h1><p><ArtistLink item={item} name={player.subtitle}/></p>{player.chapters.length>0&&<div className="screen-chapters">{player.chapters.map(c=><button key={c.id} onClick={()=>command({action:'seek',value:c.start})}>{c.title}<span>{duration(c.start)}</span></button>)}</div>}</div>}</div>
-   <aside className="immersive-side" aria-label="Current track and queue"><div className="screen-track"><div className="screen-cover" key={JSON.stringify(item?.target)}><QueueArt item={item}/></div><h2 title={player.title}>{player.title}</h2><p><ArtistLink item={item} name={player.subtitle}/></p><div className="screen-transport"><button className="icon-button" aria-label="Previous in playing screen" disabled={!player.queue.length} onClick={()=>command({action:'previous'})}><SkipBack size={19}/></button><button className="main-play" aria-label={player.status==='playing'?'Pause in playing screen':'Play in playing screen'} disabled={!player.queue.length||player.status==='loading'} onClick={()=>command({action:'toggle'})}>{player.status==='playing'?<Pause size={23}/>:<Play size={23}/>}</button><button className="icon-button" aria-label="Next in playing screen" disabled={!player.queue.length} onClick={()=>command({action:'next'})}><SkipForward size={19}/></button></div></div>
+   <aside className="immersive-side" aria-label="Current track and queue"><div className="screen-track"><div className="screen-cover" key={JSON.stringify(item?.target)}><QueueArt item={item}/></div><h2 title={player.title}>{player.title}</h2><p><ArtistLink item={item} name={player.subtitle}/></p><div className="screen-transport"><IconButton label="Shuffle" active={player.shuffle} onClick={()=>command({action:'shuffle'})}><Shuffle size={16}/></IconButton><button className="icon-button" aria-label="Previous in playing screen" disabled={!player.queue.length} onClick={()=>command({action:'previous'})}><SkipBack size={19}/></button><button className="main-play" aria-label={player.status==='playing'?'Pause in playing screen':'Play in playing screen'} disabled={!player.queue.length||player.status==='loading'} onClick={()=>command({action:'toggle'})}>{player.status==='playing'?<Pause size={23}/>:<Play size={23}/>}</button><button className="icon-button" aria-label="Next in playing screen" disabled={!player.queue.length} onClick={()=>command({action:'next'})}><SkipForward size={19}/></button><IconButton label={`Repeat: ${player.repeat}`} active={player.repeat!=='off'} onClick={()=>command({action:'repeat',value:player.repeat==='off'?'all':player.repeat==='all'?'one':'off'})}><Repeat size={16}/>{player.repeat==='one'&&<sup>1</sup>}</IconButton></div>
+    <SeekBar player={player} error={setError}/>
+    {spoken&&<div className="screen-spoken-skips"><button className="secondary" aria-label="Back 15 seconds" disabled={!active} onClick={()=>command({action:'seek',value:Math.max(0,player.position-15)})}>↶ 15s</button><button className="secondary" aria-label="Forward 30 seconds" disabled={!active} onClick={()=>command({action:'seek',value:Math.min(player.duration,player.position+30)})}>30s ↷</button></div>}
+    <div className="screen-utilities"><PlaybackUtilities player={player} command={command} error={setError}/></div>
+    {(player.error||player.syncError)&&<p className="screen-playback-error" role="status">{player.error||player.syncError}</p>}
+   </div>
     <section id="immersive-current-queue" className="screen-queue" aria-label="Current queue" hidden={prefs.layout!=='studio'&&!queueOpen}><header><h2>Current queue</h2><span>{player.queue.length} tracks</span></header><div className="screen-queue-scroll">{player.queue.slice(page*50,(page+1)*50).map((q,offset)=>{const index=page*50+offset;return <button key={index} className={`screen-queue-item ${index===player.queueIndex?'current':''}`} aria-current={index===player.queueIndex?'true':undefined} aria-label={`Play queue item ${index+1}: ${q.title}`} onClick={()=>jump(index)}><span className="queue-number">{index===player.queueIndex?<Play size={13}/>:index+1}</span><TrackArtwork item={q}/><span><strong>{q.title}</strong><small>{q.subtitle}</small></span><span>{q.duration?duration(q.duration):''}</span></button>})}{!player.queue.length&&<p className="muted">Add something to your queue to begin.</p>}</div>{player.queue.length>50&&<div className="screen-pages"><button className="icon-button" aria-label="Previous queue page" disabled={!page} onClick={()=>setPage(n=>n-1)}><ChevronLeft size={16}/></button><span>{page+1} / {Math.ceil(player.queue.length/50)}</span><button className="icon-button" aria-label="Next queue page" disabled={(page+1)*50>=player.queue.length} onClick={()=>setPage(n=>n+1)}><ChevronRight size={16}/></button></div>}</section>
    </aside>
   </div>

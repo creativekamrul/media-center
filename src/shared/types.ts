@@ -71,6 +71,7 @@ export interface DesktopAPI extends importPersonalAPI, DailyAPI, ExperienceAPI, 
   playback(): Promise<PlaybackState>
   onPlayback(listener: (state: PlaybackState) => void): () => void
   musicBrowse(input: MusicBrowseInput): Promise<MusicPage>
+  musicBrowseAll(input: Omit<MusicBrowseInput, 'serverId' | 'libraryId'>): Promise<MusicPage>
   musicDetail(input: { serverId: string; kind: 'album' | 'artist' | 'playlist'; id: string }): Promise<MusicDetail>
   musicFavorite(input: { serverId: string; kind: 'song' | 'album' | 'artist'; id: string; favorite: boolean }): Promise<void>
   musicRate(input: { serverId: string; id: string; rating: number }): Promise<void>
@@ -104,11 +105,11 @@ export const emptyPlayback: PlaybackState = { status: 'idle', title: 'Nothing pl
 export type MusicView = 'albums' | 'newest' | 'recent' | 'frequent' | 'random' | 'songs' | 'artists' | 'playlists' | 'favorites' | 'genres' | 'radio'
 export interface MusicArtist { kind: 'artist'; id: string; serverId: string; title: string; albumCount: number; starred?: boolean; cover?: string; description?: string }
 export interface MusicPlaylist { kind: 'playlist'; readonly?: boolean; id: string; serverId: string; title: string; comment: string; public: boolean; owner?: string; songCount: number; duration: number; cover?: string }
-export interface MusicGenre { kind: 'genre'; id: string; title: string; songCount: number; albumCount: number }
+export interface MusicGenre { kind: 'genre'; serverId: string; id: string; title: string; songCount: number; albumCount: number }
 export interface RadioStation { kind: 'radio'; id: string; serverId: string; title: string; homepage?: string }
 export type MusicEntity = MusicAlbum | MusicTrack | MusicArtist | MusicPlaylist | MusicGenre | RadioStation
 export interface MusicBrowseInput { serverId: string; libraryId: string; view: MusicView; page: number; search: string; genre?: string; sort?: string; descending?: boolean }
-export interface MusicPage { items: MusicEntity[]; page: number; hasMore: boolean; total?: number }
+export interface MusicPage { errors?: string[]; items: MusicEntity[]; page: number; hasMore: boolean; total?: number }
 export interface MusicDetail { kind: 'album' | 'artist' | 'playlist'; title: string; subtitle: string; cover?: string; tracks: MusicTrack[]; albums: MusicAlbum[]; playlist?: MusicPlaylist; artist?: MusicArtist; album?: MusicAlbum }
 export interface SpokenBrowseInput { library: Library; page: number; search: string; sort: string; descending: boolean; status: 'all' | 'unplayed' | 'in-progress' | 'unfinished' | 'finished' }
 export interface ContinueItem { item: QueueItem; progress: Progress; libraryId: string }

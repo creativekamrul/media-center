@@ -47,7 +47,7 @@ export function StudioPage({
   return (
     <div className="studio-page">
       <LibraryHeader collection="tools" subtitle="Organize, discover and make your collection yours."/>
-      <BrowseTabs overflowLabel="More tools" options={Object.entries(studioTabs) as [StudioTab,string][]} value={tab} onChange={setTab} label="Library tools"/>
+      <BrowseTabs scope="tools" options={Object.entries(studioTabs) as [StudioTab,string][]} value={tab} onChange={setTab} label="Library tools"/>
       {tab === 'mixes' ? <MixLibrary error={error}/> : tab === 'shelves' ? <PersonalShelves error={error}/> : tab === 'offline' ? <OfflinePreparation error={error}/> : tab === 'people' ? <PeoplePage error={error}/> : tab === 'discover' ? (
         <Discovery error={error} />
       ) : tab === 'series' ? (

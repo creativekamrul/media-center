@@ -26,7 +26,7 @@ export function QueuePage({ lyricRequest=0,player, error, expanded = false, clos
   useEffect(()=>{if(!canLyrics)setPanel('queue')},[canLyrics])
   useEffect(()=>setPage(Math.floor(player.queueIndex/100)),[player.queueIndex])
   const edit = (input: Parameters<typeof api.queueEdit>[0]) => void api.queueEdit(input).catch(e => error(message(e)))
-  if(expanded&&immersive)return <ImmersivePlayer player={player} close={()=>setImmersive(false)}/>
+  if(expanded&&immersive)return <ImmersivePlayer player={player} onExitError={error} close={()=>setImmersive(false)}/>
   return <div className={`queue-page ${expanded ? `expanded-player backdrop-${appearance.background}` : ''}`} style={expanded?lyricAppearanceStyle(appearance):undefined}>
     {expanded&&<PlayingBackdrop background={appearance.background} item={item}/>}
     {expanded&&<header className="now-playing-header"><button className="secondary now-back" aria-label="Close now playing" onClick={close}><ArrowLeft size={16}/>Back to library</button><div className="now-tabs" role="group" aria-label="Now playing view"><button className="secondary" aria-pressed={panel==='queue'} onClick={()=>setPanel('queue')}>Queue</button><button className="secondary" disabled={!canLyrics} aria-pressed={panel==='lyrics'} onClick={()=>setPanel('lyrics')}>Lyrics</button><button className="secondary" onClick={()=>setImmersive(true)}>Immersive view</button></div></header>}

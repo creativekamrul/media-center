@@ -26,7 +26,7 @@ export class Navidrome {
   async test() { await this.get('ping') }
   async libraries(): Promise<Library[]> {
     const response = await this.get('getMusicFolders')
-    return z.object({ musicFolder: z.array(z.object({ id: z.union([z.string(), z.number()]), name: z.string() })).default([]) }).parse(response.musicFolders).musicFolder.map(l => ({ id: String(l.id), serverId: this.connection.id, name: l.name, kind: 'music' }))
+    return z.object({ musicFolder: z.array(z.object({ id: z.union([z.string(), z.number()]), name: z.string() })).default([]) }).parse(response.musicFolders).musicFolder.map(l => ({ id: String(l.id), serverId: this.connection.id, name: `${this.connection.name} · ${l.name}`, kind: 'music' }))
   }
   album(raw: unknown, libraryId = ''): MusicAlbum { const a = albumSchema.parse(raw); return { kind: 'album', id: a.id, serverId: this.connection.id, libraryId, title: a.name, subtitle: a.artist, description: '', trackCount: a.songCount, year: a.year, cover: a.coverArt, starred: !!a.starred, rating: a.userRating, genre: a.genre, duration: a.duration, playCount: a.playCount, artistId: a.artistId } }
   song(raw: unknown): MusicTrack { const s = songSchema.parse(raw); return { kind: 'music-track', id: s.id, serverId: this.connection.id, title: s.title, artist: s.artist, album: s.album, duration: s.duration, codec: s.suffix, bitRate: s.bitRate, sampleRate: s.samplingRate, bitDepth: s.bitDepth, starred: !!s.starred, rating: s.userRating, cover: s.coverArt, albumId: s.albumId, artistId: s.artistId, genre: s.genre, year: s.year, trackNumber: s.track, discNumber: s.discNumber, playCount: s.playCount } }
@@ -48,7 +48,7 @@ export class Navidrome {
     const array = (raw: unknown, field: string): unknown[] => z.object({ [field]: z.array(z.unknown()).default([]) }).parse(raw ?? {})[field]
     let items: MusicEntity[] = [], complete = false
     if (input.view === 'playlists') { const data = await this.get('getPlaylists'); items = array(data.playlists, 'playlist').map(x => this.playlist(x)); complete = true }
-    else if (input.view === 'genres') { const data = await this.get('getGenres'); items = z.array(z.object({ value: z.string(), songCount: z.number().default(0), albumCount: z.number().default(0) })).parse(array(data.genres, 'genre')).map(g => ({ kind: 'genre', id: g.value, title: g.value, songCount: g.songCount, albumCount: g.albumCount })); complete = true }
+    else if (input.view === 'genres') { const data = await this.get('getGenres'); items = z.array(z.object({ value: z.string(), songCount: z.number().default(0), albumCount: z.number().default(0) })).parse(array(data.genres, 'genre')).map(g => ({ kind: 'genre', serverId: this.connection.id, id: g.value, title: g.value, songCount: g.songCount, albumCount: g.albumCount })); complete = true }
     else if (input.view === 'radio') { items = await this.radios(); complete = true }
     else if (input.view === 'favorites') {
       const data = z.object({ album: z.array(z.unknown()).default([]), artist: z.array(z.unknown()).default([]), song: z.array(z.unknown()).default([]) }).parse((await this.get('getStarred2', folder)).starred2)

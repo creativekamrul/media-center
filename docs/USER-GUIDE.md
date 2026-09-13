@@ -2,6 +2,14 @@
 
 ## Music and playlists
 
+Leaving immersive view automatically exits fullscreen.
+
+Use **Customize** at the right of the tab bar to pin or unpin views. The current four start checked. Move pinned views up or down to change their left-to-right order, then choose **Save tabs**. **Reset defaults** restores the original four, and **Cancel** discards changes. Music, Local music and Library tools save separate choices across restarts. Longer tab bars use the homepage’s previous/next arrow controls with no scrollbar while Customize stays visible; arrow keys move between tabs. A directly opened unpinned tool can appear temporarily without changing your pins.
+
+Use the Music library picker beside Create mix to choose a named server/library, or **All music libraries · Combined** to browse all configured Navidrome servers together. Combined pages include the next batch from every server, preserving each server’s selected order; they are not a single globally sorted catalog. Source labels distinguish matching records. If one server is unavailable, its error appears with Retry while other results remain available.
+
+Combined selections can play or be saved as queues. Navidrome playlists belong to one server: select a destination when creating/importing a playlist, and select tracks from one server when adding to it.
+
 Choose a music library and view: Albums, Recently added, Recently played, Most played, Songs, Artists, Playlists, Favorites, Genres, Radio, or Rediscover. Server pagination supports large catalogs. Catalog selections apply to the loaded catalog page. Inside an album or playlist, Select all tracks selects the entire collection, including other track pages.
 
 Open an artist to browse their albums. Open an album to play or select its tracks. Heart buttons update favorites; song star selectors update ratings. Search returns the entity types appropriate to the view.
@@ -293,3 +301,10 @@ The normal and immersive lyric reading areas omit the separate title/status stri
 In Settings → Appearance, choose **Frosted** under **Application style**, then **Save theme**. It brings the listening screen’s translucent pill buttons to navigation, playback and other app controls. Choose any color theme alongside it; selected controls retain a solid accent and menus remain opaque for readability. Original remains the default.
 
 For **Blurred artwork**, open **Lyrics appearance** (or **Appearance** in immersive view) and adjust **Artwork blur** from 0 to 100px. The background previews immediately, while the foreground album cover stays sharp. Save appearance keeps the value; Cancel or Escape restores the previous value. Existing settings start at 48px.
+
+
+### Immersive playback controls
+
+Immersive view hides the bottom player and puts playback controls below the cover: previous/play/next, shuffle, repeat, seeking, sleep timer, volume and mini-player access. Audiobooks and podcasts also show playback speed and 15-second back / 30-second forward controls. Use **Classic view** to restore the normal layout and bottom player.
+
+Hover over the volume icon, slider or percentage and scroll up to raise volume or down to lower it. A typical wheel step changes volume by five points; small trackpad movements accumulate. Volume stays between 0% and 100%, and the page does not scroll while adjusting it. Ctrl+scroll retains its usual zoom behavior.

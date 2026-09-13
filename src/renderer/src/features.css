@@ -6,3 +6,5 @@
 .discord-diagnostics { margin: 16px 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; }
 .discord-diagnostics p { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; margin: 0 0 12px; overflow-wrap: anywhere; }
 @media (max-width: 700px) { .discord-diagnostics p { grid-template-columns: 1fr; gap: 4px; } }
+
+.music-source-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}

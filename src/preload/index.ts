@@ -80,6 +80,7 @@ const api: DesktopAPI = {
   installUpdate: () => ipcRenderer.invoke('updates:install'),
   onUpdate: listener => { const callback = (_event: unknown, state: UpdateState) => listener(state); ipcRenderer.on('updates:state', callback); return () => ipcRenderer.removeListener('updates:state', callback) },
   musicBrowse: input => ipcRenderer.invoke('music:browse', input),
+  musicBrowseAll: input => ipcRenderer.invoke('music:browse-all', input),
   musicDetail: input => ipcRenderer.invoke('music:detail', input),
   musicFavorite: input => ipcRenderer.invoke('music:favorite', input),
   musicRate: input => ipcRenderer.invoke('music:rate', input),

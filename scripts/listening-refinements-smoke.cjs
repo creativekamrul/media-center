@@ -24,7 +24,7 @@ module.exports=async({desktop,page,artifacts})=>{
    const card=page.locator('.music-card').filter({has:page.locator('.card-favorite')}).first();await card.waitFor()
    assert.ok(await card.evaluate(el=>{const a=el.querySelector('.art').getBoundingClientRect(),b=el.querySelector('.card-favorite').getBoundingClientRect();return b.left>=a.left&&b.right<=a.right&&b.top>=a.top&&b.bottom<=a.bottom}),'Favorite stays inside artwork: '+style)
    await page.getByRole('button',{name:'Library tools',exact:true}).click();await require('./view-navigation.cjs')(page,'Custom mixes')
-   assert.equal(await page.getByRole('button',{name:'More tools',exact:true}).count(),1)
+   assert.equal(await page.getByRole('button',{name:'Customize tools',exact:true}).count(),1)
    const c=page.locator('.custom-mix-card').filter({hasText:mix.name});await c.waitFor()
    assert.equal(await c.getByRole('button',{name:'Duplicate',exact:true}).count(),0)
    const more=c.getByRole('button',{name:'More options',exact:true});const r=await more.boundingBox();assert.ok(r.width>=132&&r.height>=44)

@@ -19,7 +19,7 @@ module.exports=async({desktop,page,artifacts})=>{
   for(const tab of ['Queue','Lyrics']){
    await page.locator('.now-tabs').getByRole('button',{name:tab,exact:true}).click()
    const metrics=await page.locator('.expanded-player').evaluate(el=>{const root=el.getBoundingClientRect(),back=el.querySelector('.immersive-atmosphere').getBoundingClientRect();return {width:root.width,back:back.width,nested:el.querySelectorAll('.standard-lyrics-backdrop').length}})
-   assert.ok(Math.abs(metrics.width-metrics.back)<2);assert.equal(metrics.nested,0,'No separate dark rectangle behind the lyrics');if(tab==='Lyrics'){await page.locator('.lyrics-scroll').waitFor();assert.deepEqual(await page.locator('.lyrics-scroll').evaluate(el=>{const s=getComputedStyle(el);return [s.boxShadow,s.backgroundColor,s.backgroundImage]}),['none','rgba(0, 0, 0, 0)','none'])}
+   assert.ok(Math.abs(metrics.width-metrics.back)<2);assert.equal(metrics.nested,0,'No separate dark rectangle behind the lyrics');if(tab==='Lyrics'){await require('./lyric-tool.cjs')(page,'Refresh lyrics');await page.locator('.lyrics-scroll').waitFor();assert.deepEqual(await page.locator('.lyrics-scroll').evaluate(el=>{const s=getComputedStyle(el);return [s.boxShadow,s.backgroundColor,s.backgroundImage]}),['none','rgba(0, 0, 0, 0)','none'])}
    await page.screenshot({path:resolve(artifacts,`artwork-background-${tab.toLowerCase()}.png`)})
   }
   // Blur previews on the artwork only, cancels cleanly, and follows both player views.

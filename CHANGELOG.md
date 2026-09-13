@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.5
+
+- Automatically exit fullscreen when leaving immersive view, including navigation to an artist.
+
+- Replace More views/More tools with a right-aligned Customize control in Music, Local music and Library tools. Pin, unpin and reorder tabs with independently saved choices, the original four defaults, and homepage-style previous/next controls instead of a scrollbar.
+
+- Name music libraries by server and add an All music libraries combined picker. Keep playback, artwork, favorites, ratings and playlist edits tied to each item’s original server. Report unavailable servers while showing healthy results.
+
+- Hide the bottom player in immersive view and expand the existing cover controls with seeking, shuffle/repeat, sleep timer, volume and mini-player access. Spoken media also has speed and 15/30-second skips.
+- Adjust volume with the mouse wheel over its icon, slider or percentage; clamp levels to 0–100 and keep page scrolling separate.
+
 ## 1.3.4
 
 - Add a live artwork blur control (0–100px) for the normal and immersive backgrounds, preserving the sharp foreground cover and saved preferences.

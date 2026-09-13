@@ -1,3 +1,4 @@
+import {browseAllMusic,musicQuerySchema} from './music-libraries'
 import {UndoJournal,assertUnchanged} from './undo'
 import {LocalLibrary} from './local-library'
 import {localQuerySchema,localPlaylistSchema} from '../shared/local-library'
@@ -24,7 +25,9 @@ export function registerFeatures(handle: Handle, store: Store, player: Player, l
   const cached = async <T>(key:string,work:()=>Promise<T>):Promise<T> => {const cache=store.cache<T>(key);if(cache && Date.now()-cache.updated<30000)return cache.value;if(inflight.has(key))return inflight.get(key) as Promise<T>;const promise=work().then(value=>{store.cacheSet(key,value);return value}).finally(()=>inflight.delete(key));inflight.set(key,promise);return promise}
   const nav = (id: string) => { const p = provider(id); if (!(p instanceof Navidrome)) throw new Error('Choose a Navidrome server.'); return p }
   const abs = (id: string) => { const p = provider(id); if (!(p instanceof Audiobookshelf)) throw new Error('Choose an Audiobookshelf server.'); return p }
-  handle('music:browse', z.object({ serverId: id, libraryId: id, view: z.enum(['albums','newest','recent','frequent','random','songs','artists','playlists','favorites','genres','radio']), page: z.number().int().min(0).max(100000), search: z.string().max(500), genre: z.string().max(500).optional(), sort: z.string().max(100).optional(), descending: z.boolean().optional() }).strict(), i => cached(`music:${JSON.stringify(i)}`,()=>nav(i.serverId).catalog(i)))
+  const browseMusic = (i: import('../shared/types').MusicBrowseInput) => cached(`music:${JSON.stringify(i)}`,()=>nav(i.serverId).catalog(i))
+  handle('music:browse', musicQuerySchema.extend({serverId:id,libraryId:id}).strict(), browseMusic)
+  handle('music:browse-all', musicQuerySchema, i => browseAllMusic(store.connections(),i,browseMusic))
   handle('music:detail', z.object({ serverId: id, kind: z.enum(['album','artist','playlist']), id }).strict(), i => nav(i.serverId).collection(i.kind, i.id))
   handle('music:favorite', z.object({ serverId: id, kind: z.enum(['song','album','artist']), id, favorite: z.boolean() }).strict(), async i => {const p=nav(i.serverId),before=i.kind==='song'?(await p.track(i.id)).starred:(await p.collection(i.kind,i.id))[i.kind]?.starred;await p.favorite(i.kind,i.id,i.favorite);store.cacheClear();undo?.add('favorite change',async()=>{const now=i.kind==='song'?(await p.track(i.id)).starred:(await p.collection(i.kind,i.id))[i.kind]?.starred;assertUnchanged(i.favorite,!!now);await p.favorite(i.kind,i.id,!!before);store.cacheClear()})})
   handle('music:rate', z.object({ serverId: id, id, rating: z.number().int().min(0).max(5) }).strict(), async i=>{await nav(i.serverId).rate(i.id,i.rating);store.cacheClear()})

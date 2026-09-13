@@ -77,3 +77,20 @@ button.screen-queue-item{grid-template-columns:18px 30px minmax(0,1fr) auto}
 @media(max-height:740px){.immersive-player:is(.layout-minimal,.layout-gallery) .screen-track{padding:8px}.immersive-player.layout-gallery .screen-cover{width:min(100%,30vh)}.immersive-player:is(.layout-minimal,.layout-gallery).queue-is-open .screen-cover{width:90px}.immersive-player:is(.layout-minimal,.layout-gallery).queue-is-open .screen-track>p{margin:6px 0}.immersive-player:is(.layout-minimal,.layout-gallery) .screen-transport{margin-top:10px}}
 
 .queue-page.expanded-player .standard-lyrics .lyrics-scroll{background:transparent;box-shadow:none;border:0;border-radius:0}
+
+/* Immersive playback owns its complete transport; no duplicate footer or gap. */
+.app-shell:has(.immersive-player) {grid-template-rows:1fr}
+.app-shell:has(.immersive-player)>.player-bar {display:none}
+.immersive-player {bottom:0}
+.immersive-player .screen-track {min-height:0;overflow-y:auto;flex-shrink:1;scrollbar-width:thin}
+.immersive-player .screen-transport {gap:12px;flex-wrap:wrap}
+.screen-track>.seek-row {margin:16px 0 0;font-size:11px}
+.screen-utilities {display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px;color:var(--text)}
+.screen-utilities .volume-control {min-width:0;gap:8px}
+.screen-utilities .volume {width:82px}
+.screen-utilities :is(.sleep-control select,.speed-select) {color:var(--text);background:var(--control);border:1px solid var(--control-border);border-radius:var(--style-control-radius,12px);min-height:34px;padding:4px 7px;max-width:90px;font-size:12px}
+.screen-spoken-skips {display:flex;justify-content:center;gap:12px;margin-top:10px}
+.screen-spoken-skips button {min-height:34px;padding:6px 14px;font-size:12px}
+.screen-playback-error {font-size:12px;line-height:1.5;margin-top:10px}
+.immersive-player .screen-queue:not([hidden]) {flex-shrink:0;min-height:140px;max-height:40%}
+@media(max-height:800px){.immersive-player.layout-gallery .screen-cover{width:min(100%,28vh)}.immersive-player.layout-minimal .screen-cover{width:min(100%,24vh)}.immersive-player .screen-track{padding-block:12px}.screen-track>.seek-row{margin-top:10px}.screen-utilities{margin-top:10px}}

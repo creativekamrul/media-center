@@ -8,9 +8,9 @@ The target is a full desktop replacement for Feishin and Audiobookshelf's web cl
 
 |---|---|
 
-| Desktop | Windows installer; external MPV picker; output devices; exclusive output; media keys; optional close to tray |
+| Desktop | Independently saved pinned/reordered tabs in Music, Local music and Library tools; Windows installer; external MPV picker; output devices; exclusive output; media keys; optional close to tray |
 
-| Music | Libraries, albums, songs, artists and artist albums, recently added/played, most played, random albums, genres, favorites, radio playback |
+| Music | Named server/library picker; combined Navidrome browsing with per-server pagination, source identities and partial-failure retry; libraries, albums, songs, artists and artist albums, recently added/played, most played, random albums, genres, favorites, radio playback |
 
 | Search/order | Songs/artists/albums search, paginated catalog, album title/artist/year/rating ordering, playlist/artist/genre/favorite search |
 
@@ -330,3 +330,10 @@ Collection and episode controls share compact playback rows with personal/progre
 - Lyric toolbar portal slots remove inherited row margins and use flex layout so their controls align with adjacent buttons in both listening views.
 - Verified with typecheck, 209 unit tests, production build and the full Electron/MPV suite with zero renderer errors. Desktop checks cover ten styles, dark/light contrast, translucent controls, preview/save/cancel/reload, both player windows and equal toolbar geometry in two themes.
 - Artwork blur is adjustable from 0 to 100px in Lyrics appearance when Blurred artwork is selected. Existing saves retain the 48px background blur; live previews, cancellation and saved choices apply across both player views without blurring foreground artwork.
+
+
+### 1.3.5 immersive transport and wheel volume
+
+- Immersive view occupies the space previously reserved for the bottom player and hosts a complete transport under the cover. Studio, Minimal and Gallery retain queue access; exiting restores the footer and keyboard access. Shared utilities preserve sleep/volume behavior, and the existing identity-safe SeekBar handles seeking. Audiobooks and podcast episodes have speed and separate 15/30-second skip controls.
+- Main and immersive volume controls accept mouse-wheel input over the icon, slider and percentage. Wheel input accumulates in 100-pixel (or three-line) increments for five-point changes, clamps at 0/100, and does not scroll the page. Ctrl+wheel remains available for zoom; slider/keyboard changes use the same bounded, serialized main-process command path.
+- Verified with typecheck, 209 unit tests, production build and the full Electron/MPV suite with zero renderer errors. New native checks cover footer hide/restore, all three immersive layouts at 1440×940 and 1024×720, seek/shuffle/repeat/sleep/mini controls, bounded and rapid wheel input, and skip/speed for both audiobooks and podcast episodes.
