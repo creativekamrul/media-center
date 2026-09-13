@@ -88,3 +88,10 @@ html[data-theme][data-app-style] .media-grid .music-card>button.media-card {disp
 :is(.immersive-player,.standard-lyrics) .lyrics-plain,.lyric-style-preview p {word-spacing:var(--lyric-word-spacing,0em)}
 .immersive-header .more-options-panel {color:var(--text)}
 html[data-theme][data-app-style]:not([data-app-style=default]) :is(.card-more>summary,.lyric-playback-options>summary) {border-radius:var(--style-control-radius);border:var(--style-border-width) solid var(--style-edge);background:var(--style-control-fill);color:var(--text);box-shadow:var(--style-control-shadow)}
+
+/* Toolbar portals discard the tools row spacing used inside lyric content. */
+.immersive-tools-slot,.standard-lyrics-tools {display:flex;align-items:center;min-width:0}
+:is(.immersive-tools-slot,.standard-lyrics-tools)>.lyrics-tools {margin:0}
+:is(.immersive-tools-slot,.standard-lyrics-tools) .more-options {display:flex;align-items:center}
+.immersive-header-actions>button,.immersive-header-actions .more-options-trigger,
+.standard-lyrics-options>button,.standard-lyrics-options .more-options-trigger {min-height:44px;margin-block:0;box-sizing:border-box}

@@ -16,7 +16,7 @@ module.exports=async({desktop,page,artifacts})=>{
   await page.evaluate(mix=>window.mediaCenter.personalChange({action:'mix-save',mix}),mix)
   await page.getByRole('button',{name:'Open mini player',exact:true}).click();mini=desktop.windows().find(w=>w!==page)||await desktop.waitForEvent('window')
   await mini.locator('.mini-drag').waitFor()
-  for(const style of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon']){
+  for(const style of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']){
    await page.evaluate(({original,style})=>window.mediaCenter.savePreferences({...original,theme:'black-glass',appearance:{density:'comfortable',colors:{},bodyFont:'segoe',headingFont:'georgia',lyricsFont:'segoe',surfaceStyle:'solid',...original.appearance,appStyle:style,translucency:false}}),{original,style})
    await mini.waitForFunction(s=>document.documentElement.dataset.appStyle===s,style)
    assert.ok(await mini.locator('.mini-drag').evaluate(el=>{const r=el.getBoundingClientRect();return [...el.querySelectorAll('button,.mini-brand')].every(b=>b.getBoundingClientRect().bottom<=r.bottom-4)}),'Mini header divider stays below controls: '+style)

@@ -322,3 +322,11 @@ Collection and episode controls share compact playback rows with personal/progre
 - Fourteen preset font families and a read-only Windows installed-family list are available for interface, heading and lyric fonts. Main uses the Windows [InstalledFontCollection API](https://learn.microsoft.com/en-us/dotnet/api/system.drawing.text.installedfontcollection?view=windowsdesktop-10.0) through a fixed, hidden PowerShell query with bounded output/time. The bridge returns validated names only; it cannot install fonts, read arbitrary font paths or run renderer-supplied commands. The list is cached for the current app session. Other platforms retain preset choices.
 - Word spacing supports -0.15em to 0.60em. Line spacing supports 0.8 to 2.0 with proportional row padding. Older saves default word spacing to zero, while saved font choices and previews work across normal/immersive players and the mini player.
 - Verified with typecheck, 209 unit tests, production build and the full Electron/MPV suite with zero renderer errors. Checks include the real Windows font query, saved typography across players, compact controls, the Saved queues dialog and matching control colors/shapes across nine styles in two themes.
+
+
+### 1.3.4 Frosted style and artwork blur
+
+- Tenth application style: Frosted uses translucent pill controls, theme-aware fine borders, rounded panels and opaque menus. It shares the existing preview, save, cancel and mini-player synchronization; Original remains the default.
+- Lyric toolbar portal slots remove inherited row margins and use flex layout so their controls align with adjacent buttons in both listening views.
+- Verified with typecheck, 209 unit tests, production build and the full Electron/MPV suite with zero renderer errors. Desktop checks cover ten styles, dark/light contrast, translucent controls, preview/save/cancel/reload, both player windows and equal toolbar geometry in two themes.
+- Artwork blur is adjustable from 0 to 100px in Lyrics appearance when Blurred artwork is selected. Existing saves retain the 48px background blur; live previews, cancellation and saved choices apply across both player views without blurring foreground artwork.

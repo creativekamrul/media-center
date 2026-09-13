@@ -16,6 +16,7 @@ export const playingScreenSchema=z.object({
  inactiveOpacity:z.number().min(.2).max(1).default(.5),
  animation:z.enum(['flow','focus','fade','none']).default('flow'),
  glow:z.number().min(0).max(24).default(8),
+ artworkBlur:z.number().min(0).max(100).default(48),
  backdropDim:z.number().min(0).max(.8).default(.15)
 }).strict()
 export type PlayingScreenPreferences=z.infer<typeof playingScreenSchema>

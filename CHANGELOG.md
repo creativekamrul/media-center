@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.4
+
+- Add a live artwork blur control (0–100px) for the normal and immersive backgrounds, preserving the sharp foreground cover and saved preferences.
+
+- Add Frosted, an application style with translucent pill controls, fine borders and softly rounded surfaces that follows the selected theme.
+- Align Lyrics tools with neighboring controls in normal and immersive playback.
+
 ## 1.3.3
 
 - Label the color selection section Themes, keeping application styles separate.

@@ -53,6 +53,15 @@ html[data-theme][data-app-style=ribbon], [data-style-variant=ribbon] {
   --style-control-fill:color-mix(in srgb,var(--accent) 7%,var(--panel));
 }
 
+html[data-theme][data-app-style=frosted], [data-style-variant=frosted] {
+  color:var(--text);
+  --style-control-radius:999px; --style-panel-radius:20px; --style-art-radius:14px;
+  --style-border-width:1px; --style-edge:color-mix(in srgb,var(--text) 18%,transparent);
+  --style-shadow:0 8px 24px #0000000a;
+  --style-control-shadow:inset 0 1px 0 color-mix(in srgb,var(--text) 8%,transparent);
+  --style-control-fill:color-mix(in srgb,var(--text) 8%,transparent);
+}
+
 /* Explicit control families avoid turning clickable lyrics, rows or window chrome into boxes. */
 html[data-theme][data-app-style]:not([data-app-style=default]) :is(button.primary,button.secondary,button.icon-button,button.main-play,button.card-play,button.card-open,.more-options-trigger,.filter,.sort-button) {
   border-radius:var(--style-control-radius);
@@ -168,3 +177,22 @@ html[data-theme][data-app-style]:not([data-app-style=default]) .card-favorite.ac
 
 /* Changing selection must not cross-fade through unreadable foreground/fill pairs. */
 html[data-theme][data-app-style]:not([data-app-style=default]) button {transition-property:box-shadow,transform}
+
+/* Frosted brings the listening screen's translucent pills to everyday controls.
+   Primary/selected controls retain the opaque, contrast-paired accent above. */
+html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(button.secondary,.more-options-trigger,.filter,.sort-button,.nav-item,.settings-rail button,.browse-tabs button,.now-tabs button,.daily-tabs button,.surface-style-toggle button) {
+  backdrop-filter:blur(12px) saturate(115%);
+  border:1px solid var(--style-edge);box-shadow:var(--style-control-shadow);
+}
+html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(.nav-item,.settings-rail button,.browse-tabs button,.now-tabs button,.daily-tabs button,.surface-style-toggle button):not(:is(.active,.selected,[aria-pressed=true],[aria-selected=true],[aria-current])) {
+  background:var(--style-control-fill);color:var(--text);
+}
+html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(button.secondary,.more-options-trigger,.filter,.sort-button):hover:not(:disabled):not(:is(.active,[aria-pressed=true],[aria-expanded=true])) {
+  background:color-mix(in srgb,var(--text) 14%,transparent);color:var(--text);
+}
+html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(.browse-tabs,.now-tabs,.daily-tabs) {gap:8px}
+html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(.song-row,.queue-row,.chapter-row) {border-radius:12px}
+html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(.search,.settings-search,.field>input,.field>select,select,textarea) {border-radius:14px}
+html[data-theme][data-app-style=frosted]:not([data-app-style=default]) .more-options-panel button {backdrop-filter:none;box-shadow:none;border:0}
+[data-style-variant=frosted].style-preview {background:radial-gradient(at 10% 100%,color-mix(in srgb,var(--accent) 28%,transparent),transparent 70%),var(--panel)}
+[data-style-variant=frosted] .style-preview-cards i {background:color-mix(in srgb,var(--text) 8%,transparent);border-radius:var(--style-panel-radius)}

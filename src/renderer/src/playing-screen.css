@@ -50,7 +50,7 @@ button.screen-queue-item{width:100%;display:grid;grid-template-columns:18px minm
 .expanded-player .now-playing-header{position:relative}
 .expanded-player .queue-row{background:#080d1838}.expanded-player .queue-row.current{background:#ffffff18}
 :is(.immersive-player,.expanded-player).backdrop-artwork .immersive-atmosphere{background:#17212c}
-:is(.immersive-player,.expanded-player).backdrop-artwork .immersive-atmosphere>.art{inset:-12%;width:124%;height:124%;max-width:none;max-height:none;border:0;border-radius:0;filter:blur(48px) saturate(1.45) brightness(.95);opacity:1;pointer-events:none}
+:is(.immersive-player,.expanded-player).backdrop-artwork .immersive-atmosphere>.art{inset:-12%;width:124%;height:124%;max-width:none;max-height:none;border:0;border-radius:0;filter:blur(var(--artwork-blur,48px)) saturate(1.45) brightness(.95);opacity:1;pointer-events:none}
 :is(.immersive-player,.expanded-player).backdrop-artwork .immersive-atmosphere>.art img{display:block;width:100%;height:100%;object-fit:cover}
 :is(.immersive-player,.expanded-player).backdrop-artwork .immersive-atmosphere::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(120deg,#05091518,#05091538 65%,#05091555);pointer-events:none}
 .immersive-atmosphere::after{z-index:2}

@@ -4,6 +4,8 @@ module.exports=async({desktop,page,artifacts,mini})=>{
  assert.equal(await page.locator('.lyrics-panel>.section-title').count(),0,'No lone title or source banner')
  assert.equal(await page.getByLabel('Follow playback',{exact:true}).count(),0,'Follow is inside the closed tools menu')
  assert.equal(await page.locator('.expanded-art>.art').evaluate(el=>getComputedStyle(el).boxShadow),'none')
+ const checkAligned=async(a,b)=>{const x=await a.boundingBox(),y=await b.boundingBox();assert.ok(Math.abs(x.height-y.height)<1&&Math.abs(x.y-y.y)<1,'Lyrics tools shares its neighbors height and top edge: '+JSON.stringify({x,y,ancestors:await a.evaluate(el=>{const result=[];for(let n=el;n&&result.length<4;n=n.parentElement){const s=getComputedStyle(n);result.push({class:n.className,display:s.display,margin:s.margin,padding:s.padding,align:s.alignItems,transform:s.transform,height:s.height})}return result})}))}
+ await checkAligned(page.getByRole('button',{name:'Lyrics tools',exact:true}),page.getByRole('button',{name:'Lyrics appearance',exact:true}))
  const names=await page.evaluate(()=>window.mediaCenter.installedFonts());assert.ok(names.length>0,'Windows font family enumeration works')
  const family=names.find(n=>n==='Segoe UI')||names[0]
  await page.getByRole('button',{name:'Lyrics appearance',exact:true}).click()
@@ -22,14 +24,15 @@ module.exports=async({desktop,page,artifacts,mini})=>{
  await page.getByRole('button',{name:'Immersive view',exact:true}).click()
  if(await page.getByRole('button',{name:'Show lyrics',exact:true}).isVisible())await page.getByRole('button',{name:'Show lyrics',exact:true}).click()
  assert.equal(await page.locator('.immersive-stage h2').count(),0)
- for(const theme of ['black-glass','ocean'])for(const style of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon']){
+ for(const theme of ['black-glass','ocean'])for(const style of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']){
   await page.evaluate(async({theme,style})=>{const p=await window.mediaCenter.preferences();await window.mediaCenter.savePreferences({...p,theme,appearance:{...p.appearance,appStyle:style}})},{theme,style})
   await page.waitForFunction(({theme,style})=>document.documentElement.dataset.theme===theme&&document.documentElement.dataset.appStyle===style,{theme,style})
   await page.mouse.move(2,2)
   await page.waitForFunction(()=>{const a=document.querySelector('.immersive-tools-slot .more-options-trigger'),b=document.querySelector('.immersive-header>button.secondary');if(!a||!b||[...a.getAnimations(),...b.getAnimations()].some(animation=>animation.playState==='running'))return false;const x=getComputedStyle(a),y=getComputedStyle(b);return x.backgroundColor===y.backgroundColor&&x.borderRadius===y.borderRadius&&x.color===y.color})
   const tools=page.getByRole('button',{name:'Lyrics tools',exact:true})
+  await checkAligned(tools,page.locator('.immersive-tools-slot + button'))
   await tools.click();await page.getByLabel('Follow playback',{exact:true}).waitFor();await page.keyboard.press('Escape')
-  if(theme==='black-glass'&&['default','outline','retro'].includes(style))await page.screenshot({animations:'disabled',path:resolve(artifacts,`consistent-immersive-${style}.png`)})
+  if(theme==='black-glass'&&['default','outline','retro','frosted'].includes(style))await page.screenshot({animations:'disabled',path:resolve(artifacts,`consistent-immersive-${style}.png`)})
  }
  await page.getByRole('button',{name:'Classic view',exact:true}).click()
  await page.getByRole('button',{name:'Queue',exact:true}).click()
@@ -39,5 +42,5 @@ module.exports=async({desktop,page,artifacts,mini})=>{
  await page.screenshot({path:resolve(artifacts,'consistent-queue-toolbar.png')})
  await page.getByRole('button',{name:'Music',exact:true}).click();await require('./view-navigation.cjs')(page,'Songs','button')
  const play=page.locator('.listen-actions.compact>button').first();await play.waitFor();const r=await play.boundingBox();assert.ok(Math.abs(r.width-r.height)<1,'Compact play has equal dimensions')
- console.log('Typography and controls passed: installed fonts, shared font rendering, saved word/line spacing, clean lyric stage, nine styles in two themes, square play target and Saved queues button.')
+ console.log('Typography and controls passed: installed fonts, shared font rendering, saved word/line spacing, clean lyric stage, ten styles in two themes, square play target and Saved queues button.')
 }

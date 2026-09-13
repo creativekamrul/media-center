@@ -22,8 +22,22 @@ module.exports=async({desktop,page,artifacts})=>{
    assert.ok(Math.abs(metrics.width-metrics.back)<2);assert.equal(metrics.nested,0,'No separate dark rectangle behind the lyrics');if(tab==='Lyrics'){await page.locator('.lyrics-scroll').waitFor();assert.deepEqual(await page.locator('.lyrics-scroll').evaluate(el=>{const s=getComputedStyle(el);return [s.boxShadow,s.backgroundColor,s.backgroundImage]}),['none','rgba(0, 0, 0, 0)','none'])}
    await page.screenshot({path:resolve(artifacts,`artwork-background-${tab.toLowerCase()}.png`)})
   }
+  // Blur previews on the artwork only, cancels cleanly, and follows both player views.
+  await page.getByRole('button',{name:'Lyrics appearance',exact:true}).click()
+  const blurOptions=page.getByRole('dialog',{name:'Lyrics appearance',exact:true})
+  await blurOptions.getByLabel('Artwork blur',{exact:true}).press('Home')
+  assert.match(await page.locator('.expanded-player>.immersive-atmosphere>.art').evaluate(el=>getComputedStyle(el).filter),/blur\(0px\)/)
+  assert.equal(await page.locator('.expanded-art>.art').evaluate(el=>getComputedStyle(el).filter),'none','Foreground artwork stays sharp')
+  await blurOptions.getByRole('button',{name:'Save appearance',exact:true}).click()
+  assert.equal((await page.evaluate(()=>window.mediaCenter.playingScreenPreferences())).artworkBlur,0)
+  await page.getByRole('button',{name:'Lyrics appearance',exact:true}).click()
+  await blurOptions.getByLabel('Artwork blur',{exact:true}).press('End')
+  assert.match(await page.locator('.expanded-player>.immersive-atmosphere>.art').evaluate(el=>getComputedStyle(el).filter),/blur\(100px\)/)
+  await page.keyboard.press('Escape')
+  assert.match(await page.locator('.expanded-player>.immersive-atmosphere>.art').evaluate(el=>getComputedStyle(el).filter),/blur\(0px\)/)
   await page.getByRole('button',{name:'Immersive view',exact:true}).click()
   const view=page.getByRole('region',{name:'Immersive playing screen',exact:true})
+  assert.match(await view.locator('.immersive-atmosphere>.art').evaluate(el=>getComputedStyle(el).filter),/blur\(0px\)/)
   for(const layout of ['minimal','gallery','studio']){
    await view.getByRole('button',{name:'Appearance',exact:true}).click();const options=page.getByRole('dialog',{name:'Lyrics appearance',exact:true});await options.getByLabel('Immersive layout',{exact:true}).selectOption(layout);await options.getByRole('button',{name:'Save appearance',exact:true}).click()
    assert.equal((await page.evaluate(()=>window.mediaCenter.playingScreenPreferences())).layout,layout)
@@ -39,6 +53,6 @@ module.exports=async({desktop,page,artifacts})=>{
   }
   await view.getByRole('button',{name:'Appearance',exact:true}).click();const options=page.getByRole('dialog',{name:'Lyrics appearance',exact:true});await options.getByLabel('Immersive layout',{exact:true}).selectOption('minimal');await options.getByRole('button',{name:'Cancel',exact:true}).click();assert.ok((await view.getAttribute('class')).includes('layout-studio'))
   await view.getByRole('button',{name:'Classic view',exact:true}).click()
-  console.log('Immersive styles passed: full-canvas artwork on Queue/Lyrics, three responsive layouts, queue playback, saved choice and preview cancellation.')
+  console.log('Immersive styles passed: full-canvas artwork on Queue/Lyrics, three responsive layouts, queue playback, saved choice, artwork blur preview/save/cancel and preview cancellation.')
  }finally{await desktop.evaluate(()=>{global.fetch=global.__styleFetch;delete global.__styleFetch});await page.evaluate(previous=>window.mediaCenter.savePlayingScreenPreferences(previous),previous);await page.setViewportSize({width:1440,height:940})}
 }

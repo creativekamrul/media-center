@@ -3,6 +3,7 @@ import type {Preferences} from '../../shared/types'
 
 const styles: {id:AppStyle;name:string;description:string}[] = [
   {id:'default',name:'Original',description:'Your current design. Familiar pill buttons and clean panels.'},
+  {id:'frosted',name:'Frosted',description:'Translucent pill buttons, delicate borders and softly layered panels.'},
   {id:'soft',name:'Soft',description:'Rounded surfaces, tonal controls, and floating cards.'},
   {id:'precision',name:'Precision',description:'Crisp controls, layered panels, and subtle edge highlights.'},
   {id:'outline',name:'Outline',description:'Square corners, fine rules, and a flat, structured layout.'},

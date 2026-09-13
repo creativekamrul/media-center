@@ -286,3 +286,10 @@ The Interface font, Heading font, Lyrics font and Lyric font pickers include 14 
 In **Lyrics appearance → Typography**, **Word spacing** adjusts the gap between words from -0.15em to 0.60em. **Line spacing** ranges from 0.8 to 2.0 and also reduces the space between lyric rows. Very tight settings can overlap tall glyphs; the live preview shows the result. Both normal and immersive lyrics share the saved settings. Cancel restores the previous appearance.
 
 The normal and immersive lyric reading areas omit the separate title/status strip. Open **Lyrics tools** for the track title, lyric source, Follow playback, search, import, edit, refresh and timing controls.
+
+
+### Frosted application style
+
+In Settings → Appearance, choose **Frosted** under **Application style**, then **Save theme**. It brings the listening screen’s translucent pill buttons to navigation, playback and other app controls. Choose any color theme alongside it; selected controls retain a solid accent and menus remain opaque for readability. Original remains the default.
+
+For **Blurred artwork**, open **Lyrics appearance** (or **Appearance** in immersive view) and adjust **Artwork blur** from 0 to 100px. The background previews immediately, while the foreground album cover stays sharp. Save appearance keeps the value; Cancel or Escape restores the previous value. Existing settings start at 48px.

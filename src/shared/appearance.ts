@@ -14,7 +14,7 @@ export function fontCss(value:string){
 
 export const colorKeys=['background','panel','accent','text','muted'] as const
 export const colorLabels={background:'Background',panel:'Panels',accent:'Accent',text:'Main text',muted:'Secondary text'}
-export const appStyleIds=['default','soft','precision','outline','bold','retro','editorial','neon','ribbon'] as const
+export const appStyleIds=['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted'] as const
 export type AppStyle=typeof appStyleIds[number]
 const color=z.string().regex(/^#[0-9a-f]{6}$/i)
 export const appearanceSchema=z.object({
