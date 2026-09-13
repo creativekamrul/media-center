@@ -8,7 +8,7 @@ module.exports=async({desktop,page,artifacts})=>{
  const item={target:{kind:'music-track',serverId:nav.serverId,trackId:'song'},title:'Original Audio',subtitle:'Test Artist'}
  const album={kind:'album',serverId:nav.serverId,id:'album',title:'The Test Album',subtitle:'Test Artist'}
  await page.evaluate(async item=>{await window.mediaCenter.personalChange({action:'metadata-save',ref:{kind:'playable',item},metadata:{title:'Custom playback title',artist:'Test Artist',album:'Custom album',genre:'Pop',year:2026}})},item)
- await page.getByRole('button',{name:'Library tools',exact:true}).click();await page.getByRole('tab',{name:'People',exact:true}).click()
+ await page.getByRole('button',{name:'Library tools',exact:true}).click();await require('./view-navigation.cjs')(page,'People')
  await page.getByLabel('Name',{exact:true}).fill('Test Artist');await page.getByLabel('Role',{exact:true}).selectOption('artist');await page.getByRole('button',{name:'Explore',exact:true}).click()
  await page.locator('.person-group .personal-shelf-card').first().click()
  const artist=page.locator('.artist-page')
@@ -21,7 +21,7 @@ module.exports=async({desktop,page,artifacts})=>{
  await artist.locator('.artist-track strong').first().click({button:'right'})
  const menu=page.getByRole('dialog',{name:'Custom playback title',exact:true})
  await menu.getByRole('button',{name:/^(Add|Remove) favorite$/}).waitFor()
- await menu.getByRole('button',{name:'Add to queue',exact:true}).click()
+ await menu.getByRole('button',{name:'More options',exact:true}).click();await menu.getByRole('button',{name:'Add to queue',exact:true}).click()
  await page.waitForFunction(async()=> (await window.mediaCenter.playback()).queue.length===2)
  await menu.getByRole('button',{name:'Close dialog',exact:true}).click()
  // Keyboard context gesture chooses the same item.

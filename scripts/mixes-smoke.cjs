@@ -52,7 +52,7 @@ module.exports=async function({desktop,page,artifacts}){
 
  await page.evaluate(()=>window.mediaCenter.command({action:'stop'}))
  await page.getByRole('button',{name:'Library tools',exact:true}).click()
- await page.getByRole('tab',{name:'Custom mixes',exact:true}).click()
+ await require('./view-navigation.cjs')(page,'Custom mixes')
  await page.getByRole('button',{name:'Play mix Evening test mix',exact:true}).click()
  await page.waitForFunction(async()=>{const p=await window.mediaCenter.playback();return p.status==='playing'&&p.queue[p.queueIndex]?.target.kind==='music-track'})
  await page.evaluate(()=>window.mediaCenter.command({action:'stop'}))

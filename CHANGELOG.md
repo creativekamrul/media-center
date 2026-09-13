@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.1
+
+- Fix selected and hovered button contrast across alternative application styles, including Settings, navigation and players.
+- Add Editorial, Neon and Ribbon styles, refine existing alternatives, and reduce the size of Settings style previews. Original remains the default design.
+- Consolidate secondary listening and management actions under More options, with compact playback controls on item rows.
+- Reduce music, local music and Library tools navigation to four visible views plus More views, keeping the selected view visible.
+
 ## 1.3.0
 
 - Add five application styles—Soft, Precision, Outline, Bold and Retro—with the current design preserved as Original, live previews, saved choices and mini-player synchronization.

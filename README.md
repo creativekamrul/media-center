@@ -45,9 +45,9 @@ Personal shelves, metadata customization, offline plans, per-show podcast prefer
 
 **1.2.1 refinements:** consistent collection and episode actions, opaque More menus, playlist cover generation inside customization, redesigned Saved queues and independent queue scrolling in Now Playing.
 
-**1.3.0 update:** Choose Soft, Precision, Outline, Bold or Retro application styles, with the current design preserved as Original. Try Minimal and Gallery immersive layouts, full-view blurred artwork, a shared Discord application and improved Windows installer checks.
+**1.3.1 update:** Clearer selected buttons, nine distinct application styles including Editorial, Neon and Ribbon, compact style previews, and fewer visible actions across libraries and playback. Original remains the default design.
 
-[Read the 1.3.0 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.3.0) · [Full changelog](CHANGELOG.md)
+[Read the 1.3.1 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.3.1) · [Full changelog](CHANGELOG.md)
 
 ## A closer look
 

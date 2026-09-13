@@ -38,7 +38,7 @@ The target is a full desktop replacement for Feishin and Audiobookshelf's web cl
 
 | Audio | ReplayGain off/track/album; clipping prevention; ten-band EQ; per-book/episode speed; timed and chapter-end sleep |
 
-| Appearance | Six independent application styles (Original default, Soft, Precision, Outline, Bold, Retro), live previews and saved cross-window choices; 13 palettes including translucent Glass and Black Glass; visual theme picker with saved Solid / Gradient surfaces and optional translucent panels; consistent palette-aware cards, fields and dialogs; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; adaptive layouts with 100/125/150/200% interface-scaling checks |
+| Appearance | Nine independent application styles (Original default, Soft, Precision, Outline, Bold, Retro, Editorial, Neon, Ribbon), live previews and saved cross-window choices; 13 palettes including translucent Glass and Black Glass; visual theme picker with saved Solid / Gradient surfaces and optional translucent panels; consistent palette-aware cards, fields and dialogs; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; adaptive layouts with 100/125/150/200% interface-scaling checks |
 
 | Open source | GPL-3.0-only; user/developer/security/API documentation; model, provider, local-file, playback and desktop tests |
 
@@ -294,3 +294,11 @@ Collection and episode controls share compact playback rows with personal/progre
 - Discord Rich Presence uses public Media Center application ID `1546622716554121296` when the optional custom ID is blank. A valid custom ID overrides it. Presence stays opt-in; per-media and private-listening restrictions still apply. No bot token is required.
 - Installer preparation checks exact executable paths, handles clean installs separately, probes folder write access and asks the app to quit gracefully before a bounded fallback for older versions. It no longer treats sibling folders or unrelated executables under the chosen directory as Media Center. The first-install screenshot can also indicate copying/permission errors; the user's original machine is needed to confirm its exact cause.
 - Application styles: Original preserves the existing design; Soft, Precision, Outline, Bold and Retro change controls, panels, navigation, menus and both players. Themes, font overrides and density remain independent. Styles preview live, revert on leaving Settings without saving, and persist with Save theme.
+
+### 1.3.1 style and action cleanup
+
+- Selected buttons in alternative styles update their background and text together, including hover states. Original retains its existing visual styling. Preview cards keep their own selection treatment.
+- Editorial, Neon and Ribbon bring the style total to nine. Settings uses compact 80-pixel miniatures in a responsive grid.
+- Collection headers keep Play and Play next visible; compact rows use Play and More options. Queue, Listen later, downloads and management remain available in grouped menus. Existing card menus use a flat list.
+- Music, local music and Library tools show four views and More views. Choosing an overflow view promotes it into the visible row and preserves keyboard focus.
+- Verified with typecheck, 204 unit tests, production build and the full Electron/MPV fixture suite (three media types, zero renderer errors). Style checks cover dark/light contrast, cross-window preview/save/reload, menus, dialogs and responsive layouts.

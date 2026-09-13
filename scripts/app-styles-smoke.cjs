@@ -3,9 +3,18 @@ const {resolve}=require('node:path')
 module.exports=async({desktop,page,artifacts})=>{
  const original=await page.evaluate(()=>window.mediaCenter.preferences())
  const defaults={appStyle:'default',density:'comfortable',translucency:false,surfaceStyle:'solid',colors:{},bodyFont:'segoe',headingFont:'georgia',lyricsFont:'segoe'}
- const base={...original,customCss:undefined,theme:'forest',appearance:{...defaults,...original.appearance,appStyle:'default',translucency:false}}
+ const base={...original,customCss:undefined,theme:'black-glass',appearance:{...defaults,...original.appearance,appStyle:'default',translucency:false}}
  let mini
  const select=async(id)=>{await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('button',{name:`${id} style`,exact:true}).click()}
+ const assertContrast=async(locator,label)=>{
+  await locator.hover()
+  const ratio=await locator.evaluate(el=>{
+   const s=getComputedStyle(el),ctx=document.createElement('canvas').getContext('2d');ctx.canvas.width=ctx.canvas.height=1
+   const lum=color=>{ctx.clearRect(0,0,1,1);ctx.fillStyle=color;ctx.fillRect(0,0,1,1);const p=ctx.getImageData(0,0,1,1).data;return [p[0],p[1],p[2]].map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0)}
+   const a=lum(s.color),b=lum(s.backgroundColor);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)
+  })
+  assert.ok(ratio>=4.5,label+' contrast: '+ratio)
+ }
  const styleOf=el=>{const s=getComputedStyle(el);return {radius:s.borderRadius,border:s.borderWidth,shadow:s.boxShadow,background:s.backgroundColor}}
  try {
   await page.evaluate(p=>window.mediaCenter.savePreferences(p),base)
@@ -30,11 +39,13 @@ module.exports=async({desktop,page,artifacts})=>{
   assert.equal((await page.evaluate(()=>window.mediaCenter.preferences())).appearance.appStyle,'default')
   await page.getByRole('button',{name:'Home',exact:true}).click();await mini.waitForFunction(()=>document.documentElement.dataset.appStyle==='default')
   const fingerprints=[]
-  for(const [id,name] of [['default','Original'],['soft','Soft'],['precision','Precision'],['outline','Outline'],['bold','Bold'],['retro','Retro']]){
+  for(const [id,name] of [['default','Original'],['soft','Soft'],['precision','Precision'],['outline','Outline'],['bold','Bold'],['retro','Retro'],['editorial','Editorial'],['neon','Neon'],['ribbon','Ribbon']]){
    await select(name)
-   assert.equal(await page.locator('.app-style-choice').count(),6)
+   assert.equal(await page.locator('.app-style-choice').count(),9)
    await page.locator('.app-style-picker').scrollIntoViewIfNeeded()
-   if(id==='default')await page.screenshot({path:resolve(artifacts,'application-style-picker.png')})
+   if(['soft','editorial','neon','ribbon'].includes(id))await page.screenshot({animations:'disabled',path:resolve(artifacts,`application-style-picker-${id}.png`)})
+   assert.ok(await page.locator('.app-style-choice').evaluateAll(cards=>cards.every(c=>c.getBoundingClientRect().height<190)),'Style choices are compact')
+   if(id!=='default')await assertContrast(page.locator('.settings-rail button[aria-current=location]'),id+' settings selection')
    await page.getByRole('button',{name:'Save theme',exact:true}).click()
    await page.waitForFunction(id=>document.documentElement.dataset.appStyle===id,id)
    await mini.waitForFunction(id=>document.documentElement.dataset.appStyle===id,id)
@@ -46,10 +57,13 @@ module.exports=async({desktop,page,artifacts})=>{
    assert.equal((await mini.locator('.mini-controls .main-play').evaluate(styleOf)).radius,(await page.locator('.player-bar .main-play').evaluate(styleOf)).radius)
    await mini.getByRole('button',{name:'Play',exact:true}).click();await page.waitForFunction(async()=>(await window.mediaCenter.playback()).status==='playing')
    await mini.getByRole('button',{name:'Pause',exact:true}).click();await page.waitForFunction(async()=>(await window.mediaCenter.playback()).status==='paused')
-   await page.screenshot({path:resolve(artifacts,`app-style-${id}-home.png`)})
-   await mini.screenshot({path:resolve(artifacts,`app-style-${id}-mini.png`)})
+   await page.screenshot({animations:'disabled',path:resolve(artifacts,`app-style-${id}-home.png`)})
+   await mini.screenshot({animations:'disabled',path:resolve(artifacts,`app-style-${id}-mini.png`)})
    await page.getByRole('button',{name:'Open now playing',exact:true}).click()
+   assert.equal(await page.locator('.expanded-art > .listen-actions > button').count(),2,'Only Play and Play next stay in the main action row')
    const more=page.locator('.expanded-art .more-options-trigger').first();await more.click()
+   if(id!=='default')await assertContrast(more,id+' open menu trigger')
+   assert.equal(await page.locator('.more-options-panel:popover-open').getByRole('button',{name:'Add to queue',exact:true}).count(),1,'Queue is available once in More')
    const menu=page.locator('.more-options-panel:popover-open');await menu.waitFor()
    assert.equal(await menu.evaluate(el=>{const r=el.getBoundingClientRect();return r.x>=0&&r.right<=innerWidth&&r.bottom<=innerHeight}),true)
    assert.ok(!['transparent','rgba(0, 0, 0, 0)'].includes((await menu.evaluate(styleOf)).background))
@@ -59,7 +73,7 @@ module.exports=async({desktop,page,artifacts})=>{
    await view.getByRole('button',{name:'Appearance',exact:true}).click()
    const dialog=page.getByRole('dialog',{name:'Lyrics appearance',exact:true});await dialog.waitFor()
    if(id!=='default'){
-    assert.equal((await dialog.evaluate(styleOf)).radius,await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--style-panel-radius').trim()))
+    assert.equal((await dialog.evaluate(styleOf)).radius,await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--style-panel-radius').trim().replace('6px 28px 6px 28px','6px 28px')))
     assert.equal((await dialog.getByLabel('Immersive layout',{exact:true}).evaluate(styleOf)).radius,await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--style-control-radius').trim()))
    }
    await dialog.getByRole('button',{name:'Cancel',exact:true}).click()
@@ -67,17 +81,28 @@ module.exports=async({desktop,page,artifacts})=>{
    for(const width of [1024,1440]){await page.setViewportSize({width,height:900});assert.equal(await page.locator('.workspace').evaluate(el=>el.scrollWidth>el.clientWidth),false)}
    await page.getByRole('button',{name:'Home',exact:true}).click()
   }
-  assert.equal(new Set(fingerprints).size,6,'All styles have distinct control construction')
+  assert.equal(new Set(fingerprints).size,9,'All styles have distinct control construction')
+  await page.getByRole('button',{name:'Music',exact:true}).click()
+  const tabs=page.locator('.concise-tabs')
+  assert.equal(await tabs.locator(':scope > button').count(),4)
+  await require('./view-navigation.cjs')(page,'Recently played','button')
+  assert.equal(await tabs.getByRole('button',{name:'Recently played',exact:true}).getAttribute('aria-pressed'),'true')
+  assert.equal(await page.locator(':popover-open').count(),0,'Choosing an overflow view closes its menu')
+  assert.equal(await tabs.getByRole('button',{name:'Recently played',exact:true}).evaluate(el=>el===document.activeElement),true,'Focus follows the selected view out of the menu')
+  assert.equal(await tabs.locator(':scope > button').count(),4,'Chosen overflow view replaces the fourth visible tab')
+  await require('./view-navigation.cjs')(page,'Playlists','button')
+  await page.getByRole('button',{name:'Home',exact:true}).click()
   // A saved style survives reload and works with a custom light palette without forcing transparency.
-  await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.appStyle==='retro')
-  for(const appStyle of ['soft','precision','outline','bold','retro']){
+  await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.appStyle==='ribbon')
+  for(const appStyle of ['soft','precision','outline','bold','retro','editorial','neon','ribbon']){
    await page.evaluate(({base,appStyle})=>window.mediaCenter.savePreferences({...base,appearance:{...base.appearance,appStyle,colors:{background:'#fafafa',panel:'#eeeeee',text:'#181818',muted:'#555555',accent:'#2044aa'}}}),{base,appStyle})
    await page.waitForFunction(id=>document.documentElement.dataset.appStyle===id,appStyle)
    assert.equal(await page.evaluate(()=>document.documentElement.dataset.translucency),'false')
    if(await page.locator('.card-favorite').count())assert.equal(await page.locator('.card-favorite').first().evaluate(el=>getComputedStyle(el).color===getComputedStyle(el).backgroundColor),false)
-   await page.screenshot({path:resolve(artifacts,`app-style-${appStyle}-light.png`)})
+   await assertContrast(page.locator('.sidebar .nav-item.selected'),appStyle+' light selected navigation')
+   await page.screenshot({animations:'disabled',path:resolve(artifacts,`app-style-${appStyle}-light.png`)})
   }
-  console.log('Application styles passed: Original unchanged, five distinct alternatives, preview/cancel/save/reload, themes, mini synchronization, popovers, dialogs and responsive layouts.')
+  console.log('Application styles passed: Original unchanged, eight distinct alternatives, preview/cancel/save/reload, themes, mini synchronization, popovers, dialogs and responsive layouts.')
  }finally{
   if(mini&&!mini.isClosed())await mini.getByRole('button',{name:'Close mini player',exact:true}).click()
   await page.evaluate(p=>window.mediaCenter.savePreferences(p),original)

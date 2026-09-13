@@ -7,7 +7,10 @@ const styles: {id:AppStyle;name:string;description:string}[] = [
   {id:'precision',name:'Precision',description:'Crisp controls, layered panels, and subtle edge highlights.'},
   {id:'outline',name:'Outline',description:'Square corners, fine rules, and a flat, structured layout.'},
   {id:'bold',name:'Bold',description:'Strong borders, offset shadows, and punchy controls.'},
-  {id:'retro',name:'Retro',description:'Beveled buttons, inset fields, and classic desktop panels.'},
+  {id:'retro',name:'Retro',description:'Raised controls and inset desktop panels.'},
+  {id:'editorial',name:'Editorial',description:'Open surfaces, fine rules and understated controls.'},
+  {id:'neon',name:'Neon',description:'Illuminated edges and crisp accent outlines.'},
+  {id:'ribbon',name:'Ribbon',description:'Asymmetric corners and bold accent bands.'},
 ]
 
 export function StylePicker({value,onChange}:{value:Preferences;onChange:(p:Preferences)=>void}){

@@ -16,7 +16,7 @@ module.exports=async({desktop,page,artifacts})=>{
  await page.getByRole('button',{name:/Layout test playlist/}).click()
  await require('./collection-header-smoke.cjs')(page,artifacts,'single-row-playlist')
  const actions=page.locator('.detail-heading>.listen-actions')
- assert.equal(await actions.locator(':scope>button,:scope>.more-options').count(),5)
+ assert.equal(await actions.locator(':scope>button,:scope>.more-options').count(),3)
  await actions.getByRole('button',{name:'More options',exact:true}).click()
  await page.getByRole('button',{name:'Edit playlist',exact:true}).click()
  await page.getByRole('dialog',{name:'Edit playlist',exact:true}).waitFor()
@@ -36,7 +36,7 @@ module.exports=async({desktop,page,artifacts})=>{
   assert.ok(cardGeometry.every(Boolean),'Grid card subtitles do not collide with progress')
   await page.screenshot({path:resolve(artifacts,`continue-grid-${name.toLowerCase()}-1.2.png`)})
  }
- await page.getByRole('button',{name:'Library tools',exact:true}).click();await page.getByRole('tab',{name:'People',exact:true}).click()
+ await page.getByRole('button',{name:'Library tools',exact:true}).click();await require('./view-navigation.cjs')(page,'People')
  const fields=await page.locator('.people-search input,.people-search select,.people-search>.primary').evaluateAll(els=>els.map(e=>e.getBoundingClientRect().bottom))
  assert.ok(Math.max(...fields)-Math.min(...fields)<2,'People form controls share a baseline')
  await page.screenshot({path:resolve(artifacts,'people-alignment-1.2.png')})

@@ -13,13 +13,21 @@ Styles control component shape, borders, depth, navigation selection and surface
 | Bold | Heavy outlines, offset hard shadows and pressed-state depth changes | [Neobrutalism components](https://www.neobrutalism.dev/docs) |
 | Retro | Beveled buttons, inset fields and classic desktop panel edges | [98.css controls and windows](https://jdan.github.io/98.css/) |
 
+| Editorial | Open panels, fine rules and underlined secondary controls | Original Media Center treatment |
+| Neon | Illuminated edges, outlined surfaces and subtle accent glow | Original Media Center treatment |
+| Ribbon | Asymmetric corners and inset accent bands | Original Media Center treatment |
+
+Selected controls set their foreground and background together. Color transitions are excluded from alternative-style buttons so changing selection cannot briefly cross-fade into an unreadable pair. The compact picker uses 80-pixel previews.
+
+Common collection actions show Play, Play next and contextual primary actions, with Queue, Listen later, downloads and management in More options. Compact rows show Play and More. Existing card menus keep a flat action list. Music, local music and Library tools show four views plus More views; selecting an overflow view brings it into the visible row.
+
 These are original CSS adaptations, not imported component libraries or exact reproductions. No external fonts, scripts or network assets are needed to change styles. No new dependency was added.
 
 ## Implementation
 
 - `src/shared/appearance.ts`: validated `appStyle` preference; missing values migrate to `default`. Existing preference persistence, backups and profiles carry the style.
 - `src/renderer/src/appearance.ts`: applies the root `data-app-style` attribute through the existing cross-window theme watcher.
-- `src/renderer/src/StylePicker.tsx`: six local miniature previews and an accessible pressed-state selector using the existing Settings draft.
+- `src/renderer/src/StylePicker.tsx`: nine compact local miniature previews and an accessible pressed-state selector using the existing Settings draft.
 - `src/renderer/src/app-styles.css`: scoped component tokens and treatments, loaded after the existing app CSS. Original has no application overrides. Miniature preview tokens are scoped to each miniature. Imported custom CSS retains its existing precedence.
 
 Native window controls retain their drag exclusions and hit areas. Media identity, artwork aspect ratios, track-column sizing, queue scrolling and playback routes are unchanged. Popup menus retain opaque backgrounds and their existing top-layer placement; lyric backgrounds remain controlled by the listening-view preferences. Styles do not enable translucency or animations.

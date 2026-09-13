@@ -1,0 +1,19 @@
+/* Shared action priority: Play, Play next, contextual primary actions, More.
+   Rows show only Play and More; an already-open menu keeps a flat action list. */
+.listen-actions.simplified-actions {gap:8px}
+.detail-heading>.listen-actions.simplified-actions {display:flex;flex-wrap:wrap}
+.detail-heading>.listen-actions.simplified-actions>button,.detail-heading>.listen-actions.simplified-actions>.more-options {flex:0 1 auto;min-width:110px}
+.detail-heading>.listen-actions.simplified-actions>.more-options {margin-left:0}
+.expanded-art>.listen-actions.simplified-actions {display:flex;flex-wrap:wrap}
+.expanded-art>.listen-actions.simplified-actions>button,.expanded-art>.listen-actions.simplified-actions>.more-options {flex:1;min-width:100px}
+.episode-card .episode-bottom>.listen-actions.simplified-actions {flex:0 1 auto}
+.episode-card .episode-bottom>.listen-actions.simplified-actions>button,.episode-card .episode-bottom>.listen-actions.simplified-actions>.more-options {flex:0 1 auto;min-width:100px;max-width:none}
+.listen-actions.simplified-actions.compact {flex:0 0 auto;gap:6px}
+.listen-actions.simplified-actions.compact>button,.listen-actions.simplified-actions.compact>.more-options {min-width:0;flex:none}
+.listen-actions.simplified-actions .more-options-panel button {min-width:0;max-width:none;white-space:normal}
+.track-menu-layout .listen-actions.simplified-actions {display:flex;flex-wrap:wrap}
+.track-menu-layout .listen-actions.simplified-actions>.more-options {grid-column:auto}
+.track-menu-layout .listen-actions.simplified-actions>.more-options .more-options-trigger {width:auto}
+.listen-actions.in-menu {display:flex;flex-direction:column;align-items:stretch}
+.listen-actions.in-menu>button {width:100%;justify-content:flex-start}
+@media(max-width:650px){.episode-card .episode-bottom>.listen-actions.simplified-actions {flex-basis:100%;justify-content:flex-start}.episode-card .episode-bottom>.listen-actions.simplified-actions>button,.episode-card .episode-bottom>.listen-actions.simplified-actions>.more-options {flex:1;min-width:0}}

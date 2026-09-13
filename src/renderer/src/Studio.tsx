@@ -1,5 +1,6 @@
+import {BrowseTabs} from './BrowseTabs'
 import {MixLibrary} from './MixBuilder'
-import {LibraryHeader,TabIcon} from './LibraryHeader'
+import {LibraryHeader} from './LibraryHeader'
 import {PersonalShelves,OfflinePreparation,PeoplePage} from './PersonalLibrary'
 import { useEffect, useState } from 'react'
 import { api, Modal, ListenActions } from './actions'
@@ -46,19 +47,7 @@ export function StudioPage({
   return (
     <div className="studio-page">
       <LibraryHeader collection="tools" subtitle="Organize, discover and make your collection yours."/>
-      <div className="browse-tabs" role="tablist" aria-label="Library tools">
-        {Object.entries(studioTabs).map(([id, name]) => (
-          <button
-            className="secondary"
-            role="tab"
-            aria-selected={tab === id}
-            key={id}
-            onClick={() => setTab(id as StudioTab)}
-          >
-            <TabIcon id={id}/>{name}
-          </button>
-        ))}
-      </div>
+      <BrowseTabs options={Object.entries(studioTabs) as [StudioTab,string][]} value={tab} onChange={setTab} label="Library tools"/>
       {tab === 'mixes' ? <MixLibrary error={error}/> : tab === 'shelves' ? <PersonalShelves error={error}/> : tab === 'offline' ? <OfflinePreparation error={error}/> : tab === 'people' ? <PeoplePage error={error}/> : tab === 'discover' ? (
         <Discovery error={error} />
       ) : tab === 'series' ? (

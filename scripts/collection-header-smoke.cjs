@@ -22,7 +22,7 @@ module.exports = async (page,artifacts,name) => {
       if(buttons.length)assert.equal(lines.size,1,'Header actions remain in a single row')
       for(const line of lines.values()) {
         assert.ok(Math.abs(line[0].left-bounds.left)<2,'Action row starts at the content edge')
-        assert.ok(Math.abs(line.at(-1).right-bounds.right)<2,'Action row fills the available width')
+        assert.ok(line.at(-1).right<=bounds.right+2,'Compact action row fits within the content')
       }
     }
     assert.ok((await hero.boundingBox()).height<520,'Responsive header remains compact')
