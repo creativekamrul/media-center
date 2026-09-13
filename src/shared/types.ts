@@ -44,6 +44,7 @@ export interface DesktopAPI extends importPersonalAPI, DailyAPI, ExperienceAPI, 
   windowControl(action:'get'|'minimize'|'maximize'|'close'):Promise<WindowState>
   onWindowState(listener:(state:WindowState)=>void):()=>void
   releaseNews(action:'get'|'seen'|'changelog'):Promise<{version:string;unread:boolean}>
+  installedFonts():Promise<string[]>
   importThemeCss(): Promise<string | null>
   previewTheme(preferences: Preferences | null): Promise<void>
   fullscreen(action: 'toggle' | 'exit'): Promise<void>

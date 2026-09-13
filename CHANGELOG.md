@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.3
+
+- Label the color selection section Themes, keeping application styles separate.
+
+- Move lyric titles, source/status, follow controls, search and timing tools into a shared Lyrics tools menu in normal and immersive views.
+- Open Saved queues from a button at the right of the queue action row.
+- Keep compact play targets square, reduce stretched playback/navigation overflow controls, and remove the cover shadow in Now Playing.
+- Use the selected application style and theme for immersive controls and lyric appearance dialogs.
+- Add eight font presets and Windows installed-font selection for interface, headings and lyrics. Keep saved family choices across sessions and player windows.
+- Add lyric word spacing and lower the line-spacing minimum to 0.8, with live previews and persisted settings.
+
 ## 1.3.2
 
 - Enlarge More options controls and give Now Playing artwork, buttons and lyrics more breathing room.

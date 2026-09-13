@@ -1,7 +1,8 @@
 import {useEffect,useRef,useState} from 'react'
 import {X,RotateCcw} from 'lucide-react'
 import {defaultPlayingScreen,type PlayingScreenPreferences} from '../../shared/playing-screen'
-import {fonts,fontIds} from '../../shared/appearance'
+import {FontSelect} from './FontSelect'
+import {lyricAppearanceStyle} from './lyricAppearanceStyle'
 import {api} from './actions'
 import {message} from './ui'
 
@@ -16,12 +17,13 @@ export function LyricsAppearance({value,preview,close}:{value:PlayingScreenPrefe
  return <dialog ref={dialog} className="lyrics-appearance" aria-labelledby="lyrics-appearance-title" onCancel={e=>{e.preventDefault();cancel()}} onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();cancel()}}} onClick={e=>{if(e.target===e.currentTarget)cancel()}}>
   <header><div><span className="eyebrow">MAKE IT YOURS</span><h2 id="lyrics-appearance-title">Lyrics appearance</h2><p>Preview changes live. Save to keep them for your next listen.</p></div><button autoFocus className="icon-button" aria-label="Close lyrics appearance" disabled={busy} onClick={cancel}><X size={20}/></button></header>
   <div className="lyrics-appearance-body">
-   <div className="lyric-style-preview" aria-label="Lyric style preview"><small>STYLE PREVIEW</small><p className="preview-upcoming">A little closer to the music</p><p className="preview-current">Make this <span>moment</span> yours</p><p className="preview-upcoming">One song at a time</p></div>
+   <div className="lyric-style-preview" style={lyricAppearanceStyle(draft)} aria-label="Lyric style preview"><small>STYLE PREVIEW</small><p className="preview-upcoming">A little closer to the music</p><p className="preview-current">Make this <span>moment</span> yours</p><p className="preview-upcoming">One song at a time</p></div>
    <fieldset disabled={busy} className="lyrics-option-grid"><legend className="sr-only">Lyrics customization</legend>
-    <section><h3>Typography</h3><label>Lyric font<select aria-label="Lyric font" value={draft.font} onChange={e=>update({font:e.target.value as PlayingScreenPreferences['font']})}><option value="theme">Use theme font</option>{fontIds.map(id=><option key={id} value={id}>{fonts[id].name}</option>)}</select></label>
+    <section><h3>Typography</h3><label>Lyric font<FontSelect label="Lyric font" value={draft.font} onChange={font=>update({font})} theme/></label>
      <label>Weight<select aria-label="Lyric weight" value={draft.weight} onChange={e=>update({weight:e.target.value as PlayingScreenPreferences['weight']})}><option value="500">Medium</option><option value="650">Semibold</option><option value="800">Bold</option></select></label>
      <label>Lyric size · {draft.fontSize}px<input aria-label="Lyric font size" type="range" min={24} max={64} step={2} value={draft.fontSize} onChange={e=>update({fontSize:Number(e.target.value)})}/></label>
-     <label>Line spacing · {draft.lineHeight.toFixed(1)}<input aria-label="Lyric line spacing" type="range" min={1.2} max={2} step={.1} value={draft.lineHeight} onChange={e=>update({lineHeight:Number(e.target.value)})}/></label>
+     <label>Line spacing · {draft.lineHeight.toFixed(2)}<input aria-label="Lyric line spacing" type="range" min={.8} max={2} step={.05} value={draft.lineHeight} onChange={e=>update({lineHeight:Number(e.target.value)})}/></label>
+     <label>Word spacing · {(draft.wordSpacing??0).toFixed(2)}em<input aria-label="Lyric word spacing" type="range" min={-.15} max={.6} step={.01} value={draft.wordSpacing??0} onChange={e=>update({wordSpacing:Number(e.target.value)})}/></label>
      <label>Alignment<select aria-label="Lyric alignment" value={draft.alignment} onChange={e=>update({alignment:e.target.value as PlayingScreenPreferences['alignment']})}><option value="left">Left</option><option value="center">Centered</option></select></label>
     </section>
     <section><h3>Colors & focus</h3>{([['textColor','Upcoming lyrics'],['sungColor','Sung lyrics'],['wordColor','Current word']] as const).map(([key,label])=><label className="lyric-color-field" key={key}><span>{label}<small>{draft[key].toUpperCase()}</small></span><input aria-label={`${label} color`} type="color" value={draft[key]} onChange={e=>update({[key]:e.target.value})}/></label>)}

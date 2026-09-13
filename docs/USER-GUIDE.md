@@ -64,7 +64,7 @@ The small window icon at the right of the player opens the mini-player. Drag its
 
 Gapless playback prepares the next music/local track in MPV. It works best for compatible adjacent formats; a device format change or slow network can still cause a gap. Crossfade is not included, and no resampling is forced to hide format changes. Gapless preference changes apply when preparing the next playback. Smart rewind backs up five seconds after a break of at least ten seconds and fifteen seconds after five minutes, by default. Change both amounts or disable rewind in Settings. Explicit seeks, chapters, and note positions remain exact.
 
-Open Saved queues on the Play queue page. Give the current queue a name, then save it. Resume starts at its saved index and position; Load queue restores it without autoplay. Replace with current updates an existing saved session. Drag rows to reorder within a displayed queue page, or use the arrow controls to move across page boundaries. Long queues and track collections render 100 rows per page.
+Choose **Saved queues** on the right of the queue action row. Give the current queue a name, then save it. Resume starts at its saved index and position; Load queue restores it without autoplay. Replace with current updates an existing saved session. Drag rows to reorder within a displayed queue page, or use the arrow controls to move across page boundaries. Long queues and track collections render 100 rows per page.
 
 ## Notes, rule playlists and listening habits
 
@@ -78,7 +78,7 @@ Listening stats counts time actually spent playing on this device, excluding pau
 
 ## Manual lyric matches and theme customization
 
-Open Now Playing → Lyrics (or the immersive player), then **Find lyrics**. Search by song, artist, or album, select a result to preview its lyrics and duration, and choose **Use these lyrics**. The selected record and its text are stored in SQLite for that source/song. They do not expire or require another search, even offline. **Clear saved match** restores automatic lookup; **Find lyrics** lets you replace the choice. Manual choices can select a different recording length, so check the preview and timing. Books, podcasts, and radio do not offer lyric search.
+Open Now Playing → Lyrics (or the immersive player), then **Lyrics tools → Find lyrics**. Search by song, artist, or album, select a result to preview its lyrics and duration, and choose **Use these lyrics**. The selected record and its text are stored in SQLite for that source/song. They do not expire or require another search, even offline. **Clear saved match** restores automatic lookup; **Find lyrics** lets you replace the choice. Manual choices can select a different recording length, so check the preview and timing. Books, podcasts, and radio do not offer lyric search.
 
 In Settings, below the theme palettes, **Customize this theme** offers background, panel, accent, main text, and secondary text colors, plus interface, heading, and lyric font families. **Preview in app** applies unsaved changes temporarily. **Save theme** (in 0.7.1) or **Save audio preferences** saves audio and appearance together and updates the mini player. Leaving Settings discards an unsaved preview. Use a color's **Default** or **Reset customization** to return to the selected theme. These are local system fonts, with fallbacks if a family is unavailable.
 
@@ -145,7 +145,7 @@ Home now includes horizontal shelves (scroll or use the arrow buttons), a featur
 
 Use **Rescan library** after adding, changing, moving or deleting files. The first scan may take time. Indexing is limited per source to 50,000 tracks, 5,000 folders and 100,000 directory entries, with visible warnings. Results and playback actions are paginated at 100 tracks. Local favorites, playlists and indexes are device-local; local playlists currently support creation/playback/deletion, not editing, importing, or exporting. Personal backups do not yet include these local-library lists.
 
-In the normal Now playing screen, choose Lyrics, then **Lyrics appearance**. It shares saved typography, colors, word glow, backgrounds and animation settings with the immersive view. Exact word timing depends on the record. Line-only records use approximate word motion in Flow and a line sweep in other styles. Normal lyrics keep surrounding lines sharp and use one scrolling reading area. **Lyric tools → Timing & follow** opens the timing offset; **Follow playback** stays above the lyrics. Changes made in either player apply the next time the other view opens.
+In the normal Now playing screen, choose Lyrics, then **Lyrics appearance**. It shares saved typography, colors, word glow, backgrounds and animation settings with the immersive view. Exact word timing depends on the record. Line-only records use approximate word motion in Flow and a line sweep in other styles. Normal lyrics keep surrounding lines sharp and use one scrolling reading area. **Lyrics tools → Timing & follow** opens the timing offset; **Follow playback**, source/status and the timing indicator are inside **Lyrics tools**. Changes made in either player apply the next time the other view opens.
 
 Home shelves hide their horizontal scrollbars. Use the arrow buttons, horizontal trackpad gestures, or keyboard focus to browse each shelf.
 
@@ -181,7 +181,7 @@ Press **Ctrl+Shift+P** for the command palette. Search for a destination, theme,
 
 In **Settings > Playback**, save a listening profile after saving your desired audio/theme/lyric settings. A profile captures current volume and spoken speed too. Applying a profile preserves your current scrobbling and close-to-tray choices. Use **Remember volume & EQ** for the selected output device. Crossfade is off by default; set a duration and save transitions to enable it for music in shared-output mode. Keep the album preference checked to preserve gapless album neighbors.
 
-In normal Now Playing, open **Lyric tools** for **Import lyrics**, **Read embedded lyrics** (local music), or **Edit lyrics & timing**. The immersive view keeps these commands in **Lyrics tools**. The editor lets you edit LRC directly or stamp one selected line with the current playback time. Saving binds the result to this song locally; future opens use that saved binding. Originals are never modified.
+In normal Now Playing, open **Lyrics tools** for **Import lyrics**, **Read embedded lyrics** (local music), or **Edit lyrics & timing**. The immersive view keeps these commands in **Lyrics tools**. The editor lets you edit LRC directly or stamp one selected line with the current playback time. Saving binds the result to this song locally; future opens use that saved binding. Originals are never modified.
 
 Open a local or server playlist and choose **Design playlist cover**. Generate a grid or stacked collage, or choose your own PNG/JPEG. Customize the title, size and colors, then save the cover. PNG export is separate from saving the local override. **Restore default cover** removes only that override.
 
@@ -271,9 +271,18 @@ Selecting an artwork search result previews it in the top cover box. Choose **Us
 
 Use the collection header’s **More options** for shelf, offline and customization tools. Selecting tracks reveals **Selection options** for those tracks. For a server playlist, open **Customize details & cover → Generate cover**; local playlists use **Customize playlist → Cover art**. Each episode keeps playback in its footer; mark finished/unfinished, reset and customization are in its More menu.
 
-Expand **Saved queues**, enter a name and choose **Save current queue**. Each saved entry offers Resume; More options contains Load queue, Replace with current and Delete. On desktop Now Playing layouts, scroll the queue on the right while artwork and song details remain on the left.
+Choose **Saved queues** beside the queue controls, enter a name and choose **Save current queue** in the dialog. Each saved entry offers Resume; More options contains Load queue, Replace with current and Delete. On desktop Now Playing layouts, scroll the queue on the right while artwork and song details remain on the left.
 
 
 ### Library tools and custom mixes
 
 Use **More tools** for additional Library tools sections. Saved custom mix cards keep **Play** and **Open mix** visible; **More options** contains **Duplicate** and **Delete mix**.
+
+
+### Installed fonts and lyric spacing
+
+The Interface font, Heading font, Lyrics font and Lyric font pickers include 14 presets and an **Installed on this device** group. Windows supplies the installed family names; font files stay on your device. Font choices preview live and save with their existing theme or lyric appearance settings. If a saved font is missing on another device, a system sans-serif fallback is used. Restart Media Center after installing additional fonts to refresh the list.
+
+In **Lyrics appearance → Typography**, **Word spacing** adjusts the gap between words from -0.15em to 0.60em. **Line spacing** ranges from 0.8 to 2.0 and also reduces the space between lyric rows. Very tight settings can overlap tall glyphs; the live preview shows the result. Both normal and immersive lyrics share the saved settings. Cancel restores the previous appearance.
+
+The normal and immersive lyric reading areas omit the separate title/status strip. Open **Lyrics tools** for the track title, lyric source, Follow playback, search, import, edit, refresh and timing controls.

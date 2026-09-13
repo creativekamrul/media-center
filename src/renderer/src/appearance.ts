@@ -1,4 +1,4 @@
-import { accentText, defaultAppearance, fonts } from '../../shared/appearance'
+import { accentText, defaultAppearance, fontCss } from '../../shared/appearance'
 import type { Preferences } from '../../shared/types'
 export function watchAppearance(error:(e:unknown)=>void=()=>{}){
   let live=true,received=false
@@ -20,5 +20,5 @@ export function applyAppearance(p:Preferences){
   if(a.colors.accent){variables['--line']='color-mix(in srgb, var(--text) 12%, transparent)';variables['--control-border']='color-mix(in srgb, var(--text) 22%, transparent)';variables['--control-hover']='color-mix(in srgb, var(--text) 7%, transparent)';variables['--accent-text']=accentText(a.colors.accent)}
   else for(const key of ['--line','--control-border','--control-hover','--accent-text'])variables[key]=undefined
   for(const [key,value] of Object.entries(variables))if(value)root.style.setProperty(key,value);else root.style.removeProperty(key)
-  root.style.setProperty('--body-font',fonts[a.bodyFont].css);root.style.setProperty('--heading-font',fonts[a.headingFont].css);root.style.setProperty('--lyrics-font',fonts[a.lyricsFont].css)
+  root.style.setProperty('--body-font',fontCss(a.bodyFont));root.style.setProperty('--heading-font',fontCss(a.headingFont));root.style.setProperty('--lyrics-font',fontCss(a.lyricsFont))
 }

@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopAPI, PlaybackState, UpdateState } from '../shared/types'
 
 const api: DesktopAPI = {
+ installedFonts:()=>ipcRenderer.invoke('appearance:fonts'),
  mixPreview:i=>ipcRenderer.invoke('mix:preview',i),mixSources:()=>ipcRenderer.invoke('mix:sources'),
  exportDefaultCover:()=>ipcRenderer.invoke('personal:default-cover-export'),
  personalMetadata:r=>ipcRenderer.invoke('personal:metadata',r),

@@ -19,7 +19,7 @@ module.exports=async({page,artifacts})=>{
  await artist.locator('.artist-albums .media-card').first().click();await artist.locator('.song-row').first().waitFor();await artist.getByRole('button',{name:'Back to artist',exact:true}).click()
  await page.setViewportSize({width:1440,height:940});await artist.screenshot({path:resolve(artifacts,'artist-page.png')})
  await artist.getByRole('button',{name:'Back',exact:true}).click();await page.getByRole('button',{name:'Lyrics',exact:true}).click();await page.getByRole('button',{name:'Lyrics appearance',exact:true}).waitFor()
- const tools=page.locator('.standard-lyrics-options');await tools.getByRole('button',{name:'Find lyrics',exact:true}).waitFor()
+ const tools=page.locator('.standard-lyrics-options');await tools.getByRole('button',{name:'Lyrics tools',exact:true}).waitFor()
  assert.ok(await tools.evaluate(el=>{const rects=[...el.querySelectorAll('button')].map(b=>b.getBoundingClientRect());const centers=rects.map(r=>r.y+r.height/2);return Math.max(...centers)-Math.min(...centers)<3}),'Lyric tools and appearance share one row')
  assert.equal(await page.locator('.lyrics-panel .lyrics-tools').count(),0)
  await tools.screenshot({path:resolve(artifacts,'lyrics-toolbar-one-row.png')})

@@ -1,3 +1,4 @@
+import {installedFonts} from './installed-fonts'
 import {registerMixes} from './mixes'
 import {decoratePersonal} from './personal-display'
 import {registerPersonal} from './personal-library'
@@ -205,6 +206,7 @@ else {
       }
       return windowState()
     })
+    handle('appearance:fonts',z.undefined(),()=>installedFonts())
     handle('theme:preview', preferenceSchema.nullable(), prefs => { if(miniWindow && !miniWindow.isDestroyed()) miniWindow.webContents.send('theme:state', prefs ?? store.preferences()) })
     handle('theme:import-css', z.undefined(), async () => {
       const result = await dialog.showOpenDialog(window!, {title:'Import custom theme CSS', filters:[{name:'CSS theme', extensions:['css']}], properties:['openFile']})

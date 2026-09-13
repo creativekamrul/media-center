@@ -22,7 +22,7 @@ module.exports=async function lyricsSmoke({desktop,page,waitPlayback,artifacts})
   await desktop.evaluate(()=>{globalThis.__serverLyricsMode='found'});assert.equal((await page.evaluate(()=>window.mediaCenter.lyrics({}))).source,'navidrome');assert.equal(await desktop.evaluate(()=>globalThis.__lyricsRequests.length),1,'New server lyrics outrank a cached LRCLIB match');
   await desktop.evaluate(()=>{globalThis.__serverLyricsMode='error'});const unavailable=await page.evaluate(()=>window.mediaCenter.lyrics({}));assert.equal(unavailable.source,'lrclib');assert.ok(unavailable.warning.includes('Navidrome'));await desktop.evaluate(()=>{globalThis.__serverLyricsMode='missing'});
   await require('./playing-screen-smoke.cjs')({page,waitPlayback,artifacts})
-  await page.getByRole('button',{name:'Find lyrics',exact:true}).click()
+  await require('./lyric-tool.cjs')(page,'Find lyrics')
   await page.getByLabel('Song, artist, or album',{exact:true}).fill('Manual fixture')
   await page.getByRole('button',{name:'Search lyrics',exact:true}).click()
   await page.getByRole('button',{name:/Manual fixture match Fixture artist/}).click()

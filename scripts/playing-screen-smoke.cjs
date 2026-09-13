@@ -27,7 +27,7 @@ module.exports=async function playingScreenSmoke({page,waitPlayback,artifacts}){
  await page.getByRole('button',{name:'Second test line',exact:true}).waitFor()
  assert.equal(await page.locator('.lyrics-panel').count(),1)
  assert.equal(await page.locator('.immersive-stage .lyrics-tools').count(),0)
- await page.locator('.immersive-header summary').filter({hasText:'Lyrics tools'}).click()
+ await page.locator('.immersive-header').getByRole('button',{name:'Lyrics tools',exact:true}).click()
  await page.screenshot({path:resolve(artifacts,'immersive-lyric-tools.png')})
  await page.locator('.immersive-header').getByRole('button',{name:'Find lyrics',exact:true}).click()
  await page.getByRole('dialog').waitFor()

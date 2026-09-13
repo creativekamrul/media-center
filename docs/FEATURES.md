@@ -312,3 +312,13 @@ Collection and episode controls share compact playback rows with personal/progre
 - Normal lyrics have one reading scrollbar, sharp surrounding lines, a compact follow control and a timing dialog. Import/edit/refresh actions are grouped in Lyric tools. Immersive animation remains separately presented.
 - Installed Windows builds check once on startup and show a dismissible available-update notice. Development and smoke runs skip automatic network checks. Offline failures stay in Settings; downloading and installing require user actions.
 - Verified with typecheck, 206 unit tests, production build, real NSIS updater fixture checks and the full Electron/MPV suite with zero renderer errors. Layout checks cover favorite/header containment in nine styles and classic lyrics at 1024, 1440 and 1920 pixels.
+
+
+### 1.3.3 typography and control consistency
+
+- Both lyric views use the shared, style-aware Lyrics tools popover. The title, source/status, follow control and utility actions are inside it; lyric text remains the main reading surface.
+- Saved queues opens as a dialog from the queue toolbar. Compact playback icons use equal dimensions; Now Playing and navigation overflow controls use their natural content widths. Foreground cover shadows are removed.
+- Immersive controls and the lyric appearance dialog inherit application theme tokens instead of a hard-coded local palette. The view-switch command no longer reports an unrelated pressed state.
+- Fourteen preset font families and a read-only Windows installed-family list are available for interface, heading and lyric fonts. Main uses the Windows [InstalledFontCollection API](https://learn.microsoft.com/en-us/dotnet/api/system.drawing.text.installedfontcollection?view=windowsdesktop-10.0) through a fixed, hidden PowerShell query with bounded output/time. The bridge returns validated names only; it cannot install fonts, read arbitrary font paths or run renderer-supplied commands. The list is cached for the current app session. Other platforms retain preset choices.
+- Word spacing supports -0.15em to 0.60em. Line spacing supports 0.8 to 2.0 with proportional row padding. Older saves default word spacing to zero, while saved font choices and previews work across normal/immersive players and the mini player.
+- Verified with typecheck, 209 unit tests, production build and the full Electron/MPV suite with zero renderer errors. Checks include the real Windows font query, saved typography across players, compact controls, the Saved queues dialog and matching control colors/shapes across nine styles in two themes.

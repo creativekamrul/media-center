@@ -1,4 +1,4 @@
-.immersive-player{position:fixed;inset:0 0 var(--player);z-index:100;isolation:isolate;display:flex;flex-direction:column;overflow:hidden;background:#091019;color:#f4f4f8;--muted:#bec6d5;--text:#f4f4f8;--accent:#d9e5ff;--line:#ffffff24;--control:#263140;--control-hover:#ffffff13;--control-border:#ffffff38;--control-text:#fff}
+.immersive-player{position:fixed;inset:0 0 var(--player);z-index:100;isolation:isolate;display:flex;flex-direction:column;overflow:hidden;background:#091019;color:#f4f4f8;}
 .immersive-atmosphere{position:absolute;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(140deg,#10283a,#17213b 55%,#221a32)}
 .ambient-glow{position:absolute;inset:-15%;background:radial-gradient(ellipse at 12% 20%,#31868965,transparent 55%),radial-gradient(ellipse at 80% 70%,#8465ae55,transparent 50%);filter:blur(35px);opacity:.85}
 .backdrop-sunset .immersive-atmosphere{background:linear-gradient(145deg,#3e2939,#281c30 50%,#101322)}
@@ -44,7 +44,7 @@ button.screen-queue-item{width:100%;display:grid;grid-template-columns:18px minm
 .immersive-lyric-tools .lyrics-tools>.muted { display:block; flex-basis:100%; }
 
 /* A single artwork canvas spans both columns; shade is controlled separately. */
-.expanded-player{position:relative;isolation:isolate;border-radius:20px;padding:4px 20px;color:#f4f4f8;--text:#f4f4f8;--muted:#d8dce5;--panel:#17202b;--control:#202a36;--control-text:#f4f4f8;--control-border:#ffffff38;--control-hover:#344152;--line:#ffffff26;--accent:#e7edf7;--accent-text:#101822}
+.expanded-player{position:relative;isolation:isolate;border-radius:20px;padding:4px 20px;color:#f4f4f8;}
 .expanded-player>.immersive-atmosphere{border-radius:inherit;pointer-events:none}
 .expanded-player :is(.now-content,.standard-lyrics,.queue-content){background:transparent}
 .expanded-player .now-playing-header{position:relative}

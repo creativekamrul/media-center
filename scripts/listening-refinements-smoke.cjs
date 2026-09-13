@@ -44,8 +44,9 @@ module.exports=async({desktop,page,artifacts})=>{
    await page.screenshot({animations:'disabled',path:resolve(artifacts,`refined-classic-lyrics-${width}.png`)})
   }
   await require('./lyric-tool.cjs')(page,'Timing & follow');const timing=page.getByRole('dialog',{name:'Lyric timing',exact:true});await timing.getByLabel('Lyric timing offset',{exact:true}).fill('1.25');await timing.getByRole('button',{name:'Close dialog',exact:true}).click()
-  await page.getByText('Timing +1.25s',{exact:true}).waitFor()
+  await page.getByRole('button',{name:'Lyrics tools',exact:true}).click();await page.getByText('Timing +1.25s',{exact:true}).waitFor();await page.keyboard.press('Escape')
   await page.locator('.standard-lyrics .lyric-line').nth(1).click();await page.waitForFunction(async()=>Math.abs((await window.mediaCenter.playback()).position-6.25)<.2)
+  await require('./typography-controls-smoke.cjs')({desktop,page,artifacts,mini})
   console.log('Listening refinements passed: update notice, all-style favorite/header containment, mix menus, larger controls, single-scroll lyrics, timing and native seek.')
  }finally{
   if(mini&&!mini.isClosed())await mini.getByRole('button',{name:'Close mini player',exact:true}).click()

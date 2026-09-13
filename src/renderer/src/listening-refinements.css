@@ -1,7 +1,7 @@
 /* Comfortable targets, including the overflow trigger in compact action rows. */
 .more-options>.more-options-trigger {min-height:44px;min-width:132px;padding:11px 16px;font-size:13px;gap:10px}
 .listen-actions.compact>.more-options>.more-options-trigger {width:auto;height:44px;min-height:44px;min-width:132px;font-size:13px;padding:10px 14px;gap:8px}
-.listen-actions.compact>button {width:44px;height:44px;min-width:44px;min-height:44px}
+.listen-actions.simplified-actions.compact>button.icon-button {width:40px;height:40px;min-width:40px;max-width:40px;min-height:40px;max-height:40px;flex:0 0 40px;padding:0;aspect-ratio:1}
 .expanded-art .more-options>.more-options-trigger,.episode-card .more-options>.more-options-trigger {min-height:44px;padding:10px 14px;font-size:13px}
 .episode-card .episode-bottom>.listen-actions>button {min-height:44px;padding:10px 14px;font-size:13px}
 
@@ -27,8 +27,8 @@ html[data-theme][data-app-style] .media-grid .music-card>button.media-card {disp
 .queue-page.expanded-player {padding:24px;gap:24px 32px}
 .expanded-player>.now-playing-header {padding-bottom:18px}
 .expanded-player .expanded-art>.listen-actions {margin-top:16px;gap:10px}
-.expanded-art>.listen-actions.simplified-actions>.more-options {flex:1 0 152px;min-width:152px}
-.expanded-player .expanded-art>.listen-actions>button {min-height:44px;font-size:13px;padding:10px 16px}
+.expanded-art>.listen-actions.simplified-actions>.more-options {flex:0 0 auto;min-width:0}
+.expanded-player .expanded-art>.listen-actions.simplified-actions>button {flex:0 0 auto;min-width:0;min-height:40px;font-size:13px;padding:9px 16px}
 .expanded-player .standard-lyrics-options {flex-wrap:wrap;overflow:visible;gap:10px;padding:0 0 16px;margin:0 0 16px}
 .standard-lyrics-options>button {position:static}
 .standard-lyrics-options .secondary {font-size:13px;min-height:44px;padding:10px 14px}
@@ -64,6 +64,27 @@ html[data-theme][data-app-style] .media-grid .music-card>button.media-card {disp
 
 @media(min-width:1001px) and (max-width:1200px){
  .expanded-player .expanded-art>.art{width:min(100%,max(180px,calc(100cqh - 260px)))}
- .expanded-player .expanded-art>.listen-actions>.more-options{flex-basis:100%;min-width:0}
- .expanded-player .expanded-art>.listen-actions>button{flex:1;min-width:0;padding-inline:8px}
+ .expanded-player .expanded-art>.listen-actions>.more-options{flex-basis:auto;min-width:0}
+ .expanded-player .expanded-art>.listen-actions>button{min-width:0;padding-inline:12px}
 }
+
+/* Navigation overflow belongs to the tab row, rather than a large playback pill. */
+.browse-tabs.concise-tabs>.more-options>.more-options-trigger {min-height:36px;min-width:0;height:36px;padding:7px 12px;font-size:12px;gap:6px}
+.expanded-player .expanded-art>.listen-actions {justify-content:flex-start;gap:8px;align-items:center}
+.expanded-player .expanded-art>.listen-actions>.more-options>.more-options-trigger {width:auto;min-width:0;min-height:40px;padding:9px 14px;font-size:13px}
+.expanded-player .expanded-art>.art,.immersive-player .screen-cover {box-shadow:none}
+.queue-toolbar {display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.saved-queues-control {margin-left:auto;flex:0 0 auto}
+.saved-queues-control>button {min-height:40px;gap:8px}
+.saved-queues-body {padding:0;min-width:0}
+.modal:has(.saved-queues-body) {width:min(720px,calc(100vw - 40px))}
+.lyric-tool-status {padding:8px 12px 12px;border-bottom:1px solid var(--line);font-size:12px}
+.lyric-tool-status strong {display:block;overflow-wrap:anywhere}
+.lyric-tool-status p,.lyric-tool-status small {color:var(--muted);line-height:1.6}
+.lyric-tool-status .check-field {margin:10px 0;color:var(--text)}
+.standard-lyrics-options {justify-content:flex-end}
+.standard-lyrics-options>.secondary {margin-left:0}
+:is(.immersive-player,.standard-lyrics) .lyrics-panel button.lyric-line {padding-block:var(--lyric-row-gap,12px);word-spacing:var(--lyric-word-spacing,0em)}
+:is(.immersive-player,.standard-lyrics) .lyrics-plain,.lyric-style-preview p {word-spacing:var(--lyric-word-spacing,0em)}
+.immersive-header .more-options-panel {color:var(--text)}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.card-more>summary,.lyric-playback-options>summary) {border-radius:var(--style-control-radius);border:var(--style-border-width) solid var(--style-edge);background:var(--style-control-fill);color:var(--text);box-shadow:var(--style-control-shadow)}
