@@ -35,6 +35,6 @@ export function UpdatePanel() {
         : <><button className="secondary" disabled={busy || state.status === 'unavailable'} onClick={() => void act('checkForUpdates')}><RefreshCw size={17} className={state.status === 'checking' ? 'spin' : undefined}/>Check for updates</button>
           {['available', 'downloading'].includes(state.status) && <button className="primary" disabled={busy} onClick={() => void act('downloadUpdate')}><Download size={17}/>Download update</button>}</>}
     </div>
-    <p className="update-hint">{state.status === 'ready' ? 'Restarting stops playback and saves your queue and progress. You can keep listening and install later.' : 'Downloads start only when you choose. Updates never install on normal exit.'}</p>
+    <p className="update-hint">{state.status === 'ready' ? 'Restarting stops playback and saves your queue and progress. You can keep listening and install later.' : 'The installed Windows app checks on startup. Downloads start only when you choose; updates never install on normal exit.'}</p>
   </section>
 }

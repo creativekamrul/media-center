@@ -99,7 +99,7 @@ Media Center is actively developed. Full Feishin and Audiobookshelf web feature 
 4. For local audio, choose **Your collection → Local music → Add folder**.
 5. Pick something worth listening to.
 
-Already installed? Use **Settings → App updates → Check for updates**. Downloading and installation happen when you choose. Versions 0.2.1 and earlier need one manual upgrade to get the in-app updater.
+Already installed? The installed Windows app checks for updates on startup and shows a dismissible notice when a newer version is available. You can also use **Settings → App updates → Check for updates**. Downloading and installation happen when you choose. Versions 0.2.1 and earlier need one manual upgrade to get the in-app updater.
 
 **Compatibility baseline:** Windows, Navidrome **0.60.3**, Audiobookshelf **2.35.1**, and MPV **0.38+**. Other server versions and audio hardware need their own validation. [Setup and troubleshooting →](docs/USER-GUIDE.md)
 

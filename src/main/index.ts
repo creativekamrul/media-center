@@ -251,6 +251,8 @@ else {
     mediaAvailable(false)
     windowsMedia=new WindowsMedia(player,async item=>{const t=item.target;if(t.kind==='local-file')return local.cover(t.rootId,t.fileId);const id=item.cover??(t.kind==='music-track'?t.trackId:t.kind==='audiobook'?t.bookId:t.kind==='podcast-episode'?t.showId:'');return id?downloads.cover(t.serverId,id)??await provider(t.serverId).cover(id):null},mediaAvailable)
     createWindow()
+    // One check per launch; development and fixture runs never contact the release service.
+    if(process.env.MEDIA_CENTER_SMOKE!=='1')void updates.start()
     const icon = nativeImage.createFromPath(app.isPackaged ? join(process.resourcesPath, 'icon.ico') : join(__dirname, '../../build/icon.ico'))
     if (!icon.isEmpty()) {
       tray = new Tray(icon); tray.setToolTip('Media Center')

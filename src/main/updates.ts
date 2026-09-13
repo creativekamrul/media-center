@@ -17,6 +17,7 @@ export function updateError(error: unknown): string {
 export class Updates extends EventEmitter {
   state: UpdateState
   private busy = false
+  private started = false
   constructor(private updater: Updater, version: string, enabled: boolean, private prepareInstall: () => Promise<void>) {
     super()
     this.state = { currentVersion: version, status: enabled ? 'idle' : 'unavailable' }
@@ -34,6 +35,11 @@ export class Updates extends EventEmitter {
     updater.on('error', (error: Error) => this.set({ status: 'error', error: updateError(error) }))
   }
   private set(patch: Partial<UpdateState>) { this.state = { ...this.state, ...patch }; this.emit('state', this.state) }
+  async start() {
+    if (this.started) return this.state
+    this.started = true
+    return this.check()
+  }
   async check() {
     if (this.busy || ['unavailable', 'ready', 'installing'].includes(this.state.status)) return this.state
     this.busy = true

@@ -302,3 +302,13 @@ Collection and episode controls share compact playback rows with personal/progre
 - Collection headers keep Play and Play next visible; compact rows use Play and More options. Queue, Listen later, downloads and management remain available in grouped menus. Existing card menus use a flat list.
 - Music, local music and Library tools show four views and More views. Choosing an overflow view promotes it into the visible row and preserves keyboard focus.
 - Verified with typecheck, 204 unit tests, production build and the full Electron/MPV fixture suite (three media types, zero renderer errors). Style checks cover dark/light contrast, cross-window preview/save/reload, menus, dialogs and responsive layouts.
+
+
+### Unreleased listening refinements
+
+- More options triggers use larger targets, including compact listening rows. Now Playing leaves room around its artwork and controls at desktop and narrow widths.
+- Album favorite overlays stay inside the artwork; mini-player header dividers stay below controls across all nine application styles.
+- Library tools uses More tools. Custom mixes share style-aware cards, aligned Play/Open mix actions and a management menu.
+- Normal lyrics have one reading scrollbar, sharp surrounding lines, a compact follow control and a timing dialog. Import/edit/refresh actions are grouped in Lyric tools. Immersive animation remains separately presented.
+- Installed Windows builds check once on startup and show a dismissible available-update notice. Development and smoke runs skip automatic network checks. Offline failures stay in Settings; downloading and installing require user actions.
+- Verified with typecheck, 206 unit tests, production build, real NSIS updater fixture checks and the full Electron/MPV suite with zero renderer errors. Layout checks cover favorite/header containment in nine styles and classic lyrics at 1024, 1440 and 1920 pixels.

@@ -1,3 +1,4 @@
+import {MoreOptions} from './MoreOptions'
 import {useEffect,useRef,useState} from 'react'
 import {Plus,Trash2,Sparkles,RefreshCw,Play,LoaderCircle} from 'lucide-react'
 import {mixDefinitionSchema,sourceKey,textFields,numberFields,type MixDefinition,type MixCondition,type MixPreview,type MixSource} from '../../shared/mixes'
@@ -26,13 +27,13 @@ export function MixPlayButton({mix,error,compact=false}:{mix:MixDefinition;error
       if(result.warnings.length)error(result.warnings.join(' '))
     }catch(e){error(message(e))}finally{pending.current=false;setBusy(false)}
   }
-  return <button className={compact?'icon-button mix-play':'primary mix-play'} aria-label={`Play mix ${mix.name}`} aria-busy={busy} title={busy?'Building mix�':`Play mix ${mix.name}`} disabled={busy} onClick={()=>void play()}>{busy?<LoaderCircle className="spin" size={20}/>:<Play size={20}/>}{!compact&&(busy?'Building mix�':'Play')}</button>
+  return <button className={compact?'icon-button mix-play':'primary mix-play'} aria-label={`Play mix ${mix.name}`} aria-busy={busy} title={busy?'Building mix…':`Play mix ${mix.name}`} disabled={busy} onClick={()=>void play()}>{busy?<LoaderCircle className="spin" size={20}/>:<Play size={20}/>}{!compact&&(busy?'Building mix…':'Play')}</button>
 }
 export function MixLibrary({error}:{error:(s:string)=>void}){
   const personal=usePersonal()
   return <section className="mix-library"><div className="section-title"><div><h2>Your custom mixes</h2><p className="muted">Save a recipe. Preview fresh matches whenever you want to listen.</p></div><button className="primary" onClick={()=>openMixBuilder()}><Plus size={16}/>Create mix</button></div>
     {!personal.mixes.length&&<div className="empty-state"><Sparkles/><h3>Start with a sound you love.</h3><p>Combine artists, genres, years and favorites from your music sources.</p></div>}
-    <div className="custom-mix-grid">{personal.mixes.map(m=><article className="custom-mix-card" key={m.id}><Sparkles size={25}/><span className="eyebrow">{m.sources.length} SOURCES · UP TO {m.limit} TRACKS</span><h3>{m.name}</h3><p>{m.description||`${m.groups.length} rule groups · ${m.sort==='random'?'Shuffled':`Sorted by ${m.sort}`}`}</p><div className="control-actions"><MixPlayButton mix={m} error={error}/><button className="secondary" onClick={()=>openMixBuilder(m)}>Open mix</button><button className="text-button" onClick={()=>openMixBuilder({...m,id:crypto.randomUUID(),name:m.name+' copy'})}>Duplicate</button><button className="icon-button" aria-label={`Delete mix ${m.name}`} onClick={()=>void api.personalChange({action:'mix-delete',id:m.id}).catch(e=>error(message(e)))}><Trash2 size={16}/></button></div></article>)}</div>
+    <div className="custom-mix-grid">{personal.mixes.map(m=><article className="custom-mix-card" key={m.id}><Sparkles size={25}/><span className="eyebrow">{m.sources.length} SOURCES · UP TO {m.limit} TRACKS</span><h3>{m.name}</h3><p>{m.description||`${m.groups.length} rule groups · ${m.sort==='random'?'Shuffled':`Sorted by ${m.sort}`}`}</p><div className="mix-card-actions"><MixPlayButton mix={m} error={error}/><button className="secondary" onClick={()=>openMixBuilder(m)}>Open mix</button><MoreOptions><button className="text-button" onClick={()=>openMixBuilder({...m,id:crypto.randomUUID(),name:m.name+' copy'})}>Duplicate</button><button className="secondary danger" aria-label={`Delete mix ${m.name}`} onClick={()=>void api.personalChange({action:'mix-delete',id:m.id}).catch(e=>error(message(e)))}><Trash2 size={16}/>Delete mix</button></MoreOptions></div></article>)}</div>
   </section>
 }
 function MixEditor({value,close}:{value:MixDefinition;close:()=>void}){

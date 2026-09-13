@@ -46,7 +46,7 @@ Stable releases must also include `latest.yml`; prereleases use their channel me
 
 ## In-app updates
 
-The publish configuration points to the public `creativekamrul/media-center` GitHub repository. Electron-builder embeds `app-update.yml`; electron-updater uses it without exposing URLs or credentials to the renderer. Download and installation are separate user actions. Stable releases only, no downgrades, and no installation on normal quit. SHA-512 protects download integrity; unsigned releases do not have publisher signature authentication.
+The publish configuration points to the public `creativekamrul/media-center` GitHub repository. Electron-builder embeds `app-update.yml`; electron-updater uses it without exposing URLs or credentials to the renderer. Installed Windows builds check once on startup; development and smoke-test runs do not contact the release service automatically. An available update produces a dismissible in-app notice. Download and installation are separate user actions. Stable releases only, no downgrades, and no installation on normal quit. SHA-512 protects download integrity; unsigned releases do not have publisher signature authentication.
 
 Release 0.2.2 is the first updater-enabled version. Users of older builds must install it manually once. Forks must change `build.publish` and the displayed source before distributing their own updates. Never embed a GitHub token in the app.
 

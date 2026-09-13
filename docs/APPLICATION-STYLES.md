@@ -19,7 +19,7 @@ Styles control component shape, borders, depth, navigation selection and surface
 
 Selected controls set their foreground and background together. Color transitions are excluded from alternative-style buttons so changing selection cannot briefly cross-fade into an unreadable pair. The compact picker uses 80-pixel previews.
 
-Common collection actions show Play, Play next and contextual primary actions, with Queue, Listen later, downloads and management in More options. Compact rows show Play and More. Existing card menus keep a flat action list. Music, local music and Library tools show four views plus More views; selecting an overflow view brings it into the visible row.
+Common collection actions show Play, Play next and contextual primary actions, with Queue, Listen later, downloads and management in More options. Compact rows show Play and More. Existing card menus keep a flat action list. Music and local music show four views plus More views; Library tools labels its overflow More tools. Selecting an overflow view brings it into the visible row. Custom mix cards inherit each style’s panel treatment, with aligned primary actions and management under More options. Album favorites stay inset inside their artwork; mini-player header controls leave space above the divider.
 
 These are original CSS adaptations, not imported component libraries or exact reproductions. No external fonts, scripts or network assets are needed to change styles. No new dependency was added.
 

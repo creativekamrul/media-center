@@ -13,8 +13,8 @@ function fixture(enabled = true) {
   const updates = new Updates(backend as unknown as ConstructorParameters<typeof Updates>[0], '0.2.2', enabled, prepare)
   return { backend, updates, prepare }
 }
-describe('manual app updates', () => {
-  it('does not check, download or install automatically, and excludes prereleases and downgrades', async () => {
+describe('app updates', () => {
+  it('waits for startup or a manual check, and never downloads or installs implicitly', async () => {
     const { backend, updates } = fixture()
     expect(backend.autoDownload).toBe(false); expect(backend.autoInstallOnAppQuit).toBe(false)
     expect(backend.allowPrerelease).toBe(false); expect(backend.allowDowngrade).toBe(false); expect(backend.disableWebInstaller).toBe(true)
@@ -24,9 +24,25 @@ describe('manual app updates', () => {
     await updates.check()
     expect(updates.state.status).toBe('available'); expect(backend.downloadUpdate).not.toHaveBeenCalled()
   })
+  it('checks once on startup and exposes an available version without downloading', async () => {
+    const {backend,updates}=fixture()
+    const states: string[]=[];updates.on('state',s=>states.push(s.status))
+    await Promise.all([updates.start(),updates.start()]);await updates.start()
+    expect(backend.checkForUpdates).toHaveBeenCalledTimes(1)
+    expect(states).toEqual(['checking','available'])
+    expect(updates.state.version).toBe('0.2.3')
+    expect(backend.downloadUpdate).not.toHaveBeenCalled();expect(backend.quitAndInstall).not.toHaveBeenCalled()
+  })
+  it('keeps offline startup non-fatal and allows a later explicit retry', async () => {
+    const {backend,updates}=fixture()
+    backend.checkForUpdates.mockRejectedValueOnce(new Error('offline'))
+    await updates.start();await updates.start()
+    expect(updates.state.status).toBe('error');expect(backend.checkForUpdates).toHaveBeenCalledTimes(1)
+    await updates.check();expect(updates.state.status).toBe('available')
+  })
   it('disables updates in development', async () => {
     const { backend, updates } = fixture(false)
-    await updates.check(); expect(updates.state.status).toBe('unavailable'); expect(backend.checkForUpdates).not.toHaveBeenCalled()
+    await updates.start();await updates.check(); expect(updates.state.status).toBe('unavailable'); expect(backend.checkForUpdates).not.toHaveBeenCalled()
   })
   it('flushes playback before explicit installation and never exposes installer paths', async () => {
     const { backend, updates, prepare } = fixture()

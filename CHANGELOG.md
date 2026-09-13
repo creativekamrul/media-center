@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Enlarge More options controls and give Now Playing artwork, buttons and lyrics more breathing room.
+- Keep album favorite buttons inside their artwork and mini-player header dividers below the controls across application styles.
+- Refine custom mix cards with aligned Play/Open mix actions and management under More options; label the Library tools overflow More tools.
+- Simplify normal lyrics to one scrolling reading area, keep surrounding lines sharp, and move timing/import/edit commands into Lyric tools.
+- Check for updates once when the installed Windows app starts and show a dismissible notice when a newer version is available. Download and installation remain user actions.
+
 ## 1.3.1
 
 - Fix selected and hovered button contrast across alternative application styles, including Settings, navigation and players.

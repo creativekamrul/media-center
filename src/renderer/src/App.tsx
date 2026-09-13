@@ -29,6 +29,7 @@ import { AudioPreferences, LaterPage,  QueueArt, QueuePage } from './ListeningSp
 import { APP_VERSION } from '../../shared/version'
 import { HomePage, InboxPageView, DownloadsPage, NotesPage, StatsPage, RulesPage, DailySettingsPanel } from './DailySpace'
 import { DiscordPanel } from './DiscordPanel'
+import { UpdateNotice } from './UpdateNotice'
 import { UpdatePanel } from './UpdatePanel'
 import { sampleDetail, sampleItems, sampleLibraries } from './demo'
 
@@ -130,6 +131,7 @@ export function App() {
       <header className="topbar"><div className="topbar-location"><button className="icon-button sidebar-toggle" type="button" aria-label={experience.navigation.sidebarCollapsed?'Expand sidebar':'Collapse sidebar'} title={experience.navigation.sidebarCollapsed?'Expand sidebar':'Collapse sidebar'} aria-expanded={!experience.navigation.sidebarCollapsed} aria-controls="app-sidebar" disabled={navigationSaving} onClick={()=>void toggleSidebar()}>{experience.navigation.sidebarCollapsed?<PanelLeftOpen size={20}/>:<PanelLeftClose size={20}/>}</button><div className="breadcrumb">Your collection <span>/</span> <strong>{view === 'settings' ? 'Settings' : view === 'queue' ? 'Play queue' : view === 'local' ? collections.local.name : view === 'later' ? 'Listen later' : view === 'history' ? 'Listening history' : view === 'now' ? 'Now playing' : view === 'library' ? collections[section].name : ({artist:'Artist',playlists:'Playlists',tools:collections.tools.name,home:'Home',inbox:'Podcast inbox',downloads:'Downloads',notes:'Listening notes',stats:'Listening stats',rules:'Rule playlists'}[view])}</strong></div></div><div className="topbar-right"><PrivateButton player={player} error={setError}/><IconButton label="Command palette" onClick={()=>setPalette(true)}><SlidersHorizontal size={18}/></IconButton><IconButton label="Search all collections" onClick={()=>setGlobalSearch(true)}><Search size={18}/></IconButton><span className="version-tag">DESKTOP · {APP_VERSION}</span><IconButton label="Refresh libraries" onClick={() => { setError(''); setRevision(n => n + 1) }}><RefreshCw size={16}/></IconButton></div></header>
       {sample && <div className="sample-banner"><span><Disc3 size={14}/> You’re exploring a sample collection. Connect a server to play your own audio.</span><button onClick={() => { setSample(false); setView('settings'); setDetail(null) }}>Connect a server <ArrowRight size={14}/></button></div>}
       {error && <div role="alert" className="error-banner"><span>{error}</span><IconButton label="Dismiss error" onClick={() => setError('')}><X size={16}/></IconButton></div>}
+      <UpdateNotice open={()=>{setView('settings');setDetail(null);requestAnimationFrame(()=>document.getElementById('settings-updates')?.scrollIntoView({block:'start'}))}}/>
       <main>
         {view === 'settings' ? <SettingsPage settings={settings} refresh={refreshSettings} onError={setError} onConnected={() => { setSample(false); setDetail(null) }}/>
           : view === 'queue' || view === 'now' ? <QueuePage lyricRequest={lyricRequest} player={player} error={setError} expanded={view === 'now'} close={() => setView('library')}/>

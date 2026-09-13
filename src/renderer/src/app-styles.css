@@ -64,7 +64,7 @@ html[data-theme][data-app-style]:not([data-app-style=default]) :is(button.primar
 html[data-theme][data-app-style]:not([data-app-style=default]) :is(.nav-item,.settings-rail button,.browse-tabs button,.now-tabs button,.daily-tabs button,.surface-style-toggle button) {
   border-radius:var(--style-control-radius);
 }
-html[data-theme][data-app-style]:not([data-app-style=default]) :is(.daily-card,.episode-card,.detail-hero,.plan-card,.engine-card,.home-feature,.home-stats,.home-mix,.folder-card,.settings-panel,.library-action-panel,.episode-filter-panel,.saved-queues,.empty-state,.modal,dialog,[role=dialog],.cover-editor-current,.appearance-editor,.app-style-picker,.theme-picker,.mix-builder) {
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.custom-mix-card,.music-card,.daily-card,.episode-card,.detail-hero,.plan-card,.engine-card,.home-feature,.home-stats,.home-mix,.folder-card,.settings-panel,.library-action-panel,.episode-filter-panel,.saved-queues,.empty-state,.modal,dialog,[role=dialog],.cover-editor-current,.appearance-editor,.app-style-picker,.theme-picker,.mix-builder) {
   border-radius:var(--style-panel-radius); border:var(--style-border-width) solid var(--style-edge); box-shadow:var(--style-shadow);
 }
 html[data-theme][data-app-style]:not([data-app-style=default]) :is(.art,.screen-cover,.screen-cover>.art,.artwork-preview-box,.mini-body>.art) {border-radius:var(--style-art-radius)}
@@ -145,7 +145,7 @@ html[data-theme][data-app-style]:not([data-app-style=default]) button.icon-butto
 html[data-theme][data-app-style]:not([data-app-style=default]) button.icon-button:hover:not(:disabled) {background:var(--control-hover);color:var(--text)}
 html[data-theme][data-app-style=soft]:not([data-app-style=default]) :is(.browse-tabs,.now-tabs,.daily-tabs) {background:var(--panel);border-radius:22px;padding:6px;gap:4px}
 html[data-theme][data-app-style=precision]:not([data-app-style=default]) :is(.browse-tabs,.now-tabs) {gap:2px;border-bottom:1px solid var(--style-edge);padding-bottom:6px}
-html[data-theme][data-app-style=editorial]:not([data-app-style=default]) :is(.home-feature,.home-mix,.settings-panel,.detail-hero,.episode-card,.media-grid .media-card) {border-width:0 0 1px;border-radius:0;box-shadow:none;background-image:none}
+html[data-theme][data-app-style=editorial]:not([data-app-style=default]) :is(.custom-mix-card,.home-feature,.home-mix,.settings-panel,.detail-hero,.episode-card,.media-grid .media-card) {border-width:0 0 1px;border-radius:0;box-shadow:none;background-image:none}
 html[data-theme][data-app-style=editorial]:not([data-app-style=default]) :is(button.secondary,.more-options-trigger) {border-width:0 0 1px;box-shadow:none;border-radius:0;padding-inline:12px}
 html[data-theme][data-app-style=editorial]:not([data-app-style=default]) :is(.section-title,.library-heading) {padding-bottom:12px;border-bottom:1px solid var(--style-edge)}
 html[data-theme][data-app-style=editorial]:not([data-app-style=default]) :is(.browse-tabs,.now-tabs) {gap:16px;border-bottom:1px solid var(--style-edge)}

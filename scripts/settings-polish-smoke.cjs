@@ -85,7 +85,7 @@ module.exports=async({desktop,page,artifacts})=>{
   await page.getByRole('button',{name:'Remove custom CSS',exact:true}).click()
   await mini.waitForFunction(()=>!document.getElementById('custom-theme-css'))
   await page.getByRole('button',{name:'Save theme',exact:true}).click()
-  await mini.getByRole('button',{name:'Close mini player',exact:true}).click()
+  await mini.getByRole('button',{name:'Close mini player',exact:true}).click().catch(error=>{if(!mini.isClosed())throw error})
  }finally{await desktop.evaluate(({dialog})=>{dialog.showOpenDialog=globalThis.__themeDialog;delete globalThis.__themeDialog})}
  await page.evaluate(p=>window.mediaCenter.savePreferences(p),original)
  await page.emulateMedia({reducedMotion:'no-preference'})

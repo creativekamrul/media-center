@@ -102,7 +102,7 @@ Enter your own Last.fm API key privately in Settings for album artwork. It is en
 
 ## Troubleshooting
 
-For updates, open **Settings → App updates**. Check for updates, download the offered stable version, and choose Restart and install when ready. Downloading can run while you listen. Installation stops playback and saves the queue and listening session. Normal exit never installs an update. Connections, local sources and listening plans stay in the existing app data directory. MPV is separate and is not updated.
+The installed Windows app checks for updates once on startup. A dismissible notice appears when a newer stable version is available; **View update** opens **Settings → App updates**. You can also check there manually, download the offered version, and choose Restart and install when ready. Downloading can run while you listen. Installation stops playback and saves the queue and listening session. Normal exit never installs an update. Connections, local sources and listening plans stay in the existing app data directory. MPV is separate and is not updated.
 
 Versions 0.2.1 and earlier need one manual installation of 0.2.2 or newer. An integrity or network error prevents installation; check again to retry. If a release has just been published, allow time for its assets to become available. Development builds disable updates.
 
@@ -145,7 +145,7 @@ Home now includes horizontal shelves (scroll or use the arrow buttons), a featur
 
 Use **Rescan library** after adding, changing, moving or deleting files. The first scan may take time. Indexing is limited per source to 50,000 tracks, 5,000 folders and 100,000 directory entries, with visible warnings. Results and playback actions are paginated at 100 tracks. Local favorites, playlists and indexes are device-local; local playlists currently support creation/playback/deletion, not editing, importing, or exporting. Personal backups do not yet include these local-library lists.
 
-In the normal Now playing screen, choose Lyrics, then **Lyrics appearance**. It shares saved typography, colors, word glow, backgrounds and animation settings with the immersive view. Exact word timing depends on the record. Line-only records use approximate word motion in Flow and a line sweep in other styles. Changes made in either player apply the next time the other view opens.
+In the normal Now playing screen, choose Lyrics, then **Lyrics appearance**. It shares saved typography, colors, word glow, backgrounds and animation settings with the immersive view. Exact word timing depends on the record. Line-only records use approximate word motion in Flow and a line sweep in other styles. Normal lyrics keep surrounding lines sharp and use one scrolling reading area. **Lyric tools → Timing & follow** opens the timing offset; **Follow playback** stays above the lyrics. Changes made in either player apply the next time the other view opens.
 
 Home shelves hide their horizontal scrollbars. Use the arrow buttons, horizontal trackpad gestures, or keyboard focus to browse each shelf.
 
@@ -181,7 +181,7 @@ Press **Ctrl+Shift+P** for the command palette. Search for a destination, theme,
 
 In **Settings > Playback**, save a listening profile after saving your desired audio/theme/lyric settings. A profile captures current volume and spoken speed too. Applying a profile preserves your current scrobbling and close-to-tray choices. Use **Remember volume & EQ** for the selected output device. Crossfade is off by default; set a duration and save transitions to enable it for music in shared-output mode. Keep the album preference checked to preserve gapless album neighbors.
 
-In either lyrics view, choose **Import lyrics**, **Read embedded lyrics** (local music), or **Edit lyrics & timing**. The editor lets you edit LRC directly or stamp one selected line with the current playback time. Saving binds the result to this song locally; future opens use that saved binding. Originals are never modified.
+In normal Now Playing, open **Lyric tools** for **Import lyrics**, **Read embedded lyrics** (local music), or **Edit lyrics & timing**. The immersive view keeps these commands in **Lyrics tools**. The editor lets you edit LRC directly or stamp one selected line with the current playback time. Saving binds the result to this song locally; future opens use that saved binding. Originals are never modified.
 
 Open a local or server playlist and choose **Design playlist cover**. Generate a grid or stacked collage, or choose your own PNG/JPEG. Customize the title, size and colors, then save the cover. PNG export is separate from saving the local override. **Restore default cover** removes only that override.
 
@@ -272,3 +272,8 @@ Selecting an artwork search result previews it in the top cover box. Choose **Us
 Use the collection header’s **More options** for shelf, offline and customization tools. Selecting tracks reveals **Selection options** for those tracks. For a server playlist, open **Customize details & cover → Generate cover**; local playlists use **Customize playlist → Cover art**. Each episode keeps playback in its footer; mark finished/unfinished, reset and customization are in its More menu.
 
 Expand **Saved queues**, enter a name and choose **Save current queue**. Each saved entry offers Resume; More options contains Load queue, Replace with current and Delete. On desktop Now Playing layouts, scroll the queue on the right while artwork and song details remain on the left.
+
+
+### Library tools and custom mixes
+
+Use **More tools** for additional Library tools sections. Saved custom mix cards keep **Play** and **Open mix** visible; **More options** contains **Duplicate** and **Delete mix**.
