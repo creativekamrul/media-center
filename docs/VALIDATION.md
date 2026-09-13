@@ -363,3 +363,33 @@ This installer supersedes the earlier 1.2.0 local build recorded above.
 - Navidrome 0.60.3 source verification: `core/lyrics/lyrics.go`, `core/lyrics/sources.go`, `model/lyrics.go`, and `conf/configuration.go`. Embedded versus sidecar priority is server-configured; the documented embedded-first setting is not applied remotely by Media Center.
 - Rebuilt the local installer with `npm run package:win` (`--publish never`): `K:\media-center\release\Media-Center-1.2.3-win-x64.exe`, 154,440,158 bytes; SHA-256 `A9C673B951E3E32DEAB77C72E256E77168B00E1D00091F687397E80C0F8AF52F`.
 - The full packaged Electron suite also passed with muted native MPV, both fixture servers and zero renderer errors. This installer remains a local preview; no GitHub publication was requested.
+
+
+### Unreleased background, layouts, Discord and installer follow-up — 2026-09-13
+
+- Typecheck, all 203 unit tests and the production build passed. No version bump or release build/publication was made.
+- New Electron checks passed at 1440×940 and 1024×720: one artwork canvas across classic Queue/Lyrics, transparent lyric content, Studio/Minimal/Gallery layouts, queue visibility and playback, saved layout and preview cancellation.
+- Broad source desktop coverage passed through playback, native MPV, book/podcast progress, settings, lyrics, local libraries, mixes, artwork and menus. Two regressions were caught: an obsolete Discord setup-text assertion, and background padding that reduced the large classic cover. Updated the assertion for optional IDs and corrected spacing. The targeted combined continuation of collection consistency, immersive layouts and installer exit checks passed after those corrections, including restored cover dimensions and independent queue scrolling.
+- The installer exit request closes a tray-hidden Electron app gracefully and does not open a window when no app is running. PowerShell fixture checks cover a fresh folder, an unwritable/non-directory destination, exact executable matching, a sibling directory with the same prefix, and bounded closure without touching the sibling process.
+- Discord RPC transport tests cover the shared ID and custom override. The unauthenticated public Discord application endpoint returned ID `1546622716554121296`, name `Media Center`; no live listening activity was published during verification.
+- Reviewed `artifacts/artwork-background-lyrics.png`, `immersive-gallery-1440.png`, and `immersive-minimal-1024.png`. The friend's exact first-install failure remains unconfirmed on their machine: the stock installer reuses the same message for process and copy errors. These changes harden process detection and report directory-access failures earlier.
+- Compiled the NSIS hook into an isolated test harness and ran it against a 64-bit fixture process. The 32-bit installer uses native PowerShell via Sysnative and excludes its own PID. Harness and process isolation checks passed; the fixture wrote only under ignored `artifacts/`.
+
+
+### Unreleased application styles — 2026-09-13
+
+- Typecheck, all 204 unit tests and the production build passed. Style validation covers legacy settings migrating to Original, invalid values, and storage of all six styles without altering theme colors.
+- Focused real Electron checks passed for Original plus Soft, Precision, Outline, Bold and Retro. Removing the style attribute leaves Original's sampled navigation, main control, hero and sidebar geometry/paint identical. Each alternative has distinct control construction.
+- Verified live previews and cancellation in both windows, explicit save, reload persistence, selected navigation markers, native MPV play/pause from the mini player, top-layer menu placement and opacity, dialog and field shapes, and layouts at 1024/1440 pixels.
+- Reviewed the style picker, Home, library and mini-player screenshots under `artifacts/app-style-*`. All five alternatives were exercised with custom light colors and translucency disabled. Fixed an artwork favorite-overlay contrast issue for those palettes. The default artwork overlay remains unchanged.
+- The final full Electron suite passed with both fixture servers, all three server media types, native MPV, progress, settings, lyrics, local files, mixes, artwork, context menus, immersive layouts, all six application styles and graceful installer exit; zero renderer errors. The immersive fixture explicitly refreshes lyrics after native playback loads to isolate it from earlier tests caching missing lyrics for shared server metadata.
+- No version bump, installer release, tag or GitHub publication was made. Design references and usage are in `docs/APPLICATION-STYLES.md`.
+
+
+### 1.3.0 release verification — 2026-09-13
+
+- User explicitly requested GitHub publication after reviewing the styles work. Package, lockfile, changelog, website and in-app release highlights now identify 1.3.0.
+- Typecheck, 204 unit tests, production build and updater integration passed. Updater checks exercise manual downloads and SHA-512 rejection without installing an update. Installer process fixtures passed for fresh folders, write failures, exact paths, sibling isolation and bounded closure.
+- Built the local Windows installer using `npm run package:win` (`--publish never`): `K:/media-center/release/Media-Center-1.3.0-win-x64.exe`, 154,444,044 bytes. SHA-256: `2ea3d5a3f78779d40740073004098432e8d72fb0adb9363bcd4fa03024db3d5b`.
+- The packaged style comparison now samples Original with and without its attribute within one frame, preventing hover/selection transitions between measurements from causing false failures.
+- Full packaged Electron suite passed for 1.3.0 with both fixture servers, all three server media types, muted native MPV, all six application styles, immersive layouts and installer exit; zero renderer errors. Installer and packaged executable version resources match 1.3.0.

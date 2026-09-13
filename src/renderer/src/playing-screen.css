@@ -42,3 +42,38 @@ button.screen-queue-item{width:100%;display:grid;grid-template-columns:18px minm
 .immersive-lyric-tools .lyrics-tools { width:100%; }
 .immersive-lyric-tools .lyrics-tools>.secondary { flex:1 1 150px; }
 .immersive-lyric-tools .lyrics-tools>.muted { display:block; flex-basis:100%; }
+
+/* A single artwork canvas spans both columns; shade is controlled separately. */
+.expanded-player{position:relative;isolation:isolate;border-radius:20px;padding:4px 20px;color:#f4f4f8;--text:#f4f4f8;--muted:#d8dce5;--panel:#17202b;--control:#202a36;--control-text:#f4f4f8;--control-border:#ffffff38;--control-hover:#344152;--line:#ffffff26;--accent:#e7edf7;--accent-text:#101822}
+.expanded-player>.immersive-atmosphere{border-radius:inherit;pointer-events:none}
+.expanded-player :is(.now-content,.standard-lyrics,.queue-content){background:transparent}
+.expanded-player .now-playing-header{position:relative}
+.expanded-player .queue-row{background:#080d1838}.expanded-player .queue-row.current{background:#ffffff18}
+:is(.immersive-player,.expanded-player).backdrop-artwork .immersive-atmosphere{background:#17212c}
+:is(.immersive-player,.expanded-player).backdrop-artwork .immersive-atmosphere>.art{inset:-12%;width:124%;height:124%;max-width:none;max-height:none;border:0;border-radius:0;filter:blur(48px) saturate(1.45) brightness(.95);opacity:1;pointer-events:none}
+:is(.immersive-player,.expanded-player).backdrop-artwork .immersive-atmosphere>.art img{display:block;width:100%;height:100%;object-fit:cover}
+:is(.immersive-player,.expanded-player).backdrop-artwork .immersive-atmosphere::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(120deg,#05091518,#05091538 65%,#05091555);pointer-events:none}
+.immersive-atmosphere::after{z-index:2}
+.backdrop-artwork :is(.immersive-stage,.immersive-side){background:#05091120;backdrop-filter:none}
+.screen-queue[hidden]{display:none}
+button.screen-queue-item{grid-template-columns:18px 30px minmax(0,1fr) auto}
+.screen-queue-item>.track-artwork{width:30px;height:30px}.screen-queue-item>.track-artwork>.art{width:100%;height:100%}
+/* Minimal: cover and words only, with a queue available on demand. */
+.immersive-player:is(.layout-minimal,.layout-gallery) .immersive-layout{grid-template-columns:minmax(240px,.8fr) minmax(0,1.2fr);gap:clamp(24px,5vw,80px);padding:10px clamp(24px,5vw,80px) 32px}
+.immersive-player:is(.layout-minimal,.layout-gallery) .immersive-stage{grid-column:2;grid-row:1;border:0;background:transparent;backdrop-filter:none}
+.immersive-player:is(.layout-minimal,.layout-gallery) .immersive-side{grid-column:1;grid-row:1;border:0;background:transparent;backdrop-filter:none;justify-content:center}
+.immersive-player.layout-minimal .screen-cover{width:clamp(140px,27vh,260px);box-shadow:0 18px 65px #0004}
+.immersive-player.layout-minimal .screen-track{padding:12px}
+.immersive-player.layout-minimal .screen-track h2{font-size:22px}
+.immersive-player:is(.layout-minimal,.layout-gallery) .screen-queue{background:#07101c88;border:1px solid #ffffff26;border-radius:18px;margin:10px 0 0;padding:16px;min-height:140px}
+.immersive-player:is(.layout-minimal,.layout-gallery).queue-is-open .screen-cover{width:clamp(100px,17vh,170px)}
+/* Gallery: large album artwork with a clean, editorial listening stage. */
+.immersive-player.layout-gallery .screen-cover{width:min(100%,43vh);max-width:480px;border-radius:20px;box-shadow:0 24px 70px #0005}
+.immersive-player.layout-gallery .screen-track{padding:12px 0}
+.immersive-player.layout-gallery .screen-track h2{font-size:clamp(20px,2vw,30px);white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2}
+.immersive-player.layout-gallery .screen-track>p{font-size:14px;margin:12px 0}
+.immersive-player:is(.layout-minimal,.layout-gallery) .immersive-stage .lyrics-panel{padding:10px 0}
+@media(max-width:1100px){.immersive-player:is(.layout-minimal,.layout-gallery) .immersive-layout{grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr);padding:0 22px 20px;gap:24px}.expanded-player{padding:4px 14px}.immersive-player.layout-gallery .screen-cover{width:min(100%,34vh)}}
+@media(max-height:740px){.immersive-player:is(.layout-minimal,.layout-gallery) .screen-track{padding:8px}.immersive-player.layout-gallery .screen-cover{width:min(100%,30vh)}.immersive-player:is(.layout-minimal,.layout-gallery).queue-is-open .screen-cover{width:90px}.immersive-player:is(.layout-minimal,.layout-gallery).queue-is-open .screen-track>p{margin:6px 0}.immersive-player:is(.layout-minimal,.layout-gallery) .screen-transport{margin-top:10px}}
+
+.queue-page.expanded-player .standard-lyrics .lyrics-scroll{background:transparent;box-shadow:none;border:0;border-radius:0}

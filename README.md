@@ -45,9 +45,9 @@ Personal shelves, metadata customization, offline plans, per-show podcast prefer
 
 **1.2.1 refinements:** consistent collection and episode actions, opaque More menus, playlist cover generation inside customization, redesigned Saved queues and independent queue scrolling in Now Playing.
 
-**1.2.3 update:** Play custom mixes directly, explore dedicated artist pages, and enjoy larger artwork with aligned track columns. The artwork editor preview is fixed, and automatic lyrics check embedded local tags or Navidrome before LRCLIB.
+**1.3.0 update:** Choose Soft, Precision, Outline, Bold or Retro application styles, with the current design preserved as Original. Try Minimal and Gallery immersive layouts, full-view blurred artwork, a shared Discord application and improved Windows installer checks.
 
-[Read the 1.2.3 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.2.3) · [Full changelog](CHANGELOG.md)
+[Read the 1.3.0 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.3.0) · [Full changelog](CHANGELOG.md)
 
 ## A closer look
 

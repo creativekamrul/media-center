@@ -29,7 +29,7 @@ describe('Discord presence privacy and artwork',()=>{
   })
   it('validates configuration without accepting a bot token',()=>{
     const {hasLastfmKey:_,...base}=discordDefaults
-    expect(discordSchema.safeParse(base).success).toBe(true);expect(discordSchema.safeParse({...base,enabled:true}).success).toBe(false);expect(discordSchema.safeParse({...base,applicationId:'abc'}).success).toBe(false);expect(discordSchema.safeParse({...base,botToken:'no'}).success).toBe(false)
+    expect(discordSchema.safeParse(base).success).toBe(true);expect(discordSchema.safeParse({...base,enabled:true}).success).toBe(true);expect(discordSchema.safeParse({...base,applicationId:'abc'}).success).toBe(false);expect(discordSchema.safeParse({...base,botToken:'no'}).success).toBe(false)
   })
   it('automatically supplies a public default for every shared media type without an API key or uploaded asset',()=>{
     for(const legacy of [undefined,false,true])expect(presence(playing,{...settings,defaultCoverAsset:legacy})?.assets?.large_image).toBe(defaultDiscordArtwork)

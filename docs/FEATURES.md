@@ -38,7 +38,7 @@ The target is a full desktop replacement for Feishin and Audiobookshelf's web cl
 
 | Audio | ReplayGain off/track/album; clipping prevention; ten-band EQ; per-book/episode speed; timed and chapter-end sleep |
 
-| Appearance | 13 palettes including translucent Glass and Black Glass; visual theme picker with saved Solid / Gradient surfaces and optional translucent panels; consistent palette-aware cards, fields and dialogs; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; adaptive layouts with 100/125/150/200% interface-scaling checks |
+| Appearance | Six independent application styles (Original default, Soft, Precision, Outline, Bold, Retro), live previews and saved cross-window choices; 13 palettes including translucent Glass and Black Glass; visual theme picker with saved Solid / Gradient surfaces and optional translucent panels; consistent palette-aware cards, fields and dialogs; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; adaptive layouts with 100/125/150/200% interface-scaling checks |
 
 | Open source | GPL-3.0-only; user/developer/security/API documentation; model, provider, local-file, playback and desktop tests |
 
@@ -285,3 +285,12 @@ Collection and episode controls share compact playback rows with personal/progre
 - Saved/imported/edited lyrics retain priority. Otherwise local music reads embedded tags from its approved folder; Navidrome music requests `getLyricsBySongId` before LRCLIB. Existing LRCLIB cache entries do not bypass this order. Books, podcast episodes and radio never request song lyrics.
 - Navidrome 0.60.3 chooses embedded versus sidecar lyrics on the server. For embedded-first selection, set `LyricsPriority = "embedded,.lrc,.txt"` in Navidrome (environment equivalent: `ND_LYRICSPRIORITY=embedded,.lrc,.txt`) and restart the server. Its default is `.lrc,.txt,embedded`; Media Center does not change the server configuration or download remote audio to inspect tags. Verified against [v0.60.3 configuration](https://github.com/navidrome/navidrome/blob/v0.60.3/conf/configuration.go) and [source selection](https://github.com/navidrome/navidrome/blob/v0.60.3/core/lyrics/lyrics.go).
 - The lyric panel labels embedded, Navidrome, LRCLIB and saved lyrics. An unavailable preferred source falls back with a visible message. Structured server timestamps/offsets use milliseconds and convert to MPV seconds; plain lyrics remain untimed.
+
+
+### 1.3.0 styles, listening view and installer
+
+- Blurred artwork fills the complete classic and immersive listening surface, with one shade layer. Artwork colors are preserved; the queue and lyrics no longer receive separate dark artwork panels.
+- Immersive layouts: Studio retains the queue beside the lyrics; Minimal uses a small cover and a queue toggle; Gallery gives the album cover more space beside the lyrics or spoken-media stage. Layout selection supports live preview, cancellation and persistence; older saves default to Studio.
+- Discord Rich Presence uses public Media Center application ID `1546622716554121296` when the optional custom ID is blank. A valid custom ID overrides it. Presence stays opt-in; per-media and private-listening restrictions still apply. No bot token is required.
+- Installer preparation checks exact executable paths, handles clean installs separately, probes folder write access and asks the app to quit gracefully before a bounded fallback for older versions. It no longer treats sibling folders or unrelated executables under the chosen directory as Media Center. The first-install screenshot can also indicate copying/permission errors; the user's original machine is needed to confirm its exact cause.
+- Application styles: Original preserves the existing design; Soft, Precision, Outline, Bold and Retro change controls, panels, navigation, menus and both players. Themes, font overrides and density remain independent. Styles preview live, revert on leaving Settings without saving, and persist with Save theme.

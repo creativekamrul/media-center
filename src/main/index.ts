@@ -103,8 +103,9 @@ function createMini() {
   if(!app.isPackaged && process.env.ELECTRON_RENDERER_URL) {const url=new URL(process.env.ELECTRON_RENDERER_URL);url.searchParams.set('mini','1');void miniWindow.loadURL(url.href)} else void miniWindow.loadFile(join(__dirname,'../renderer/index.html'),{query:{mini:'1'}})
 }
 if (!app.requestSingleInstanceLock()) app.quit()
+else if(process.argv.includes('--quit-for-install')) app.quit()
 else {
-  app.on('second-instance', () => { void app.whenReady().then(()=>{if(!window)createWindow();if (window?.isMinimized()) window.restore(); window?.show(); window?.focus()}) })
+  app.on('second-instance', (_event,args) => { if(args.includes('--quit-for-install')){app.quit();return}void app.whenReady().then(()=>{if(!window)createWindow();if (window?.isMinimized()) window.restore(); window?.show(); window?.focus()}) })
   void app.whenReady().then(() => {
     session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false))
     session.defaultSession.setPermissionCheckHandler(() => false)

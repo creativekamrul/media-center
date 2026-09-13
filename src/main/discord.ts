@@ -1,3 +1,4 @@
+import {discordApplicationId} from '../shared/discord'
 import { createConnection, type Socket } from 'node:net'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
@@ -15,7 +16,7 @@ export { publicArtwork } from './lastfm'
 
 export const discordDefaults: DiscordSettings = {enabled:false,applicationId:'',music:true,books:false,podcasts:false,local:false,showPaused:true,hasLastfmKey:false}
 export const defaultDiscordArtwork='https://raw.githubusercontent.com/creativekamrul/media-center/v1.1.0/src/renderer/public/assets/default-cover.png'
-export const discordSchema=z.object({defaultCoverAsset:z.boolean().optional(),enabled:z.boolean(),applicationId:z.string().regex(/^(?:\d{15,22})?$/),music:z.boolean(),books:z.boolean(),podcasts:z.boolean(),local:z.boolean(),showPaused:z.boolean(),lastfmKey:z.string().regex(/^(?:[a-fA-F0-9]{32})?$/).optional()}).strict().refine(s=>!s.enabled||!!s.applicationId,{message:'Enter a Discord Application ID to enable presence.'})
+export const discordSchema=z.object({defaultCoverAsset:z.boolean().optional(),enabled:z.boolean(),applicationId:z.string().regex(/^(?:\d{15,22})?$/),music:z.boolean(),books:z.boolean(),podcasts:z.boolean(),local:z.boolean(),showPaused:z.boolean(),lastfmKey:z.string().regex(/^(?:[a-fA-F0-9]{32})?$/).optional()}).strict()
 export function rpcFrame(opcode:number,data:unknown) {const body=Buffer.from(JSON.stringify(data)),header=Buffer.alloc(8);header.writeUInt32LE(opcode,0);header.writeUInt32LE(body.length,4);return Buffer.concat([header,body])}
 export function presence(state:PlaybackState,settings:DiscordSettings,art?:string,now=Date.now()) {
   const allowed=state.kind==='music-track'?settings.music:state.kind==='audiobook'?settings.books:state.kind==='podcast-episode'?settings.podcasts:state.kind==='local-file'?settings.local:false
@@ -98,8 +99,8 @@ export class DiscordPresence {
   private async tick(){
     if(this.busy||this.stopped)return;this.busy=true
     try{
-      const settings=this.settings();if(!settings.enabled||!settings.applicationId){this.status={connected:false,message:settings.enabled?'Add your Discord Application ID.':'Discord presence is disabled.',artwork:false};return}
-      if(!this.socket){if(Date.now()>=this.nextConnect)await this.connect(settings.applicationId);return}if(!this.status.connected)return
+      const settings=this.settings();if(!settings.enabled){this.status={connected:false,message:'Discord presence is disabled.',artwork:false};return}
+      if(!this.socket){if(Date.now()>=this.nextConnect)await this.connect(discordApplicationId(settings.applicationId));return}if(!this.status.connected)return
       if(this.pending){if(Date.now()-this.pending.sent>15000){this.socket.destroy();this.pending=undefined}return}
       const state=structuredClone(this.player.state),generation=this.generation
       let art:string|undefined,artworkMessage='Start shared media to display its artwork.'

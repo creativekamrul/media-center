@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0
+
+- Add five application styles—Soft, Precision, Outline, Bold and Retro—with the current design preserved as Original, live previews, saved choices and mini-player synchronization.
+- Share one colorful blurred-artwork background across the listening view, with consistent shading behind the queue and lyrics.
+- Add Minimal and Gallery immersive layouts with an optional queue, alongside Studio.
+- Use Media Center's shared Discord application when the custom Application ID is empty, while keeping presence opt-in.
+- Harden installer process detection and folder checks, and support graceful shutdown of a running or tray-hidden app.
+
 ## 1.2.3
 
 Artist pages, clearer artwork and smarter lyric lookup.

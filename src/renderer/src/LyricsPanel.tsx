@@ -1,7 +1,7 @@
 import {createPortal} from 'react-dom'
 import {LyricEditor} from './LyricEditor'
 import {QueueArt} from './ListeningSpace'
-import {defaultPlayingScreen} from '../../shared/playing-screen'
+import {defaultPlayingScreen,type PlayingScreenPreferences} from '../../shared/playing-screen'
 import {LyricsAppearance} from './LyricsAppearance'
 import {lyricAppearanceStyle} from './lyricAppearanceStyle'
 import { KaraokeLine } from './KaraokeLine'
@@ -42,15 +42,17 @@ function LyricsContent({player,immersive=false,motion=true,wordLift=false,toolba
  {shown?.warning&&<p className="muted" role="status">{shown.warning}</p>}{!immersive&&<p className="lyrics-credit">Lyrics are checked while this panel is open: embedded tags for local files, or Navidrome lyrics for server music, then LRCLIB. Only the LRCLIB fallback sends song metadata there; credentials and audio stay private.</p>}</section>
 }
 
-export function LyricsPanel(props:{player:PlaybackState;immersive?:boolean;motion?:boolean;wordLift?:boolean;toolbar?:HTMLElement|null}) {
- return props.immersive?<LyricsContent {...props}/>:<StandardLyrics player={props.player}/>
+type SharedAppearance={appearance?:PlayingScreenPreferences;onAppearanceChange?:(value:PlayingScreenPreferences)=>void}
+export function LyricsPanel(props:{player:PlaybackState;immersive?:boolean;motion?:boolean;wordLift?:boolean;toolbar?:HTMLElement|null}&SharedAppearance) {
+ return props.immersive?<LyricsContent {...props}/>:<StandardLyrics player={props.player} appearance={props.appearance} onAppearanceChange={props.onAppearanceChange}/>
 }
-function StandardLyrics({player}:{player:PlaybackState}) {
- const [prefs,setPrefs]=useState(defaultPlayingScreen),[ready,setReady]=useState(false),[open,setOpen]=useState(false),[error,setError]=useState(''),[toolbar,setToolbar]=useState<HTMLDivElement|null>(null)
- useEffect(()=>{const reload=()=>void api.playingScreenPreferences().then(setPrefs).catch(e=>setError(message(e)));window.addEventListener('profile-applied',reload);return()=>window.removeEventListener('profile-applied',reload)},[])
- useEffect(()=>{let live=true;void api.playingScreenPreferences().then(p=>{if(live)setPrefs(p)}).catch(e=>{if(live)setError(message(e))}).finally(()=>{if(live)setReady(true)});return()=>{live=false}},[])
+function StandardLyrics({player,appearance,onAppearanceChange}:{player:PlaybackState}&SharedAppearance) {
+ const [localPrefs,setLocalPrefs]=useState(defaultPlayingScreen),[ready,setReady]=useState(false),[open,setOpen]=useState(false),[error,setError]=useState(''),[toolbar,setToolbar]=useState<HTMLDivElement|null>(null)
+ const prefs=appearance??localPrefs,setPrefs=onAppearanceChange??setLocalPrefs
+ useEffect(()=>{const reload=()=>{if(appearance)return;void api.playingScreenPreferences().then(setPrefs).catch(e=>setError(message(e)))};window.addEventListener('profile-applied',reload);return()=>window.removeEventListener('profile-applied',reload)},[])
+ useEffect(()=>{if(appearance){setReady(true);return}let live=true;void api.playingScreenPreferences().then(p=>{if(live)setPrefs(p)}).catch(e=>{if(live)setError(message(e))}).finally(()=>{if(live)setReady(true)});return()=>{live=false}},[])
  return <div className={`standard-lyrics backdrop-${prefs.background} lyric-animation-${prefs.animation} ${prefs.motion?'with-motion':'still'}`} style={lyricAppearanceStyle(prefs)}>
- {prefs.background==='artwork'&&<div className="standard-lyrics-backdrop" aria-hidden="true"><QueueArt item={player.queue[player.queueIndex]}/></div>}
+ {!appearance&&prefs.background==='artwork'&&<div className="standard-lyrics-backdrop" aria-hidden="true"><QueueArt item={player.queue[player.queueIndex]}/></div>}
  <div className="standard-lyrics-options"><div className="standard-lyrics-tools" ref={setToolbar}/><button className="secondary" disabled={!ready} onClick={()=>setOpen(true)}><Settings2 size={16}/>Lyrics appearance</button></div>
  {error&&<p role="alert">{error}</p>}{open&&<LyricsAppearance value={prefs} preview={setPrefs} close={()=>setOpen(false)}/>}
  <LyricsContent player={player} toolbar={toolbar} motion={prefs.motion&&prefs.animation!=='none'} wordLift={prefs.animation==='flow'}/></div>

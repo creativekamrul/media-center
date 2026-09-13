@@ -1,3 +1,4 @@
+import {DEFAULT_DISCORD_APPLICATION_ID} from '../src/shared/discord'
 import {EventEmitter} from 'node:events'
 import {afterEach,describe,expect,it,vi} from 'vitest'
 vi.mock('../src/main/store',()=>({Store:class{}}))
@@ -17,6 +18,15 @@ class Pipe extends EventEmitter {
 }
 afterEach(()=>{vi.useRealTimers();vi.restoreAllMocks();vi.unstubAllGlobals()})
 describe('Discord local transport',()=>{
+  it.each(['', '1546622716554121297'])('handshakes with the shared ID or custom override: %s',async applicationId=>{
+    vi.useFakeTimers();const pipe=new Pipe()
+    vi.mocked(createConnection).mockImplementation((()=>{queueMicrotask(()=>pipe.emit('connect'));return pipe}) as unknown as typeof createConnection)
+    const settings={...discordDefaults,enabled:true,applicationId}
+    const store={get:()=>settings,secret:()=>undefined} as unknown as Store
+    const rpc=new DiscordPresence(store,Object.assign(new EventEmitter(),{state:emptyPlayback}) as Player,()=>{throw Error('No provider expected')},{} as LocalFiles)
+    try{await vi.advanceTimersByTimeAsync(1);expect(JSON.parse(pipe.frames[0].subarray(8).toString()).client_id).toBe(applicationId||DEFAULT_DISCORD_APPLICATION_ID)}finally{rpc.stop()}
+  })
+
   it('keeps artwork errors visible after acknowledgements and retries the same track',async()=>{
     vi.useFakeTimers();const pipe=new Pipe()
     vi.mocked(createConnection).mockImplementation((()=>{queueMicrotask(()=>pipe.emit('connect'));return pipe}) as unknown as typeof createConnection)

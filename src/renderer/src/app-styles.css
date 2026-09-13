@@ -1,0 +1,124 @@
+/* Styles change component construction independently of palette, fonts and density.
+   Original intentionally has no application overrides. Preview tokens are local. */
+[data-style-variant=default] {
+  --style-control-radius:999px; --style-panel-radius:16px; --style-art-radius:12px;
+  --style-border-width:1px; --style-edge:var(--line); --style-shadow:none; --style-control-shadow:none;
+}
+html[data-theme][data-app-style=soft], [data-style-variant=soft] {
+  --style-control-radius:18px; --style-panel-radius:26px; --style-art-radius:18px;
+  --style-border-width:1px; --style-edge:color-mix(in srgb,var(--accent) 14%,var(--panel));
+  --style-shadow:0 8px 24px #0002; --style-control-shadow:none;
+  --style-control-fill:color-mix(in srgb,var(--accent) 12%,var(--panel));
+}
+html[data-theme][data-app-style=precision], [data-style-variant=precision] {
+  --style-control-radius:4px; --style-panel-radius:10px; --style-art-radius:6px;
+  --style-border-width:1px; --style-edge:color-mix(in srgb,var(--text) 22%,var(--panel));
+  --style-shadow:0 3px 9px #0003,0 14px 32px #0002; --style-control-shadow:inset 0 1px #ffffff14,0 1px 2px #0003;
+  --style-control-fill:var(--panel);
+}
+html[data-theme][data-app-style=outline], [data-style-variant=outline] {
+  --style-control-radius:0px; --style-panel-radius:0px; --style-art-radius:0px;
+  --style-border-width:1px; --style-edge:color-mix(in srgb,var(--text) 35%,var(--panel));
+  --style-shadow:none; --style-control-shadow:none; --style-control-fill:transparent;
+}
+html[data-theme][data-app-style=bold], [data-style-variant=bold] {
+  --style-control-radius:6px; --style-panel-radius:10px; --style-art-radius:6px;
+  --style-border-width:2px; --style-edge:color-mix(in srgb,var(--text) 65%,var(--panel));
+  --style-shadow:5px 5px 0 color-mix(in srgb,var(--accent) 35%,var(--bg));
+  --style-control-shadow:3px 3px 0 color-mix(in srgb,var(--text) 40%,var(--bg));
+  --style-control-fill:var(--panel);
+}
+html[data-theme][data-app-style=retro], [data-style-variant=retro] {
+  --style-control-radius:1px; --style-panel-radius:2px; --style-art-radius:1px;
+  --style-border-width:1px; --style-edge:color-mix(in srgb,var(--text) 32%,var(--panel));
+  --style-shadow:inset 2px 2px color-mix(in srgb,var(--text) 28%,var(--panel)),inset -2px -2px #0007,3px 3px 0 #0004;
+  --style-control-shadow:inset 1px 1px color-mix(in srgb,var(--text) 45%,var(--panel)),inset -1px -1px #0008;
+  --style-control-fill:color-mix(in srgb,var(--text) 6%,var(--panel));
+}
+
+/* Explicit control families avoid turning clickable lyrics, rows or window chrome into boxes. */
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(button.primary,button.secondary,button.icon-button,button.main-play,button.card-play,button.card-open,.more-options-trigger,.filter,.sort-button) {
+  border-radius:var(--style-control-radius);
+  border:var(--style-border-width) solid var(--style-edge);
+  box-shadow:var(--style-control-shadow);
+}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(button.secondary,.more-options-trigger,.filter,.sort-button) {background:var(--style-control-fill)}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(button.primary,button.main-play,button.card-play,button.card-open) {border-color:var(--accent)}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.nav-item,.settings-rail button,.browse-tabs button,.now-tabs button,.daily-tabs button,.surface-style-toggle button) {
+  border-radius:var(--style-control-radius);
+}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.daily-card,.episode-card,.detail-hero,.plan-card,.engine-card,.home-feature,.home-stats,.home-mix,.folder-card,.settings-panel,.library-action-panel,.episode-filter-panel,.saved-queues,.empty-state,.modal,dialog,[role=dialog],.cover-editor-current,.appearance-editor,.app-style-picker,.theme-picker,.mix-builder) {
+  border-radius:var(--style-panel-radius); border:var(--style-border-width) solid var(--style-edge); box-shadow:var(--style-shadow);
+}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.art,.screen-cover,.screen-cover>.art,.artwork-preview-box,.mini-body>.art) {border-radius:var(--style-art-radius)}
+html[data-theme][data-app-style]:not([data-app-style=default]) .media-grid .media-card {padding:8px;border:var(--style-border-width) solid var(--style-edge);border-radius:var(--style-panel-radius);box-shadow:var(--style-shadow)}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.immersive-side,.immersive-stage) {border-radius:var(--style-panel-radius);border-color:var(--style-edge)}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.search,.settings-search,.library-select,.field>input,.field>select,.field>textarea,input:not([type]),input[type=text],input[type=password],input[type=number],input[type=url],input[type=search],select,textarea) {
+  border-radius:var(--style-control-radius); border-color:var(--style-edge);
+}
+/* Search wrappers already supply a border; preserve the seamless inner input. */
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.search,.settings-search) input {border:0;box-shadow:none;border-radius:0}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.progress-badge,.saved-queue-count,.layout-switch,.version-tag) {border-radius:var(--style-control-radius)}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.player-bar,.mini-player) {border-color:var(--style-edge);box-shadow:var(--style-shadow)}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.seek-track,input[type=range],progress,.daily-meter,.daily-meter>span) {border-radius:var(--style-control-radius)}
+html[data-theme][data-app-style]:not([data-app-style=default]) input[type=range]::-webkit-slider-thumb {border-radius:var(--style-control-radius)}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.more-options-panel,.card-more>.listen-actions) {
+  border-radius:var(--style-panel-radius);border:var(--style-border-width) solid var(--style-edge);box-shadow:var(--style-shadow);
+  /* Menus always obscure the controls below them, even with translucent panels enabled. */
+  background:var(--panel);backdrop-filter:none;
+}
+html[data-theme][data-app-style]:not([data-app-style=default]) .more-options-panel button {box-shadow:none;border:0;border-radius:var(--style-control-radius);background:transparent}
+html[data-theme][data-app-style]:not([data-app-style=default]) .more-options-panel button:hover:not(:disabled) {background:var(--control-hover)}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(button.primary,button.secondary,.more-options-trigger):hover:not(:disabled) {filter:brightness(1.1)}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(button,input,select,textarea,summary):focus-visible {outline:2px solid var(--accent);outline-offset:3px}
+
+/* Each alternative also changes the composition of navigation and surfaces. */
+html[data-theme][data-app-style=soft] .sidebar .nav-item.selected {border-radius:24px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent)}
+html[data-theme][data-app-style=soft] :is(.library-action-panel,.episode-filter-panel,.saved-queues) {background:color-mix(in srgb,var(--accent) 5%,var(--panel))}
+html[data-theme][data-app-style=soft] :is(.song-row,.queue-row,.chapter-row) {border-radius:12px}
+html[data-theme][data-app-style=precision] .sidebar .nav-item.selected {box-shadow:inset 3px 0 var(--accent);border-radius:4px}
+html[data-theme][data-app-style=precision] :is(.topbar,.sidebar,.player-bar) {border-color:var(--style-edge)}
+html[data-theme][data-app-style=precision] :is(.settings-panel,.detail-hero,.episode-card) {border-top-color:color-mix(in srgb,var(--text) 35%,var(--panel))}
+html[data-theme][data-app-style=outline] :is(.nav-item.selected,.browse-tabs button.active,.settings-rail button[aria-current]) {box-shadow:inset 3px 0 var(--accent);background:var(--panel)}
+html[data-theme][data-app-style=outline] :is(.song-row,.queue-row,.chapter-row,.daily-row) {border-radius:0;border-bottom:1px solid var(--style-edge)}
+html[data-theme][data-app-style=outline] :is(.home-mix,.home-feature,.detail-hero) {background-image:none}
+html[data-theme][data-app-style=outline] :is(.topbar,.sidebar,.player-bar) {border-color:var(--style-edge)}
+html[data-theme][data-app-style=bold] .sidebar .nav-item.selected {box-shadow:inset 0 0 0 2px var(--accent)}
+html[data-theme][data-app-style=bold] :is(.library-heading,.section-title) {border-bottom:2px solid var(--style-edge);padding-bottom:12px}
+html[data-theme][data-app-style=bold] :is(button.primary,button.secondary,.more-options-trigger):active:not(:disabled) {box-shadow:none}
+html[data-theme][data-app-style=bold] :is(.song-row,.queue-row) {border-bottom-width:2px}
+html[data-theme][data-app-style=retro] :is(.topbar,.mini-drag) {border-bottom:2px groove var(--style-edge)}
+html[data-theme][data-app-style=retro] :is(.nav-item.selected,.field>input,.field>select,.field>textarea,.search,.settings-search) {box-shadow:inset 1px 1px #0008,inset -1px -1px color-mix(in srgb,var(--text) 28%,var(--panel))}
+html[data-theme][data-app-style=retro] :is(button.primary,button.secondary,.more-options-trigger):active:not(:disabled) {box-shadow:inset 1px 1px #0008,inset -1px -1px #ffffff33}
+html[data-theme][data-app-style=retro] :is(.modal>header,.saved-queues>summary) {border-bottom:2px groove var(--style-edge)}
+/* Edge-to-edge native window hit targets retain their size and drag behavior. */
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.window-controls,.mini-drag) button {border:0;box-shadow:none}
+
+/* The picker is a new surface; its miniatures always show their own style, never the active one. */
+.app-style-picker {min-width:0;margin:0 0 28px;padding:20px;border:1px solid var(--line);border-radius:16px}
+.app-style-picker legend {font-size:18px;font-weight:600;padding:0 8px}
+.app-style-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:20px 0}
+.app-style-choice {min-width:0;text-align:left;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--text)}
+.app-style-choice[aria-pressed=true] {border-color:var(--accent);outline:1px solid var(--accent);outline-offset:1px}
+.app-style-choice:hover {background:var(--panel)}
+.app-style-name {display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px;font-weight:650;margin:14px 0 6px}
+.app-style-name>span {font-size:11px;color:var(--accent)}
+.app-style-description {display:block;color:var(--muted);font-size:12px;line-height:1.6}
+.style-preview {display:flex;gap:12px;padding:14px;height:136px;border:var(--style-border-width) solid var(--style-edge);border-radius:var(--style-panel-radius);background:var(--panel);box-shadow:var(--style-shadow);overflow:hidden}
+.style-preview-rail {display:flex;flex-direction:column;gap:10px;width:26px;border-right:1px solid var(--style-edge);padding-right:8px}
+.style-preview-rail i {height:14px;border-radius:var(--style-control-radius);background:var(--control-hover)}
+.style-preview-rail i:first-child {background:var(--accent)}
+.style-preview-content {min-width:0;flex:1;display:flex;flex-direction:column;gap:10px}
+.style-preview-heading {width:55%;height:5px;background:var(--text);opacity:.7;border-radius:var(--style-control-radius)}
+.style-preview-cards {display:flex;gap:8px;min-height:0;flex:1}
+.style-preview-cards i {flex:1;border-radius:var(--style-art-radius);border:var(--style-border-width) solid var(--style-edge);box-shadow:var(--style-control-shadow);background:color-mix(in srgb,var(--accent) 18%,var(--panel))}
+.style-preview-cards i:nth-child(2) {background:color-mix(in srgb,var(--accent) 35%,var(--panel))}
+.style-preview-controls {display:flex;gap:6px;align-items:center}
+.style-preview-controls i {display:grid;place-items:center;font-style:normal;font-size:10px;width:26px;height:22px;border:var(--style-border-width) solid var(--style-edge);border-radius:var(--style-control-radius);box-shadow:var(--style-control-shadow);background:var(--style-control-fill,var(--panel))}
+.style-preview-controls i:first-child {background:var(--accent);color:var(--accent-text,var(--bg))}
+.style-preview-controls>span {flex:1;height:3px;background:var(--accent);border-radius:var(--style-control-radius)}
+@media(max-width:1200px) {.app-style-grid {grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px) {.app-style-grid {grid-template-columns:1fr}.app-style-picker {padding:12px}}
+
+/* Artwork overlays must remain legible with custom light palettes as well. */
+html[data-theme][data-app-style]:not([data-app-style=default]) .card-favorite {background:var(--panel)!important;color:var(--text)}
