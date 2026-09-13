@@ -45,9 +45,9 @@ Personal shelves, metadata customization, offline plans, per-show podcast prefer
 
 **1.2.1 refinements:** consistent collection and episode actions, opaque More menus, playlist cover generation inside customization, redesigned Saved queues and independent queue scrolling in Now Playing.
 
-**1.3.1 update:** Clearer selected buttons, nine distinct application styles including Editorial, Neon and Ribbon, compact style previews, and fewer visible actions across libraries and playback. Original remains the default design.
+**1.3.2 update:** More comfortable playback controls, contained album favorites, refined custom mix cards, cleaner normal lyrics, and a startup notice when an update is available.
 
-[Read the 1.3.1 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.3.1) · [Full changelog](CHANGELOG.md)
+[Read the 1.3.2 release notes](https://github.com/creativekamrul/media-center/releases/tag/v1.3.2) · [Full changelog](CHANGELOG.md)
 
 ## A closer look
 

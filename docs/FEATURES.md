@@ -304,7 +304,7 @@ Collection and episode controls share compact playback rows with personal/progre
 - Verified with typecheck, 204 unit tests, production build and the full Electron/MPV fixture suite (three media types, zero renderer errors). Style checks cover dark/light contrast, cross-window preview/save/reload, menus, dialogs and responsive layouts.
 
 
-### Unreleased listening refinements
+### 1.3.2 listening refinements
 
 - More options triggers use larger targets, including compact listening rows. Now Playing leaves room around its artwork and controls at desktop and narrow widths.
 - Album favorite overlays stay inside the artwork; mini-player header dividers stay below controls across all nine application styles.

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.2
 
 - Enlarge More options controls and give Now Playing artwork, buttons and lyrics more breathing room.
 - Keep album favorite buttons inside their artwork and mini-player header dividers below the controls across application styles.
