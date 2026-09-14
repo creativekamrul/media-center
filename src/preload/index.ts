@@ -107,6 +107,7 @@ const api: DesktopAPI = {
   history: () => ipcRenderer.invoke('history:list'),
   previewTheme: input => ipcRenderer.invoke('theme:preview', input),
   importThemeCss: () => ipcRenderer.invoke('theme:import-css'),
+  exportThemeCss: css => ipcRenderer.invoke('theme:export-css',css),
   fullscreen: action => ipcRenderer.invoke('window:fullscreen', action),
   preferences: () => ipcRenderer.invoke('preferences:get'),
   savePreferences: input => ipcRenderer.invoke('preferences:save', input),

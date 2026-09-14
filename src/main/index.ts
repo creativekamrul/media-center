@@ -11,6 +11,8 @@ import {PodcastAutomation} from './podcast-automation'
 import {registerExperience} from './experience'
 import {LocalWatcher} from './local-watch'
 import {experienceSchema} from '../shared/experience'
+import {writeFile} from 'node:fs/promises'
+import {customCssSchema} from '../shared/custom-css'
 import { readThemeCss } from './custom-css'
 import { LyricsClient } from './lyrics'
 import { automaticLyrics } from './lyric-sources'
@@ -208,6 +210,11 @@ else {
     })
     handle('appearance:fonts',z.undefined(),()=>installedFonts())
     handle('theme:preview', preferenceSchema.nullable(), prefs => { if(miniWindow && !miniWindow.isDestroyed()) miniWindow.webContents.send('theme:state', prefs ?? store.preferences()) })
+    handle('theme:export-css', customCssSchema, async css => {
+      const result=await dialog.showSaveDialog(window!,{title:'Export current theme CSS',defaultPath:'Media-Center-theme.css',filters:[{name:'CSS theme',extensions:['css']}]})
+      if(result.canceled||!result.filePath)return false
+      await writeFile(result.filePath,css,'utf8');return true
+    })
     handle('theme:import-css', z.undefined(), async () => {
       const result = await dialog.showOpenDialog(window!, {title:'Import custom theme CSS', filters:[{name:'CSS theme', extensions:['css']}], properties:['openFile']})
       return result.canceled || !result.filePaths[0] ? null : readThemeCss(result.filePaths[0])

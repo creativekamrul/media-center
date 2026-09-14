@@ -20,7 +20,7 @@ export function CollectionControls({error}:{error:(s:string)=>void}){
  }
  return <section className="settings-panel collection-controls" id="collection-controls" aria-label="Collection controls">
   <div className="panel-heading"><span className="panel-icon"><LibraryBig size={21}/></span><div><h2>Collection controls</h2><p>Choose collection names, icons and order. Library tools lives in Listening Space.</p></div></div>
-  <p className="muted">These labels stay on this device. Your server libraries, files and media types keep their original names.</p>
+  <p className="muted guidance">These labels stay on this device. Your server libraries, files and media types keep their original names.</p>
   <form onSubmit={e=>{e.preventDefault();void save()}}>
    <div className="collection-control-list">{([...order,'tools'] as const).map(key=>{const entry=draft[key],Icon=collectionIconComponents[entry.icon];return <div className="collection-control-row" key={key}>
     <span className="collection-icon-preview" aria-hidden="true"><Icon size={23}/></span>

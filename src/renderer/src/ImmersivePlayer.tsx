@@ -1,3 +1,4 @@
+import {useQueueFollow} from './useQueueFollow'
 import {PlaybackUtilities} from './PlaybackUtilities'
 import {SeekBar} from './SeekBar'
 import {IconButton} from './ui'
@@ -27,7 +28,8 @@ export function ImmersivePlayer({player,close,onExitError}:{player:PlaybackState
  const item=player.queue[player.queueIndex],canLyrics=item?.target.kind==='music-track'||item?.target.kind==='local-file'
  useEffect(()=>{let live=true;void api.playingScreenPreferences().then(p=>{if(live)setPrefs(p)}).catch(e=>{if(live)setError(message(e))}).finally(()=>{if(live)setReady(true)});return()=>{live=false}},[])
  useEffect(()=>{const elements=[...document.querySelectorAll<HTMLElement>('.sidebar,.topbar,.player-bar')],previous=elements.map(el=>el.inert);elements.forEach(el=>el.inert=true);return()=>elements.forEach((el,i)=>el.inert=previous[i])},[])
- useEffect(()=>setPage(Math.floor(player.queueIndex/50)),[player.queueIndex,player.queue.length])
+ useEffect(()=>setPage(Math.floor(player.queueIndex/50)),[player.queueIndex,player.queue.length,queueOpen])
+ const queueRoot=useQueueFollow(player.queueIndex,page,prefs.layout==='studio'||queueOpen,JSON.stringify(item?.target))
  const command=(input:PlayerCommand)=>void api.command(input).catch(e=>setError(message(e)))
  const jump=(index:number)=>void api.queueEdit({action:'jump',index}).catch(e=>setError(message(e)))
  return <section className={`immersive-player layout-${prefs.layout} ${queueOpen?'queue-is-open':''} backdrop-${prefs.background} lyric-animation-${prefs.animation} ${prefs.motion?'with-motion':'still'}`} aria-label="Immersive playing screen" style={lyricAppearanceStyle(prefs)}>
@@ -45,7 +47,7 @@ export function ImmersivePlayer({player,close,onExitError}:{player:PlaybackState
     <div className="screen-utilities"><PlaybackUtilities player={player} command={command} error={setError}/></div>
     {(player.error||player.syncError)&&<p className="screen-playback-error" role="status">{player.error||player.syncError}</p>}
    </div>
-    <section id="immersive-current-queue" className="screen-queue" aria-label="Current queue" hidden={prefs.layout!=='studio'&&!queueOpen}><header><h2>Current queue</h2><span>{player.queue.length} tracks</span></header><div className="screen-queue-scroll">{player.queue.slice(page*50,(page+1)*50).map((q,offset)=>{const index=page*50+offset;return <button key={index} className={`screen-queue-item ${index===player.queueIndex?'current':''}`} aria-current={index===player.queueIndex?'true':undefined} aria-label={`Play queue item ${index+1}: ${q.title}`} onClick={()=>jump(index)}><span className="queue-number">{index===player.queueIndex?<Play size={13}/>:index+1}</span><TrackArtwork item={q}/><span><strong>{q.title}</strong><small>{q.subtitle}</small></span><span>{q.duration?duration(q.duration):''}</span></button>})}{!player.queue.length&&<p className="muted">Add something to your queue to begin.</p>}</div>{player.queue.length>50&&<div className="screen-pages"><button className="icon-button" aria-label="Previous queue page" disabled={!page} onClick={()=>setPage(n=>n-1)}><ChevronLeft size={16}/></button><span>{page+1} / {Math.ceil(player.queue.length/50)}</span><button className="icon-button" aria-label="Next queue page" disabled={(page+1)*50>=player.queue.length} onClick={()=>setPage(n=>n+1)}><ChevronRight size={16}/></button></div>}</section>
+    <section id="immersive-current-queue" className="screen-queue" aria-label="Current queue" hidden={prefs.layout!=='studio'&&!queueOpen}><header><h2>Current queue</h2><span>{player.queue.length} tracks</span></header><div ref={queueRoot} className="screen-queue-scroll">{player.queue.slice(page*50,(page+1)*50).map((q,offset)=>{const index=page*50+offset;return <button key={index} className={`screen-queue-item ${index===player.queueIndex?'current':''}`} aria-current={index===player.queueIndex?'true':undefined} aria-label={`Play queue item ${index+1}: ${q.title}`} onClick={()=>jump(index)}><span className="queue-number">{index===player.queueIndex?<Play size={13}/>:index+1}</span><TrackArtwork item={q}/><span><strong>{q.title}</strong><small>{q.subtitle}</small></span><span>{q.duration?duration(q.duration):''}</span></button>})}{!player.queue.length&&<p className="muted">Add something to your queue to begin.</p>}</div>{player.queue.length>50&&<div className="screen-pages"><button className="icon-button" aria-label="Previous queue page" disabled={!page} onClick={()=>setPage(n=>n-1)}><ChevronLeft size={16}/></button><span>{page+1} / {Math.ceil(player.queue.length/50)}</span><button className="icon-button" aria-label="Next queue page" disabled={(page+1)*50>=player.queue.length} onClick={()=>setPage(n=>n+1)}><ChevronRight size={16}/></button></div>}</section>
    </aside>
   </div>
  </section>

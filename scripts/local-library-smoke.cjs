@@ -1,6 +1,7 @@
 const assert=require('node:assert/strict')
 const {resolve}=require('node:path')
 module.exports=async({page,artifacts})=>{
+ await require('./view-navigation.cjs')(page,'Albums')
  await page.getByRole('button',{name:'Open Disc 1',exact:true}).waitFor()
  assert.equal(await page.getByRole('tablist',{name:'Local music views'}).getByRole('tab').count(),4)
  await page.getByRole('button',{name:'Open Disc 1',exact:true}).click()

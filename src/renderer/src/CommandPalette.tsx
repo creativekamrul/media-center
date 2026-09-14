@@ -97,7 +97,7 @@ export function CommandPalette({
         ))}
       </div>
       {!found.length && <p>No matching actions.</p>}
-      <p className="muted">
+      <p className="muted guidance">
         Ctrl+Shift+P · Arrow keys to choose · Enter to run
       </p>
     </Modal>

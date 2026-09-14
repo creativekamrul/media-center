@@ -10,6 +10,7 @@ export function applyAppearance(p:Preferences){
   let style=document.getElementById('custom-theme-css') as HTMLStyleElement | null
   if(p.customCss){if(!style){style=document.createElement('style');style.id='custom-theme-css';document.head.append(style)}style.textContent=p.customCss}else style?.remove()
   const root=document.documentElement,a=p.appearance??defaultAppearance
+  root.dataset.showHelp=String(a.showHelp??true)
   root.dataset.theme=p.theme
   root.dataset.appStyle=a.appStyle??'default'
  root.dataset.density=a.density??'comfortable'

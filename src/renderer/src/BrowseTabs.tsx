@@ -1,5 +1,5 @@
 import {ShelfControls} from './Shelf'
-import {useEffect,useRef,useState} from 'react'
+import {useEffect,useRef,useState,type RefObject} from 'react'
 import {ArrowDown,ArrowUp,Settings2} from 'lucide-react'
 import {TabIcon} from './LibraryHeader'
 import {api,Modal} from './actions'
@@ -7,21 +7,21 @@ import {useExperience} from './Experience'
 import {message} from './ui'
 import {defaultViewPins,type ViewPinScope} from '../../shared/view-pins'
 
-export function BrowseTabs<T extends string>({options,value,onChange,label,scope,tabRoles=true}:{options:readonly (readonly [T,string])[];value:T;onChange:(id:T)=>void;label:string;scope:ViewPinScope;tabRoles?:boolean}){
- const [prefs]=useExperience(),[editing,setEditing]=useState(false),[draft,setDraft]=useState<string[]>([]),[busy,setBusy]=useState(false),[failure,setFailure]=useState('')
+export function BrowseTabs<T extends string>({options,value,onChange,label,scope,tabRoles=true,landingRef}:{options:readonly (readonly [T,string])[];value:T;onChange:(id:T)=>void;label:string;scope:ViewPinScope;tabRoles?:boolean;landingRef?:RefObject<boolean>}){
+ const [prefs,,ready]=useExperience(),[editing,setEditing]=useState(false),[draft,setDraft]=useState<string[]>([]),[busy,setBusy]=useState(false),[failure,setFailure]=useState('')
  const list=useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null)
  const defaults=defaultViewPins[scope].filter(id=>options.some(([key])=>key===id))
  const saved=prefs.navigation.viewPins[scope]??defaults
  const pins=saved.filter(id=>options.some(([key])=>key===id))
- const restored=useRef(false)
+ const localRestored=useRef(false),restored=landingRef??localRestored
  useEffect(()=>{
-  if(restored.current||!prefs.navigation.viewPins[scope])return
+  if(restored.current||!ready)return
   restored.current=true
-  // Reopening a section starts at its first pin when its usual landing tab was unpinned.
-  if(value===({music:'albums',local:'albums',tools:'mixes'} as const)[scope]&&!pins.includes(value)){
+  // The first pinned tab is the landing view, even when Albums is still pinned.
+  if(value===({music:'albums',local:'albums',tools:'mixes'} as const)[scope]){
    const first=options.find(([id])=>id===pins[0]);if(first)onChange(first[0])
   }
- },[prefs.navigation.viewPins,scope,value])
+ },[ready,prefs.navigation.viewPins,scope,value])
  const active=options.find(([id])=>id===value)
  // Deep links can open an unpinned view without silently changing saved pins.
  const visible=[...pins.flatMap(id=>options.filter(([key])=>key===id)),...(active&&!pins.includes(value)?[active]:[])]

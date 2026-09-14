@@ -32,7 +32,13 @@ module.exports=async({desktop,page,artifacts})=>{
   }
   const panel=await page.locator('#settings-servers .settings-panel').first().evaluate(el=>({background:getComputedStyle(el).backgroundColor,blur:getComputedStyle(el).backdropFilter,expected:getComputedStyle(document.documentElement).getPropertyValue('--panel').trim()}))
   if(name.includes('Glass'))assert.match(panel.blur,/blur/)
-  else assert.equal(panel.background,await page.evaluate(color=>{const el=document.createElement('div');el.style.color=color;document.body.append(el);const rgb=getComputedStyle(el).color;el.remove();return rgb},panel.expected))
+  const contrast=await page.locator('#settings-servers .settings-panel').first().evaluate(el=>{
+   const ctx=document.createElement('canvas').getContext('2d');ctx.canvas.width=ctx.canvas.height=1
+   const lum=()=>[...ctx.getImageData(0,0,1,1).data].slice(0,3).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((n,v,i)=>n+v*[.2126,.7152,.0722][i],0)
+   const paint=color=>{ctx.fillStyle=color;ctx.fillRect(0,0,1,1)}
+   paint(getComputedStyle(document.documentElement).getPropertyValue('--bg'));paint(getComputedStyle(el).backgroundColor);const bg=lum();paint(getComputedStyle(el).color);const fg=lum();return (Math.max(bg,fg)+.05)/(Math.min(bg,fg)+.05)
+  })
+  assert.ok(contrast>=4.5,name+' Settings panel contrast: '+contrast)
  }
  for(const width of [1024,1440,1920]){
   await page.setViewportSize({width,height:940})

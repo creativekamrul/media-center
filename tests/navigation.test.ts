@@ -6,7 +6,7 @@ import {exportExtra,restoreExtra,personalExtraSchema} from '../src/main/personal
 
 describe('collection navigation preferences',()=>{
  it('keeps older preferences and backups usable with default navigation',()=>{
-  expect(experienceSchema.parse({}).navigation).toEqual({viewPins:{},collections:collectionDefaults,collectionOrder:[...orderedCollectionKeys],queueBelowHome:false,playlistsBelowHome:false,listeningCollapsed:false,sidebarCollapsed:false})
+  expect(experienceSchema.parse({}).navigation).toEqual({librarySelections:{},viewPins:{},collections:collectionDefaults,collectionOrder:[...orderedCollectionKeys],queueBelowHome:false,playlistsBelowHome:false,listeningCollapsed:false,sidebarCollapsed:false})
   const store=new Store(':memory:')
   try{const backup=exportExtra(store);delete (backup.experience as Partial<typeof backup.experience>).navigation;expect(personalExtraSchema.parse(backup).experience.navigation.collections).toEqual(collectionDefaults)}finally{store.close()}
  })
@@ -33,4 +33,17 @@ describe('collection navigation preferences',()=>{
    expect(restored.get('experience')).toEqual(prefs)
   }finally{store.close();restored.close()}
  })
+ it('accepts bounded library choices only for known pages',()=>{
+  for(const [scope,value] of [['music','all'],['musicPlaylists','s:1'],['audiobooks','s:book'],['podcasts','s:podcast'],['local','root'],['playlistSource','local']])expect(navigationChangeSchema.safeParse({action:'library-selection',scope,value}).success).toBe(true)
+  for(const input of [{scope:'unknown',value:'all'},{scope:'music',value:'x'.repeat(4097)},{scope:'music',value:4}])expect(navigationChangeSchema.safeParse({action:'library-selection',...input}).success).toBe(false)
+ })
+ it('remaps saved source identities on restore and drops missing sources without losing Combined',()=>{
+  const store=new Store(':memory:')
+  try{
+   store.set('experience',experienceSchema.parse({navigation:{librarySelections:{music:'all',musicPlaylists:'s:1',audiobooks:'s:books',podcasts:'removed:shows',local:'r',localPlaylists:'gone',localFolders:'r',playlistSource:'local'}}}))
+   const {values}=restoreExtra(exportExtra(store),{servers:new Map([['s','new-s']]),folders:new Map([['r','new-r']])},q=>q)
+   expect(experienceSchema.parse(values.experience).navigation.librarySelections).toEqual({music:'all',musicPlaylists:'new-s:1',audiobooks:'new-s:books',local:'new-r',localFolders:'new-r',playlistSource:'local'})
+  }finally{store.close()}
+ })
+
 })

@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState,type ReactNode} from 'react'
-import {ChevronDown} from 'lucide-react'
+import {ChevronDown,MoreHorizontal} from 'lucide-react'
 
-export function MoreOptions({children,label='More options'}:{children:ReactNode;label?:string}){
+export function MoreOptions({children,label='More options',iconOnly=false}:{children:ReactNode;label?:string;iconOnly?:boolean}){
  const [open,setOpen]=useState(false),root=useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null),panel=useRef<HTMLDivElement>(null)
  const close=(focus=true)=>{panel.current?.hidePopover();setOpen(false);if(focus)trigger.current?.focus()}
  useEffect(()=>{
@@ -15,7 +15,7 @@ export function MoreOptions({children,label='More options'}:{children:ReactNode;
   return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('scroll',scroll,true);window.removeEventListener('resize',position)}
  },[open])
  return <div className="more-options" ref={root} onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}if(open&&['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();const buttons=[...panel.current!.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')],i=buttons.indexOf(document.activeElement as HTMLButtonElement);buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length ]?.focus()}}} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node))close(false)}}>
-  <button ref={trigger} className="secondary more-options-trigger" aria-expanded={open} onClick={()=>open?close():setOpen(true)}>{label}<ChevronDown size={14}/></button>
+  <button ref={trigger} className={`secondary more-options-trigger ${iconOnly?'icon-only':''}`} aria-label={iconOnly?label:undefined} title={iconOnly?label:undefined} aria-expanded={open} onClick={()=>open?close():setOpen(true)}>{iconOnly?<MoreHorizontal size={18}/>:<>{label}<ChevronDown size={14}/></>}</button>
   {open&&<div ref={panel} popover="manual" className="more-options-panel" aria-label={label} onClick={e=>{if((e.target as HTMLElement).closest('button'))close(false)}}>{children}</div>}
  </div>
 }

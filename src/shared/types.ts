@@ -13,7 +13,7 @@ export interface Chapter { id: number; title: string; start: number; end: number
 export interface AudioTrack { index: number; title: string; startOffset: number; duration: number }
 interface ItemBase { id: string; serverId: string; libraryId: string; title: string; subtitle: string; description: string; cover?: string }
 export interface MusicAlbum extends ItemBase { kind: 'album'; year?: number; trackCount: number; starred?: boolean; rating?: number; genre?: string; duration?: number; playCount?: number; artistId?: string }
-export interface MusicTrack { kind: 'music-track'; id: string; serverId: string; title: string; artist: string; album: string; duration: number; codec?: string; bitRate?: number; sampleRate?: number; bitDepth?: number; starred?: boolean; rating?: number; cover?: string; albumId?: string; artistId?: string; genre?: string; year?: number; trackNumber?: number; discNumber?: number; playCount?: number }
+export interface MusicTrack { addedAt?:number; kind: 'music-track'; id: string; serverId: string; title: string; artist: string; album: string; duration: number; codec?: string; bitRate?: number; sampleRate?: number; bitDepth?: number; starred?: boolean; rating?: number; cover?: string; albumId?: string; artistId?: string; genre?: string; year?: number; trackNumber?: number; discNumber?: number; playCount?: number }
 export interface Progress { status: 'unplayed' | 'in-progress' | 'finished'; position: number; duration: number; fraction: number; updatedAt?: number; finishedAt?: number }
 export interface Audiobook extends ItemBase { kind: 'audiobook'; authors: string[]; narrators: string[]; series: string[]; seriesOrder?:{id?:string;name:string;sequence:string}[]; duration: number; chapters: Chapter[]; tracks: AudioTrack[]; progress?: Progress }
 export interface PodcastEpisode { kind: 'podcast-episode'; id: string; showId: string; serverId: string; title: string; description: string; publishedAt?: number; duration: number; downloaded: boolean; season?: string; episode?: string; filename?: string; subtitle?: string; progress?: Progress }
@@ -46,6 +46,7 @@ export interface DesktopAPI extends importPersonalAPI, DailyAPI, ExperienceAPI, 
   releaseNews(action:'get'|'seen'|'changelog'):Promise<{version:string;unread:boolean}>
   installedFonts():Promise<string[]>
   importThemeCss(): Promise<string | null>
+  exportThemeCss(css:string): Promise<boolean>
   previewTheme(preferences: Preferences | null): Promise<void>
   fullscreen(action: 'toggle' | 'exit'): Promise<void>
   updateState(): Promise<UpdateState>
@@ -116,7 +117,7 @@ export interface ContinueItem { item: QueueItem; progress: Progress; libraryId: 
 export interface Bookmark { time: number; title: string; createdAt?: number }
 export type QueueEdit = { action: 'append' | 'next'; items: QueueItem[] } | { action: 'remove' | 'jump'; index: number } | { action: 'move'; from: number; to: number } | { action: 'clear' | 'clear-upcoming' | 'restore' } | { action: 'sleep-chapter'; enabled: boolean }
 export interface LocalRoot { id: string; name: string; path: string }
-export interface LocalFile { id: string; name: string; title: string; artist: string; album: string; duration: number; size: number; modified: number; codec?: string; sampleRate?: number; bitDepth?: number; bitRate?: number; trackNumber?: number; discNumber?: number; albumArtist?: string; genre?: string; year?: number; hasCover: boolean; fileIdentity?:string; error?: string }
+export interface LocalFile { addedAt?:number; id: string; name: string; title: string; artist: string; album: string; duration: number; size: number; modified: number; codec?: string; sampleRate?: number; bitDepth?: number; bitRate?: number; trackNumber?: number; discNumber?: number; albumArtist?: string; genre?: string; year?: number; hasCover: boolean; fileIdentity?:string; error?: string }
 export interface LocalFolder { rootId: string; folder: string; folders: { id: string; name: string }[]; files: LocalFile[]; warnings: string[] }
 export interface ListenLater { id: string; item: QueueItem; due: string; note: string; done: boolean; createdAt: number }
 export interface HistoryItem { id: string; item: QueueItem; position: number; duration: number; playedAt: number }

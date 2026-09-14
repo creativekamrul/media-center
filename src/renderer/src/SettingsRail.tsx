@@ -1,5 +1,6 @@
+import {RefreshCw,Server,AudioLines,Palette,Headphones,Share2} from 'lucide-react'
 import {useEffect,useState} from 'react'
-const sections=['Updates','Servers','Playback','Appearance','Listening','Sharing']
+const sections=[['Updates',RefreshCw],['Servers',Server],['Playback',AudioLines],['Appearance',Palette],['Listening',Headphones],['Sharing',Share2]] as const
 export function SettingsRail(){
   const [active,setActive]=useState('updates')
   useEffect(()=>{
@@ -13,5 +14,5 @@ export function SettingsRail(){
     },{root,rootMargin:'-80px 0px -30% 0px',threshold:[0,.1,.25,.5,.75,1]})
     groups.forEach(g=>observer.observe(g));return()=>observer.disconnect()
   },[])
-  return <nav className="settings-rail" aria-label="Settings sections">{sections.map(label=>{const id=label.toLowerCase();return <button className="secondary" key={id} aria-current={active===id?'location':undefined} onClick={()=>{setActive(id);document.getElementById(`settings-${id}`)?.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}}>{label}</button>})}</nav>
+  return <nav className="settings-rail" aria-label="Settings sections">{sections.map(([label,Icon])=>{const id=label.toLowerCase();return <button className="secondary" key={id} aria-current={active===id?'location':undefined} onClick={()=>{setActive(id);document.getElementById(`settings-${id}`)?.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}}><Icon size={16}/><span>{label}</span></button>})}</nav>
 }

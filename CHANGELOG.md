@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.0
+
+- Remember library and combined-library selections across navigation and restarts; open the first pinned view by default.
+- Sort album and playlist tracks by title, artist, date added, duration and more. Play, Play next and Queue follow the displayed sort without rewriting saved playlists.
+- Refine all themes and styles, Settings, tab navigation, track alignment, single-row player controls and mix actions. Keep the Original sidebar selection dot without the left ribbon.
+- Follow the current track in normal and immersive queues and place compact page controls alongside the queue heading.
+- Export the current application CSS, palette and fonts for local editing and re-import.
+- Add a saved Show page guidance setting, enabled by default, and consistent context-menu surfaces.
+- Add Snowfall, Rain, Deep Ocean and Ember Glow lyric backgrounds, respecting motion and reduced-motion preferences.
+
 ## 1.3.5
 
 - Automatically exit fullscreen when leaving immersive view, including navigation to an artist.

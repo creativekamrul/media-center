@@ -1,0 +1,248 @@
+/* A shared, restrained surface system. Palette and style tokens remain independent. */
+html[data-theme] {
+  --line:color-mix(in srgb,var(--text) 11%,transparent);
+  --control-border:color-mix(in srgb,var(--text) 17%,transparent);
+  --control-hover:color-mix(in srgb,var(--text) 7%,transparent);
+  --surface-quiet:color-mix(in srgb,var(--panel) 46%,var(--bg));
+  --navigation-radius:6px;
+}
+html[data-theme] :is(.sidebar,.topbar,.player-bar) {border-color:var(--line);box-shadow:none}
+html[data-theme] .sidebar {background:color-mix(in srgb,var(--bg) 94%,transparent);padding-inline:16px}
+html[data-theme] .sidebar .nav-item {
+  position:relative;min-height:40px;padding:10px 12px;margin-block:2px;gap:12px;
+  border:0!important;border-radius:var(--navigation-radius)!important;box-shadow:none!important;
+  background:transparent!important;color:var(--muted)!important;backdrop-filter:none!important;
+  font-size:13px;font-weight:500;transform:none;
+}
+html[data-theme] .sidebar .nav-item:hover {background:var(--control-hover)!important;color:var(--text)!important}
+html[data-theme] .sidebar .nav-item.selected {
+  background:color-mix(in srgb,var(--text) 8%,var(--bg))!important;color:var(--text)!important;
+  box-shadow:inset 2px 0 var(--accent)!important;font-weight:600;
+}
+html[data-theme] .sidebar .nav-item.selected>svg {color:var(--accent)}
+html[data-theme] .sidebar :is(.nav-heading,.listening-disclosure) {letter-spacing:.09em;font-size:10px}
+html[data-theme] :is(.avatar,.panel-icon) {box-shadow:none;background:var(--control-hover)}
+html[data-theme] .sidebar .profile {border-top:1px solid var(--line);padding-top:16px}
+html[data-theme][data-app-style=outline],html[data-theme][data-app-style=editorial],html[data-theme][data-app-style=retro] {--navigation-radius:2px}
+
+/* Utility controls have one rhythm. Icon-only playback controls keep their square hit targets. */
+html[data-theme] :is(button.secondary,.more-options-trigger,.filter,.sort-button) {
+  font-size:13px;font-weight:550;letter-spacing:0;min-height:38px;line-height:1.35;
+}
+html[data-theme] :is(.library-toolbar,.library-view-actions,.listen-actions) {gap:8px}
+html[data-theme] :is(.library-action-panel,.episode-filter-panel) {background:var(--surface-quiet);box-shadow:none;padding:14px 16px}
+html[data-theme] .library-action-panel {border-color:var(--line)}
+html[data-theme] :is(.song-row,.local-library-track,.queue-row) {border-color:var(--line)}
+html[data-theme] .media-grid>.music-card {background:transparent;box-shadow:none;border-color:transparent}
+html[data-theme] .media-grid>.music-card:hover {background:var(--control-hover);border-color:var(--line)}
+html[data-theme] .card-copy {padding-block:12px 6px}
+html[data-theme] .card-copy strong {font-size:14px;font-weight:600}
+html[data-theme] .card-copy :is(span,small) {line-height:1.5}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.browse-tabs,.now-tabs,.daily-tabs) {background:transparent;padding:0;gap:6px;border-radius:0;box-shadow:none}
+html[data-theme][data-app-style=ribbon]:not([data-app-style=default]) :is(.browse-tabs button,.now-tabs button) {border-radius:var(--style-control-radius)}
+html[data-theme][data-app-style=retro]:not([data-app-style=default]) :is(.topbar,.mini-drag,.modal>header) {border-bottom:1px solid var(--line)}
+html[data-theme][data-app-style=retro]:not([data-app-style=default]) :is(.field>input,.field>select,.field>textarea,.search,.settings-search) {box-shadow:none}
+html[data-theme][data-app-style=bold]:not([data-app-style=default]) :is(.library-heading,.section-title,.song-row,.queue-row) {border-bottom-width:1px}
+html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(.settings-panel,.library-action-panel,.custom-mix-card,.episode-card) {background:color-mix(in srgb,var(--panel) 55%,transparent);backdrop-filter:blur(16px);box-shadow:none}
+
+.track-sort-control {display:inline-flex;align-items:center;gap:6px;color:var(--muted);flex:0 1 auto;min-width:0}
+.track-sort-control select {min-height:38px;max-width:220px;width:auto;font-size:13px;padding:8px 28px 8px 10px}
+.track-sort-control>svg {flex-shrink:0}
+.library-view-actions {flex-wrap:wrap}
+
+/* Queue, Lyrics, Immersive view and lyric tools share the same header. */
+.expanded-player>.now-playing-header {align-items:center;gap:16px;padding-bottom:20px}
+.now-header-actions {display:flex;align-items:center;justify-content:flex-end;gap:16px;flex-wrap:wrap;min-width:0}
+.now-header-actions .now-tabs {display:flex;align-items:center;gap:8px;border:0!important;margin:0;padding:0}
+.now-lyrics-toolbar:empty {display:none}
+.now-lyrics-toolbar>.standard-lyrics-options {display:flex;align-items:center;gap:8px;margin:0;padding:0 0 0 16px;border:0;border-left:1px solid var(--line)}
+.now-lyrics-toolbar .standard-lyrics-tools {display:flex;align-items:center}
+.now-lyrics-toolbar .lyrics-tools {margin:0;padding:0}
+.now-header-actions :is(button.secondary,.more-options>.more-options-trigger) {min-height:40px;height:40px;min-width:0;padding:9px 15px;white-space:nowrap;font-size:13px}
+.now-header-actions .more-options-trigger {gap:8px}
+.standard-lyrics>.lyrics-panel {padding-top:0}
+
+/* Settings: clear category navigation and compact, consistently aligned preference groups. */
+.settings-page {max-width:1480px;margin-inline:auto}
+.settings-heading {padding-bottom:20px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.settings-heading>.eyebrow {font-size:10px;letter-spacing:.12em;margin:0 0 8px;color:var(--muted)}
+.settings-heading>h1 {font-family:var(--body-font);font-size:30px;line-height:1.25;font-weight:600;letter-spacing:-.025em;margin:0 0 8px}
+.settings-heading>.page-intro {font-size:14px;margin:0;color:var(--muted)}
+.settings-layout {grid-template-columns:172px minmax(0,1fr);gap:32px}
+html[data-theme] .settings-rail {border:0;border-radius:0;background:transparent;backdrop-filter:none;box-shadow:none;padding:0 16px 0 0;border-right:1px solid var(--line);gap:4px}
+html[data-theme] .settings-rail button {
+  display:flex;align-items:center;justify-content:flex-start;gap:10px;width:100%;min-height:40px;
+  border:0!important;border-radius:var(--navigation-radius)!important;box-shadow:none!important;
+  background:transparent!important;color:var(--muted)!important;backdrop-filter:none!important;
+  font-size:13px;font-weight:500;padding:10px 12px;text-align:left;
+}
+html[data-theme] .settings-rail button:hover {color:var(--text)!important;background:var(--control-hover)!important}
+html[data-theme] .settings-rail button[aria-current] {color:var(--text)!important;background:color-mix(in srgb,var(--text) 8%,var(--bg))!important;box-shadow:inset 2px 0 var(--accent)!important;font-weight:600}
+.settings-groups {gap:40px}
+.settings-group-title {font-family:var(--body-font);font-size:20px;font-weight:600;letter-spacing:-.015em;margin-bottom:18px}
+html[data-theme][data-app-style] .settings-group .settings-panel {padding:24px;border:1px solid var(--line);box-shadow:none;background:var(--surface-quiet)}
+.settings-panel :is(h2,h3) {font-family:var(--body-font);font-size:16px;line-height:1.4;font-weight:600;letter-spacing:0}
+.settings-panel p {font-size:13px;line-height:1.65}
+.settings-panel .field {font-size:13px;gap:8px;margin-bottom:16px}
+.settings-panel :is(.field>input,.field>select) {min-height:40px;font-size:13px}
+.settings-panel .panel-icon {padding:8px;border-radius:8px}
+.settings-panel .panel-heading {gap:12px;margin-bottom:20px}
+.settings-panel .panel-heading h2 {margin-bottom:4px}
+.settings-panel .setting-toggle {padding-block:16px;gap:20px}
+.settings-panel .settings-actions {border-top:1px solid var(--line);padding-top:18px;margin-top:20px}
+.settings-panel .connection-row {padding-block:16px;gap:12px}
+.settings-panel .connection-row small {overflow-wrap:anywhere}
+.settings-panel .control-actions {display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+.settings-panel .control-actions>button {max-width:100%;white-space:normal;overflow-wrap:anywhere;flex-shrink:1}
+.settings-panel .secure-note {background:transparent;padding:0}
+html[data-theme][data-app-style] .theme-preferences :is(.app-style-picker,.theme-picker,.appearance-editor) {background:transparent;border:0;border-radius:0;box-shadow:none;padding:0 0 24px;margin:0 0 24px;border-bottom:1px solid var(--line)}
+.theme-preferences :is(.app-style-picker,.theme-picker) legend {padding:0;font-size:16px;font-weight:600}
+.theme-preferences .app-style-grid {grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:10px}
+.app-style-choice {padding:10px;border-radius:10px}
+.app-style-choice .style-preview {height:68px;box-shadow:none;padding:8px}
+.app-style-choice .style-preview-rail {width:20px;gap:6px}
+.app-style-choice .style-preview-rail i {height:9px}
+.app-style-description {font-size:11px;line-height:1.45;min-height:32px}
+.app-style-choice[aria-pressed=true] {outline:none;border-color:var(--accent);background:color-mix(in srgb,var(--accent) 5%,var(--bg))}
+.settings-page .theme-grid {grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.settings-page .theme-swatch {min-height:80px;padding:10px;border-radius:8px;font-size:12px;box-shadow:none}
+.settings-page .theme-sample {height:32px;margin-bottom:8px;border-radius:4px}
+.theme-sample i:first-child {height:18px;width:5px;border-radius:2px}
+.theme-sample i:last-child {height:3px}
+.settings-page .css-import {padding-top:0}
+@media(max-width:1200px) {
+  .settings-layout {grid-template-columns:148px minmax(0,1fr);gap:24px}
+  .now-header-actions {gap:10px}
+  .now-header-actions :is(button.secondary,.more-options>.more-options-trigger) {padding-inline:11px;font-size:12px}
+  .now-lyrics-toolbar>.standard-lyrics-options {padding-left:10px}
+}
+@media(max-width:960px) {
+  .expanded-player>.now-playing-header {flex-wrap:wrap}
+  .now-header-actions {justify-content:flex-start}
+  .settings-layout {grid-template-columns:minmax(0,1fr)}
+  html[data-theme] .settings-rail {flex-direction:row;flex-wrap:wrap;padding:8px;border:1px solid var(--line);background:var(--bg);gap:4px}
+  html[data-theme] .settings-rail button {width:auto;flex:1 0 auto;justify-content:center}
+}
+@media(max-width:640px) {
+  .now-lyrics-toolbar>.standard-lyrics-options {border-left:0;padding-left:0}
+  html[data-theme][data-app-style] .settings-group .settings-panel {padding:18px}
+}
+
+/* Browse navigation shares the sidebar's quiet selection language in every style. */
+html[data-theme] .pinned-tab-list>button {border:0!important;border-radius:4px 4px 0 0!important;background:transparent!important;color:var(--muted)!important;box-shadow:none!important;backdrop-filter:none!important}
+html[data-theme] .pinned-tab-list>button:hover {background:var(--control-hover)!important;color:var(--text)!important}
+html[data-theme] .pinned-tab-list>button.active {background:transparent!important;color:var(--text)!important;box-shadow:inset 0 -2px var(--accent)!important}
+
+html[data-theme][data-app-style][data-translucency=true] .settings-group .settings-panel,
+html[data-theme][data-app-style]:is([data-theme=glass],[data-theme=black-glass]) .settings-group .settings-panel {background:color-mix(in srgb,var(--surface-quiet) 78%,transparent);backdrop-filter:blur(20px)}
+html[data-theme] .more-options>.more-options-trigger {min-height:44px}
+html[data-theme] .now-header-actions .more-options>.more-options-trigger {min-height:40px;height:40px}
+
+.profile-row {flex-wrap:wrap;min-width:0;gap:12px}
+.profile-row>div:first-child {min-width:0;flex:1 1 180px;overflow-wrap:anywhere}
+.profile-row .control-actions {flex:0 1 auto;max-width:100%;min-width:0;margin-block:0}
+
+html[data-theme] .detail-heading>.listen-actions>button,
+html[data-theme] .detail-heading>.listen-actions>.more-options>.more-options-trigger,
+html[data-theme] .expanded-art>.listen-actions.simplified-actions>button,
+html[data-theme] .expanded-art>.listen-actions>.more-options>.more-options-trigger {height:44px;min-height:44px}
+html[data-theme] .immersive-header :is(button.secondary,.more-options-trigger) {height:40px;min-height:40px;padding-block:9px}
+
+/* 1.4: consistent navigation, compact actions and quiet guidance. */
+html[data-show-help=false] .guidance {display:none!important}
+html[data-theme][data-app-style=default] .sidebar .nav-item.selected {box-shadow:none!important}
+html[data-theme] .browse-tabs>button.filter {border:0!important;border-radius:4px 4px 0 0!important;background:transparent!important;box-shadow:none!important;color:var(--muted)!important;min-height:42px;padding:10px 16px}
+html[data-theme] .browse-tabs>button.filter.active {color:var(--text)!important;box-shadow:inset 0 -2px var(--accent)!important}
+html[data-theme][data-app-style=frosted] :is(.browse-tabs>button.filter,.pinned-tab-list>button) {backdrop-filter:blur(12px)!important}
+html[data-theme][data-app-style=frosted] :is(.browse-tabs>button.filter:hover,.pinned-tab-list>button:hover) {background:color-mix(in srgb,var(--text) 5%,transparent)!important}
+.queue-header-meta,.queue-pagination {display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.queue-header-meta {margin-left:auto;color:var(--muted);font-size:12px}
+.queue-pagination {gap:6px;border-left:1px solid var(--line);padding-left:12px}
+.queue-pagination .icon-button {width:32px;height:32px;min-width:32px;min-height:32px}
+.queue-pagination>span {font-variant-numeric:tabular-nums}
+.pagination {justify-content:flex-end;gap:12px;border-top:1px solid var(--line);padding-top:16px;margin-top:20px}
+.pagination>button {min-height:36px;padding:8px 14px}
+.mix-card-actions {grid-template-columns:auto minmax(0,1fr) 40px;gap:8px}
+.mix-card-actions>.more-options {grid-column:auto;min-width:0}
+html[data-theme] .mix-card-actions>button {height:40px;min-height:40px;padding:8px 12px;font-size:12px}
+html[data-theme] .mix-card-actions>.more-options>.more-options-trigger {height:40px;min-height:40px;width:40px;min-width:40px;padding:0;justify-content:center}
+.playlist-destination {display:flex;align-items:center;margin:0;flex:0 1 240px;min-width:160px}
+.playlist-destination>select {width:100%;min-height:42px;margin:0}
+@container(min-width:1201px) {
+ .customizable-table .song-row:not(.has-row-tools) {grid-template-columns:20px minmax(240px,1fr) auto}
+ .customizable-table:has(.track-column:nth-child(6)) .song-row:not(.has-row-tools) {grid-template-columns:20px minmax(0,1fr)}
+}
+/* The same menu surface and flat action rows in every palette and style. */
+html[data-theme][data-app-style] :is(.more-options-panel[popover],.card-action-popover[popover],.card-more>.listen-actions) {
+ border:1px solid var(--control-border)!important;border-radius:20px!important;padding:8px!important;
+ background:var(--panel)!important;color:var(--text)!important;box-shadow:0 12px 36px #0005!important;backdrop-filter:none!important;
+}
+html[data-theme][data-app-style] :is(.more-options-panel,.card-action-popover,.card-more>.listen-actions) button {
+ display:flex;align-items:center;justify-content:flex-start;width:100%;height:auto;min-height:40px;padding:10px 12px;margin:0;
+ border:0!important;border-radius:8px!important;background:transparent!important;color:var(--text)!important;box-shadow:none!important;backdrop-filter:none!important;font-size:12px;text-align:left;
+}
+html[data-theme][data-app-style] :is(.more-options-panel,.card-action-popover,.card-more>.listen-actions) button:hover:not(:disabled) {background:var(--control-hover)!important}
+html[data-theme][data-app-style] :is(.more-options-panel,.card-action-popover,.card-more>.listen-actions) button:focus-visible {outline:2px solid var(--accent);outline-offset:-2px}
+.backdrop-snow .immersive-atmosphere {background:linear-gradient(145deg,#0b1928,#253442)}
+.backdrop-rain .immersive-atmosphere {background:linear-gradient(145deg,#07131c,#172738 65%,#101822)}
+.backdrop-ocean .immersive-atmosphere {background:linear-gradient(145deg,#062e36,#071820 70%)}
+.backdrop-ocean .ambient-glow {background:radial-gradient(ellipse at 15% 80%,#098b8555,transparent 60%),radial-gradient(ellipse at 85% 15%,#125b8855,transparent 50%)}
+.backdrop-ember .immersive-atmosphere {background:linear-gradient(145deg,#301c22,#1b111b 70%)}
+.backdrop-ember .ambient-glow {background:radial-gradient(ellipse at 20% 70%,#bc633b66,transparent 60%),radial-gradient(ellipse at 85% 15%,#80314b44,transparent 50%)}
+.weather-field {position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:.45}
+.weather-field>i {position:absolute;inset:-320px 0;background-repeat:repeat;will-change:transform}
+.weather-snow>i {background-image:radial-gradient(2px 2px at 24px 35px,#f1f6ff 85%,transparent 100%),radial-gradient(1px 1px at 110px 130px,#fff 85%,transparent 100%);background-size:180px 240px;--fall-distance:240px;opacity:.6}
+.weather-snow>i:nth-child(2) {background-size:280px 320px;--fall-distance:320px;opacity:.4}
+.weather-snow>i:nth-child(3) {background-size:130px 160px;--fall-distance:160px;opacity:.25}
+.weather-rain>i {background-image:linear-gradient(102deg,transparent 49%,#c5dff155 50%,transparent 52%);background-size:90px 170px;--fall-distance:170px;opacity:.55}
+.weather-rain>i:nth-child(2) {background-size:145px 220px;--fall-distance:220px;opacity:.35}
+.weather-rain>i:nth-child(3) {background-size:210px 280px;--fall-distance:280px;opacity:.2}
+.with-motion .weather-snow>i {animation:snow-fall 18s linear infinite}
+.with-motion .weather-snow>i:nth-child(2) {animation-duration:27s;animation-delay:-12s}
+.with-motion .weather-snow>i:nth-child(3) {animation-duration:12s;animation-delay:-5s}
+.with-motion .weather-rain>i {animation:rain-fall 1.4s linear infinite}
+.with-motion .weather-rain>i:nth-child(2) {animation-duration:1.8s;animation-delay:-.7s}
+.with-motion .weather-rain>i:nth-child(3) {animation-duration:2.2s;animation-delay:-1s}
+@keyframes snow-fall {to{transform:translateY(var(--fall-distance))}}
+@keyframes rain-fall {to{transform:translateY(var(--fall-distance))}}
+.still .weather-field>i {animation:none;will-change:auto}
+@media(prefers-reduced-motion:reduce) {.with-motion .weather-field>i {animation:none;will-change:auto}}
+
+/* Semantic hierarchy: navigation, choices and results do not inherit action-button shapes. */
+html[data-theme][data-app-style] :is(.browse-tabs:not(.concise-tabs),.now-tabs,.daily-tabs) {
+ border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;padding:0;gap:4px;
+}
+html[data-theme][data-app-style] :is(.browse-tabs>button,.now-tabs>button,.daily-tabs>button,button[role=tab]) {
+ border:0!important;border-radius:4px 4px 0 0!important;box-shadow:none!important;background:transparent!important;
+ color:var(--muted)!important;min-height:40px;padding:10px 14px;font-size:13px;font-weight:500;
+}
+html[data-theme][data-app-style] :is(.browse-tabs>button,.now-tabs>button,.daily-tabs>button,button[role=tab]):is(.active,[aria-selected=true],[aria-pressed=true]) {
+ color:var(--text)!important;background:transparent!important;box-shadow:inset 0 -2px var(--accent)!important;font-weight:600;
+}
+html[data-theme][data-app-style] :is(.browse-tabs>button,.now-tabs>button,.daily-tabs>button,button[role=tab]):hover:not(:disabled) {color:var(--text)!important;background:var(--control-hover)!important}
+html[data-theme][data-app-style=frosted] :is(.browse-tabs:not(.concise-tabs),.now-tabs,.daily-tabs) {background:color-mix(in srgb,var(--text) 3%,transparent);backdrop-filter:blur(12px)}
+html[data-theme][data-app-style] :is(.provider-toggle,.surface-style-toggle) {display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:8px;background:var(--control-hover);box-shadow:none}
+html[data-theme][data-app-style] :is(.provider-toggle,.surface-style-toggle)>button {border:0;border-radius:5px;box-shadow:none;background:transparent;color:var(--muted);min-height:34px;padding:8px 14px}
+html[data-theme][data-app-style] :is(.provider-toggle,.surface-style-toggle)>button:is(.selected,[aria-pressed=true]) {background:var(--panel);color:var(--text);box-shadow:0 1px 3px #0002}
+html[data-theme][data-app-style] .result-card {
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:6px;width:100%;min-width:0;
+ padding:16px!important;border:1px solid var(--line)!important;border-radius:min(var(--style-panel-radius,12px),16px)!important;
+ background:var(--surface-quiet)!important;color:var(--text)!important;text-align:left;box-shadow:none!important;
+ font-size:13px;white-space:normal;overflow-wrap:anywhere;
+}
+html[data-theme][data-app-style] .result-card>strong {font-size:14px;font-weight:600;line-height:1.5}
+html[data-theme][data-app-style] .result-card>:is(span,small) {color:var(--muted)!important;font-size:12px;line-height:1.5}
+html[data-theme][data-app-style] .result-card[aria-pressed=true] {border-color:var(--accent)!important;box-shadow:inset 3px 0 var(--accent)!important;background:color-mix(in srgb,var(--accent) 6%,var(--panel))!important}
+html[data-theme][data-app-style] .result-card:hover:not(:disabled) {border-color:var(--control-border)!important;background:var(--control-hover)!important}
+html[data-theme][data-app-style=frosted] .result-card {background:color-mix(in srgb,var(--panel) 60%,transparent)!important;backdrop-filter:blur(16px)}
+html[data-theme][data-app-style] :is(.section-title,.library-heading,.panel-heading,.settings-group-title) {border-radius:0;box-shadow:none;background:transparent}
+
+/* Foreground pairs follow the surface, including secondary text inside a selection. */
+html[data-theme][data-app-style] :is(button.primary,button.main-play,button.card-play) {--muted:var(--accent-text,#101010);color:var(--accent-text,#101010)}
+html[data-theme][data-app-style] :is(button.primary,button.main-play,button.card-play) :is(strong,span,small,p) {color:inherit}
+html[data-theme][data-app-style] :is(.queue-row,.song-row,.local-library-track,.command-result,.playlist-choice,.personal-shelf-card) {color:var(--text)}
+html[data-theme][data-app-style] :is(.queue-row,.song-row,.local-library-track,.command-result,.playlist-choice,.personal-shelf-card) strong {color:var(--text)}
+html[data-theme][data-app-style] :is(.queue-row,.song-row,.local-library-track,.command-result,.playlist-choice,.personal-shelf-card) small {color:var(--muted)}
+html[data-theme][data-app-style] .queue-row.current {background:color-mix(in srgb,var(--text) 8%,var(--panel));color:var(--text)}
+html[data-theme][data-app-style] .result-card:disabled {opacity:.65}
+html[data-theme][data-app-style] :is(input,textarea)::placeholder {color:var(--muted);opacity:1}

@@ -5,9 +5,9 @@
   --style-border-width:1px; --style-edge:var(--line); --style-shadow:none; --style-control-shadow:none;
 }
 html[data-theme][data-app-style=soft], [data-style-variant=soft] {
-  --style-control-radius:999px; --style-panel-radius:26px; --style-art-radius:18px;
+  --style-control-radius:999px; --style-panel-radius:18px; --style-art-radius:12px;
   --style-border-width:1px; --style-edge:color-mix(in srgb,var(--accent) 14%,var(--panel));
-  --style-shadow:0 8px 24px #0002; --style-control-shadow:none;
+  --style-shadow:0 4px 16px #00000012; --style-control-shadow:none;
   --style-control-fill:color-mix(in srgb,var(--accent) 12%,var(--panel));
 }
 html[data-theme][data-app-style=precision], [data-style-variant=precision] {
@@ -23,16 +23,16 @@ html[data-theme][data-app-style=outline], [data-style-variant=outline] {
 }
 html[data-theme][data-app-style=bold], [data-style-variant=bold] {
   --style-control-radius:6px; --style-panel-radius:10px; --style-art-radius:6px;
-  --style-border-width:2px; --style-edge:color-mix(in srgb,var(--text) 65%,var(--panel));
-  --style-shadow:5px 5px 0 color-mix(in srgb,var(--accent) 35%,var(--bg));
-  --style-control-shadow:2px 2px 0 color-mix(in srgb,var(--text) 30%,var(--bg));
+  --style-border-width:1px; --style-edge:color-mix(in srgb,var(--text) 28%,var(--panel));
+  --style-shadow:0 6px 20px #00000020;
+  --style-control-shadow:inset 0 -1px color-mix(in srgb,var(--text) 18%,transparent);
   --style-control-fill:var(--panel);
 }
 html[data-theme][data-app-style=retro], [data-style-variant=retro] {
   --style-control-radius:1px; --style-panel-radius:2px; --style-art-radius:1px;
   --style-border-width:1px; --style-edge:color-mix(in srgb,var(--text) 32%,var(--panel));
-  --style-shadow:inset 2px 2px color-mix(in srgb,var(--text) 28%,var(--panel)),inset -2px -2px #0007,3px 3px 0 #0004;
-  --style-control-shadow:inset 1px 1px color-mix(in srgb,var(--text) 45%,var(--panel)),inset -1px -1px #0008;
+  --style-shadow:none;
+  --style-control-shadow:inset 0 1px color-mix(in srgb,var(--text) 12%,transparent);
   --style-control-fill:color-mix(in srgb,var(--text) 6%,var(--panel));
 }
 html[data-theme][data-app-style=editorial], [data-style-variant=editorial] {
@@ -42,14 +42,14 @@ html[data-theme][data-app-style=editorial], [data-style-variant=editorial] {
 }
 html[data-theme][data-app-style=neon], [data-style-variant=neon] {
   --style-control-radius:10px; --style-panel-radius:18px; --style-art-radius:10px;
-  --style-border-width:1px; --style-edge:color-mix(in srgb,var(--accent) 65%,var(--panel));
-  --style-shadow:inset 0 0 20px color-mix(in srgb,var(--accent) 4%,transparent),0 0 16px color-mix(in srgb,var(--accent) 10%,transparent);
-  --style-control-shadow:0 0 6px color-mix(in srgb,var(--accent) 12%,transparent); --style-control-fill:var(--panel);
+  --style-border-width:1px; --style-edge:color-mix(in srgb,var(--accent) 30%,var(--panel));
+  --style-shadow:none;
+  --style-control-shadow:none; --style-control-fill:var(--panel);
 }
 html[data-theme][data-app-style=ribbon], [data-style-variant=ribbon] {
-  --style-control-radius:6px 18px 18px 6px; --style-panel-radius:6px 28px 6px 28px; --style-art-radius:6px 18px;
+  --style-control-radius:8px; --style-panel-radius:12px; --style-art-radius:8px;
   --style-border-width:1px; --style-edge:color-mix(in srgb,var(--accent) 30%,var(--panel));
-  --style-shadow:inset 4px 0 var(--accent); --style-control-shadow:inset 3px 0 var(--accent);
+  --style-shadow:none; --style-control-shadow:none;
   --style-control-fill:color-mix(in srgb,var(--accent) 7%,var(--panel));
 }
 
@@ -170,7 +170,7 @@ html[data-theme][data-app-style=ribbon]:not([data-app-style=default]) .section-t
 /* Always set a selected control's fill AND foreground together, after neutral
    style treatments. This covers settings, tabs, navigation, toggles and players.
    Style/theme preview cards and lyric lines keep their own selection language. */
-html[data-theme][data-app-style]:not([data-app-style=default]) button:not(.app-style-choice):not(.theme-swatch):not(.personal-shelf-card):not(.lyric-line):is(.primary,.main-play,.card-play,.active,.selected,[aria-pressed=true],[aria-selected=true],[aria-current=location],[aria-current=page],.more-options-trigger[aria-expanded=true]) {
+html[data-theme][data-app-style]:not([data-app-style=default]) button:is(.primary,.main-play,.card-play,.secondary.active,.secondary[aria-pressed=true],.icon-button.active,.filter.active,.sort-button.active,.more-options-trigger[aria-expanded=true]) {
   background:var(--accent);color:var(--accent-text,#101010);border-color:var(--accent);filter:none;
 }
 html[data-theme][data-app-style]:not([data-app-style=default]) .card-favorite.active {background:var(--accent)!important;color:var(--accent-text,#101010)}

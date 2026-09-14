@@ -20,7 +20,7 @@ module.exports=async({page,artifacts})=>{
   await save(dialog)
   assert.deepEqual(await names(),['Favorites','Albums','Songs','Artists','Playlists'])
   await page.reload();await page.getByRole('button',{name:'Music',exact:true}).click()
-  await page.waitForFunction(()=>document.querySelector('.pinned-tab-list>button')?.textContent==='Favorites')
+  await page.waitForFunction(()=>document.querySelector('.pinned-tab-list>.active')?.textContent==='Favorites')
   dialog=await open();await dialog.getByRole('checkbox',{name:'Pin Albums',exact:true}).uncheck();await save(dialog)
   await page.waitForFunction(()=>document.querySelector('.pinned-tab-list>.active')?.textContent==='Favorites')
   assert.deepEqual(await names(),['Favorites','Songs','Artists','Playlists'])

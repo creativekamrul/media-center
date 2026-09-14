@@ -37,7 +37,7 @@ export function LyricEditor({
   const rows = text.split('\n')
   return (
     <Modal title="Edit song lyrics" close={close}>
-      <p className="muted">
+      <p className="muted guidance">
         Edit text or LRC line timestamps. Changes are saved for this song on
         this device and included in personal backups. Timing a line here
         replaces that line’s word timing.

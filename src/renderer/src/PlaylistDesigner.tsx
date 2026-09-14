@@ -141,7 +141,7 @@ export function PlaylistDesigner({
   }
   const content = (
     <section className="playlist-designer">
-      <p className="muted">
+      <p className="muted guidance">
         Create a collage or choose a picture. Covers are saved locally for this
         playlist. Export PNG to share or upload elsewhere.
       </p>

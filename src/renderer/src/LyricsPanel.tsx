@@ -52,16 +52,17 @@ function LyricsContent({player,immersive=false,motion=true,wordLift=false,toolba
 
 type SharedAppearance={appearance?:PlayingScreenPreferences;onAppearanceChange?:(value:PlayingScreenPreferences)=>void}
 export function LyricsPanel(props:{player:PlaybackState;immersive?:boolean;motion?:boolean;wordLift?:boolean;toolbar?:HTMLElement|null}&SharedAppearance) {
- return props.immersive?<LyricsContent {...props}/>:<StandardLyrics player={props.player} appearance={props.appearance} onAppearanceChange={props.onAppearanceChange}/>
+ return props.immersive?<LyricsContent {...props}/>:<StandardLyrics toolbar={props.toolbar} player={props.player} appearance={props.appearance} onAppearanceChange={props.onAppearanceChange}/>
 }
-function StandardLyrics({player,appearance,onAppearanceChange}:{player:PlaybackState}&SharedAppearance) {
+function StandardLyrics({player,appearance,onAppearanceChange,toolbar:externalToolbar}:{player:PlaybackState;toolbar?:HTMLElement|null}&SharedAppearance) {
  const [localPrefs,setLocalPrefs]=useState(defaultPlayingScreen),[ready,setReady]=useState(false),[open,setOpen]=useState(false),[error,setError]=useState(''),[toolbar,setToolbar]=useState<HTMLDivElement|null>(null)
  const prefs=appearance??localPrefs,setPrefs=onAppearanceChange??setLocalPrefs
  useEffect(()=>{const reload=()=>{if(appearance)return;void api.playingScreenPreferences().then(setPrefs).catch(e=>setError(message(e)))};window.addEventListener('profile-applied',reload);return()=>window.removeEventListener('profile-applied',reload)},[])
  useEffect(()=>{if(appearance){setReady(true);return}let live=true;void api.playingScreenPreferences().then(p=>{if(live)setPrefs(p)}).catch(e=>{if(live)setError(message(e))}).finally(()=>{if(live)setReady(true)});return()=>{live=false}},[])
+ const options=<div className="standard-lyrics-options"><div className="standard-lyrics-tools" ref={setToolbar}/><button className="secondary" disabled={!ready} onClick={()=>setOpen(true)}><Settings2 size={16}/>Lyrics appearance</button></div>
  return <div className={`standard-lyrics backdrop-${prefs.background} lyric-animation-${prefs.animation} ${prefs.motion?'with-motion':'still'}`} style={lyricAppearanceStyle(prefs)}>
  {!appearance&&prefs.background==='artwork'&&<div className="standard-lyrics-backdrop" aria-hidden="true"><QueueArt item={player.queue[player.queueIndex]}/></div>}
- <div className="standard-lyrics-options"><div className="standard-lyrics-tools" ref={setToolbar}/><button className="secondary" disabled={!ready} onClick={()=>setOpen(true)}><Settings2 size={16}/>Lyrics appearance</button></div>
+ {externalToolbar?createPortal(options,externalToolbar):options}
  {error&&<p role="alert">{error}</p>}{open&&<LyricsAppearance value={prefs} preview={setPrefs} close={()=>setOpen(false)}/>}
  <LyricsContent player={player} toolbar={toolbar} motion={prefs.motion&&prefs.animation!=='none'} wordLift={prefs.animation==='flow'}/></div>
 }

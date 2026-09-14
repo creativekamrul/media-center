@@ -10,7 +10,7 @@ The target is a full desktop replacement for Feishin and Audiobookshelf's web cl
 
 | Desktop | Independently saved pinned/reordered tabs in Music, Local music and Library tools; Windows installer; external MPV picker; output devices; exclusive output; media keys; optional close to tray |
 
-| Music | Named server/library picker; combined Navidrome browsing with per-server pagination, source identities and partial-failure retry; libraries, albums, songs, artists and artist albums, recently added/played, most played, random albums, genres, favorites, radio playback |
+| Music | Per-page library/source choices persist across navigation and restart (Music, Playlists, local folders, books and podcasts), including Combined; named server/library picker; combined Navidrome browsing with per-server pagination, source identities and partial-failure retry; libraries, albums, songs, artists and artist albums, recently added/played, most played, random albums, genres, favorites, radio playback |
 
 | Search/order | Songs/artists/albums search, paginated catalog, album title/artist/year/rating ordering, playlist/artist/genre/favorite search |
 
@@ -337,3 +337,16 @@ Collection and episode controls share compact playback rows with personal/progre
 - Immersive view occupies the space previously reserved for the bottom player and hosts a complete transport under the cover. Studio, Minimal and Gallery retain queue access; exiting restores the footer and keyboard access. Shared utilities preserve sleep/volume behavior, and the existing identity-safe SeekBar handles seeking. Audiobooks and podcast episodes have speed and separate 15/30-second skip controls.
 - Main and immersive volume controls accept mouse-wheel input over the icon, slider and percentage. Wheel input accumulates in 100-pixel (or three-line) increments for five-point changes, clamps at 0/100, and does not scroll the page. Ctrl+wheel remains available for zoom; slider/keyboard changes use the same bounded, serialized main-process command path.
 - Verified with typecheck, 209 unit tests, production build and the full Electron/MPV suite with zero renderer errors. New native checks cover footer hide/restore, all three immersive layouts at 1440×940 and 1024×720, seek/shuffle/repeat/sleep/mini controls, bounded and rapid wheel input, and skip/speed for both audiobooks and podcast episodes.
+
+- The first pinned view opens when entering Music, Local music or Library tools, even when the old default is still pinned. Explicit links and returning from detail keep their intended view.
+- Album/playlist track tables offer original order, title A–Z/Z–A, artist, album, date added, release year, duration and disc/track sorting. Header playback, Play next, Add to queue and play-from-row follow the display order without rewriting a server playlist. Manual playlist reordering uses Original order. Duplicate track occurrences remain distinct. Standalone server song searches sort the loaded page; local sorting runs before pagination (local playback retains its existing 100-track page limit).
+- Navidrome date sorting uses its optional `created` field ([0.60.3 response source](https://github.com/navidrome/navidrome/blob/v0.60.3/server/subsonic/responses/responses.go)); this is a library date, not an insertion date within a playlist. Unknown dates sort last. Local date added records first indexing and survives rescans and identified renames; legacy files without a recorded date remain unknown.
+- Now Playing places view switches and lyrics tools/appearance in one responsive header. All 13 themes and 10 application styles share restrained navigation, consistent utility controls and a compact Settings layout, with separate palette and style choices.
+
+### Version 1.4.0 interface refinements
+
+- Normal and immersive queues follow the current item across pages and when reopened.
+- Page guidance can be hidden through Appearance; the default remains on. Status, errors and metadata remain visible.
+- Export the current app CSS and computed palette/font tokens through a native save dialog; edit locally and re-import (512 KB maximum). The snapshot identifies the theme/style selections to use.
+- Tabs, segmented choices, action buttons, headings and selectable results have distinct treatments across the theme/style system.
+- Snowfall, Rain, Deep Ocean and Ember Glow backgrounds support saved preview/cancel and reduced motion.

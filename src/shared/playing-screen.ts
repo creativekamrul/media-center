@@ -5,7 +5,7 @@ const color=z.string().regex(/^#[0-9a-f]{6}$/i)
 export const playingScreenSchema=z.object({
  layout:z.enum(['studio','minimal','gallery']).default('studio'),
  showMusicLyrics:z.boolean().default(true),
- background:z.enum(['aurora','artwork','midnight','sunset','stars']),
+ background:z.enum(['aurora','artwork','midnight','sunset','stars','snow','rain','ocean','ember']),
  fontSize:z.number().int().min(24).max(64),motion:z.boolean(),
  font:z.union([z.literal('theme'),fontChoiceSchema]).default('theme'),
  weight:z.enum(['500','650','800']).default('800'),

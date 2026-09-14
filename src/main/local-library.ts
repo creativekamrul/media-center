@@ -1,3 +1,4 @@
+import {sortedTrackIndexes} from '../shared/track-sort'
 import {applyMetadata} from '../shared/personal-state'
 import {progressKey} from '../shared/timeline'
 import type {PersonalState} from '../shared/personal-library'
@@ -15,7 +16,7 @@ export class LocalLibrary {
  constructor(private store:Store,private local:LocalFiles){}
  private async scan(rootId:string):Promise<Index>{
   const root=this.local.roots().find(r=>r.id===rootId);if(!root)throw Error('Choose a local source.')
-  const result:Index={version:3,files:[],updatedAt:Date.now(),warnings:[]},pending=[''],seen=new Set<string>();let entriesRead=0
+  const result:Index={version:4,files:[],updatedAt:Date.now(),warnings:[]},pending=[''],seen=new Set<string>();let entriesRead=0
   while(pending.length){
    const folder=pending.shift()!
    try{
@@ -33,11 +34,14 @@ export class LocalLibrary {
   }
   if(!this.local.roots().some(r=>r.id===rootId))throw Error('This source was removed during indexing.')
   const old=this.store.get<Index>(`local-index:${rootId}`)
+  const added=new Map(old?.files.map(f=>[f.id,f.addedAt]))
+  for(const f of result.files)f.addedAt=added.has(f.id)?added.get(f.id):result.updatedAt
   if(old){
    const currentIds=new Set(result.files.map(f=>f.id)),identities=new Map<string,string[]>()
    for(const f of result.files)if(f.fileIdentity){const ids=identities.get(f.fileIdentity)??[];ids.push(f.id);identities.set(f.fileIdentity,ids)}
    const moved=new Map<string,string>()
    for(const f of old.files)if(!currentIds.has(f.id)&&f.fileIdentity){const candidates=identities.get(f.fileIdentity);if(candidates?.length===1)moved.set(f.id,candidates[0])}
+   for(const [before,after] of moved){const f=result.files.find(f=>f.id===after);if(f)f.addedAt=added.get(before)}
    if(moved.size){const remap=(id:string)=>moved.get(id)??id;this.store.set(`local-favorites:${rootId}`,[...new Set((this.store.get<string[]>(`local-favorites:${rootId}`)??[]).map(remap))]);this.store.set(`local-playlists:${rootId}`,(this.store.get<LocalPlaylist[]>(`local-playlists:${rootId}`)??[]).map(p=>({...p,files:p.files.map(remap)})))}
   }
   this.store.set(`local-index:${rootId}`,result);return result
@@ -45,7 +49,7 @@ export class LocalLibrary {
  async index(rootId:string,refresh=false):Promise<Index>{
   if(!this.local.roots().some(r=>r.id===rootId))throw Error('Choose a local source.')
   const running=this.scans.get(rootId);if(running){await running;return refresh?this.index(rootId,true):this.store.get<Index>(`local-index:${rootId}`)!}
-  const cached=this.store.get<Index>(`local-index:${rootId}`);if(cached?.version===3&&!refresh)return cached
+  const cached=this.store.get<Index>(`local-index:${rootId}`);if(cached?.version===4&&!refresh)return cached
   const work=this.scan(rootId).finally(()=>this.scans.delete(rootId));this.scans.set(rootId,work);return work
  }
  async favorite(rootId:string,fileId:string,favorite:boolean){await this.local.path(rootId,fileId);const ids=new Set(this.store.get<string[]>(`local-favorites:${rootId}`)??[]);favorite?ids.add(fileId):ids.delete(fileId);this.store.set(`local-favorites:${rootId}`,[...ids])}
@@ -76,7 +80,11 @@ export class LocalLibrary {
   }
   if(input.view==='favorites')files=files.filter(f=>favorites.has(f.id))
   if(input.view==='recent')files=files.filter(f=>recent.has(f.id))
-  if(input.view!=='playlists'||!input.group)files.sort((a,b)=>input.view==='recent'?(recent.get(b.id)??0)-(recent.get(a.id)??0):input.view==='newest'?b.modified-a.modified:input.view==='albums'&&input.group?(a.discNumber??1)-(b.discNumber??1)||(a.trackNumber??0)-(b.trackNumber??0)||a.name.localeCompare(b.name):input.sort==='duration'?b.duration-a.duration:input.sort==='year'?(b.year??0)-(a.year??0):String(a[input.sort]??'').localeCompare(String(b[input.sort]??''),undefined,{numeric:true}))
+  if(input.sort!=='original')files=sortedTrackIndexes(files,input.sort).map(i=>files[i])
+  else if(input.view==='recent')files.sort((a,b)=>(recent.get(b.id)??0)-(recent.get(a.id)??0))
+  else if(input.view==='newest')files.sort((a,b)=>(b.addedAt??0)-(a.addedAt??0))
+  else if(input.view==='albums'&&input.group)files=sortedTrackIndexes(files,'track').map(i=>files[i])
+  else if(input.view!=='playlists'||!input.group)files=sortedTrackIndexes(files,'title').map(i=>files[i])
   groups.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true}))
   const grouped=['albums','artists','genres','playlists'].includes(input.view)&&input.group===undefined
   return {tracks:grouped?[]:files.slice(input.page*100,(input.page+1)*100).map(f=>({...f,favorite:favorites.has(f.id)})),groups:groups.slice(input.page*100,(input.page+1)*100),total:grouped?groups.length:files.length,trackCount:index.files.length,page:input.page,updatedAt:index.updatedAt,warnings:index.warnings}

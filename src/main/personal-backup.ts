@@ -216,6 +216,14 @@ export function restoreExtra(
     profileSpeed: extra.profileSpeed,
     experience: {
       ...extra.experience,
+      navigation:{...extra.experience.navigation,librarySelections:Object.fromEntries(Object.entries(extra.experience.navigation.librarySelections).flatMap(([scope,value])=>{
+        if(value===undefined)return []
+        if(scope==='playlistSource'||value==='all'||value==='')return [[scope,value]]
+        if(scope.startsWith('local')){const mapped=maps.folders.get(value);return mapped?[[scope,mapped]]:[]}
+        const original=[...maps.servers.keys()].sort((a,b)=>b.length-a.length).find(id=>value.startsWith(id+':'))
+        const mapped=original&&maps.servers.get(original)
+        return mapped?[[scope,mapped+value.slice(original!.length)]]:[]
+      }))},
       pins: extra.experience.pins.map((p) => ({
         ...p,
         source: p.kind === 'local' ? folder(p.source) : server(p.source),

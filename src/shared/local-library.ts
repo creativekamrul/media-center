@@ -1,7 +1,8 @@
+import {trackSortOptions} from './track-sort'
 import {z} from 'zod'
 import type {LocalFile} from './types'
 export const localViews=['albums','songs','artists','genres','favorites','newest','recent','playlists','folders'] as const
-export const localQuerySchema=z.object({rootId:z.string().min(1).max(200),view:z.enum(localViews),page:z.number().int().min(0).max(100000),search:z.string().max(500),sort:z.enum(['title','artist','year','duration']).default('title'),group:z.string().max(4096).optional(),refresh:z.boolean().optional()}).strict()
+export const localQuerySchema=z.object({rootId:z.string().min(1).max(200),view:z.enum(localViews),page:z.number().int().min(0).max(100000),search:z.string().max(500),sort:z.enum(trackSortOptions.map(([id])=>id) as ['original',...Array<typeof trackSortOptions[number][0]>]).default('original'),group:z.string().max(4096).optional(),refresh:z.boolean().optional()}).strict()
 export type LocalQuery=z.infer<typeof localQuerySchema>
 export interface LocalIndexedTrack extends LocalFile {favorite:boolean}
 export interface LocalGroup {id:string;title:string;subtitle:string;count:number;fileId?:string}

@@ -35,4 +35,26 @@ describe('Indexed local collection',()=>{
   await writeFile(join(path,'before.wav'),'fixture');const root=await local.add(path);await library.query(localQuerySchema.parse({rootId:root.id,view:'songs',page:0,search:''}));await library.favorite(root.id,'before.wav',true);await library.playlist({action:'create',rootId:root.id,name:'Old',files:['before.wav','before.wav']});await rename(join(path,'before.wav'),join(path,'after.wav'));await library.index(root.id,true);expect(values.get('local-favorites:'+root.id)).toEqual(['after.wav']);const lists=values.get('local-playlists:'+root.id) as {id:string;files:string[]}[];expect(lists[0].files).toEqual(['after.wav','after.wav']);await library.playlist({action:'update',rootId:root.id,id:lists[0].id,name:'New',files:['after.wav']});expect(values.get('local-playlists:'+root.id)).toEqual([{id:lists[0].id,name:'New',files:['after.wav']}])
  })
 
+ it('sorts a whole local playlist before pagination without saving the display order',async()=>{
+  const root=await local.add(path)
+  const files=Array.from({length:105},(_,i)=>({id:`${i}.wav`,name:`${i}.wav`,title:`Song ${104-i}`,artist:'Artist',album:'Album',duration:i+1,addedAt:i,modified:1,size:7,hasCover:false}))
+  values.set(`local-index:${root.id}`,{version:4,files,updatedAt:1,warnings:[]})
+  const ids=files.map(f=>f.id);values.set(`local-playlists:${root.id}`,[{id:'p',name:'Playlist',files:ids}])
+  const query=localQuerySchema.parse({rootId:root.id,view:'playlists',group:'p',page:0,search:'',sort:'title'})
+  expect((await library.query(query)).tracks.map(t=>t.title)).toEqual(Array.from({length:100},(_,i)=>`Song ${i}`))
+  expect((await library.query({...query,page:1})).tracks[0].title).toBe('Song 100')
+  expect((await library.query({...query,sort:'added'})).tracks[0].id).toBe('104.wav')
+  expect((await library.query({...query,sort:'original'})).tracks[0].id).toBe('0.wav')
+  expect(values.get(`local-playlists:${root.id}`)).toEqual([{id:'p',name:'Playlist',files:ids}])
+ })
+
+ it('keeps first-indexed dates through rescans and does not invent dates for legacy entries',async()=>{
+  await writeFile(join(path,'one.wav'),'fixture');const root=await local.add(path)
+  const first=await library.index(root.id);const added=first.files[0].addedAt
+  expect(added).toBeGreaterThan(0)
+  expect((await library.index(root.id,true)).files[0].addedAt).toBe(added)
+  values.set(`local-index:${root.id}`,{...first,version:3,files:first.files.map(({addedAt,...file})=>file)})
+  expect((await library.index(root.id)).files[0].addedAt).toBeUndefined()
+ })
+
 })

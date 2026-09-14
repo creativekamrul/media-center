@@ -3,7 +3,7 @@ const {resolve}=require('node:path')
 module.exports=async({desktop,page,artifacts})=>{
  const original=await page.evaluate(()=>window.mediaCenter.preferences())
  const defaults={appStyle:'default',density:'comfortable',translucency:false,surfaceStyle:'solid',colors:{},bodyFont:'segoe',headingFont:'georgia',lyricsFont:'segoe'}
- const base={...original,customCss:undefined,theme:'black-glass',appearance:{...defaults,...original.appearance,appStyle:'default',translucency:false}}
+ const base={...original,customCss:undefined,theme:'black-glass',appearance:{...defaults,...original.appearance,appStyle:'default',translucency:false,colors:{}}}
  let mini
  const select=async(id)=>{await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('button',{name:`${id} style`,exact:true}).click()}
  const assertContrast=async(locator,label)=>{
@@ -73,6 +73,12 @@ module.exports=async({desktop,page,artifacts})=>{
    assert.equal(await menu.evaluate(el=>{const r=el.getBoundingClientRect();return r.x>=0&&r.right<=innerWidth&&r.bottom<=innerHeight}),true)
    assert.ok(!['transparent','rgba(0, 0, 0, 0)'].includes((await menu.evaluate(styleOf)).background))
    await page.keyboard.press('Escape');assert.equal(await menu.count(),0)
+   await page.getByRole('button',{name:'Lyrics',exact:true}).click()
+   await page.locator('.now-header-actions .standard-lyrics-options').waitFor()
+   const positions=await page.locator('.now-header-actions').evaluate(el=>[...el.querySelectorAll(':scope>button,.now-tabs>button,.standard-lyrics-options>button,.lyrics-tools .more-options-trigger')].map(b=>b.getBoundingClientRect().y))
+   assert.equal(positions.length,5)
+   assert.ok(Math.max(...positions)-Math.min(...positions)<3,id+' view and lyrics controls share a row')
+   if(id==='frosted')await page.screenshot({animations:'disabled',path:resolve(artifacts,'refined-now-playing-frosted.png')})
    await page.getByRole('button',{name:'Immersive view',exact:true}).click()
    const view=page.getByRole('region',{name:'Immersive playing screen',exact:true})
    await view.getByRole('button',{name:'Appearance',exact:true}).click()
@@ -87,9 +93,24 @@ module.exports=async({desktop,page,artifacts})=>{
    await page.getByRole('button',{name:'Home',exact:true}).click()
   }
   assert.equal(new Set(fingerprints).size,10,'All styles have distinct control construction')
+  await page.getByRole('button',{name:'Settings',exact:true}).click()
+  const themes=['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass']
+  const styles=['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']
+  for(const theme of themes)for(const appStyle of styles){
+   await page.evaluate(p=>window.mediaCenter.savePreferences(p),{...base,theme,appearance:{...base.appearance,appStyle}})
+   await page.waitForFunction(({theme,appStyle})=>document.documentElement.dataset.theme===theme&&document.documentElement.dataset.appStyle===appStyle,{theme,appStyle})
+   await assertContrast(page.locator('.sidebar .nav-item.selected'),theme+'/'+appStyle+' sidebar')
+   await assertContrast(page.locator('.settings-rail button[aria-current=location]'),theme+'/'+appStyle+' Settings')
+   assert.equal(await page.locator('.workspace').evaluate(el=>el.scrollWidth>el.clientWidth+1),false,theme+'/'+appStyle+' fits the viewport')
+  }
+  await page.evaluate(p=>window.mediaCenter.savePreferences(p),{...base,theme:'midnight',appearance:{...base.appearance,appStyle:'frosted'}})
+  await page.locator('.settings-heading').scrollIntoViewIfNeeded()
+  await page.screenshot({animations:'disabled',path:resolve(artifacts,'refined-settings-frosted.png')})
+  console.log('All 130 theme/style combinations passed selected-navigation contrast and viewport checks; all styles use one Now Playing toolbar.')
   await page.getByRole('button',{name:'Music',exact:true}).click()
   const tabs=page.locator('.concise-tabs')
   await page.evaluate(()=>window.mediaCenter.saveNavigation({action:'view-pins',viewPins:{music:['albums','songs','artists','playlists']}}))
+  await tabs.getByRole('button',{name:'Albums',exact:true}).click()
   await page.waitForFunction(()=>document.querySelectorAll('.pinned-tab-list > button').length===4)
   await require('./view-navigation.cjs')(page,'Recently played','button')
   assert.equal(await tabs.getByRole('button',{name:'Recently played',exact:true}).getAttribute('aria-pressed'),'true')

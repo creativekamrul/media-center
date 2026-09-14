@@ -95,7 +95,7 @@ function Discovery({ error }: { error: (s: string) => void }) {
       <div className="section-title">
         <div>
           <h2>Something worth returning to.</h2>
-          <p className="muted">
+          <p className="muted guidance">
             Suggestions explain why they appear and use your real collection and
             retained device history.
           </p>
@@ -279,7 +279,7 @@ function LibraryHealth({ error }: { error: (s: string) => void }) {
   return (
     <>
       <h2>A healthier local library.</h2>
-      <p className="muted">
+      <p className="muted guidance">
         Review missing artwork, incomplete tags, unavailable files and likely
         duplicates. Audio files are never changed or deleted by this report.
       </p>
@@ -375,7 +375,7 @@ function LibraryHealth({ error }: { error: (s: string) => void }) {
               Next issues
             </button>
           </div>
-          <p className="muted">
+          <p className="muted guidance">
             Possible duplicates match title, artist and approximate duration;
             they are not verified identical files. Artwork and tag changes can
             be made in your preferred tag editor, then rescanned here.
@@ -396,7 +396,7 @@ export function Profiles({ error }: { error: (s: string) => void }) {
   return (
     <section className="settings-panel">
       <h2>Listening profiles</h2>
-      <p className="muted">
+      <p className="muted guidance">
         Capture your saved theme, lyric appearance, EQ, current volume and
         spoken playback speed. Set them up first, then save a profile for
         headphones, speakers or bedtime. Reusing a name updates that profile.
@@ -437,6 +437,7 @@ export function Profiles({ error }: { error: (s: string) => void }) {
           <div className="control-actions">
             <button
               className="secondary"
+              aria-label={`Apply ${p.name}`}
               disabled={w.busy}
               onClick={() =>
                 void w.run(async () => {
@@ -445,10 +446,11 @@ export function Profiles({ error }: { error: (s: string) => void }) {
                 }, 'Profile applied.')
               }
             >
-              Apply {p.name}
+              Apply
             </button>
             <button
               className="text-button"
+              aria-label={`Remove ${p.name}`}
               disabled={w.busy}
               onClick={() =>
                 void w.run(async () => {
@@ -457,7 +459,7 @@ export function Profiles({ error }: { error: (s: string) => void }) {
                 })
               }
             >
-              Remove {p.name}
+              Remove
             </button>
           </div>
         </div>
@@ -503,7 +505,7 @@ export function AudioExtras({ error }: { error: (s: string) => void }) {
         />
         Keep album tracks gapless
       </label>
-      <p className="muted">
+      <p className="muted guidance">
         Music and local music only. Crossfade mixes original streams through MPV
         and requires shared audio output. Books, episodes and radio retain their
         normal playback.
@@ -521,7 +523,7 @@ export function AudioExtras({ error }: { error: (s: string) => void }) {
       </div>
       <div className="settings-subsection">
         <h3>Remember this output</h3>
-        <p className="muted">
+        <p className="muted guidance">
           Save volume and EQ for the selected output. Its settings return when
           you select it again. Device changes apply at the next playback start.
         </p>
@@ -576,7 +578,7 @@ function Recovery({
   return (
     <section className="settings-panel">
       <h2>Connection recovery</h2>
-      <p className="muted">
+      <p className="muted guidance">
         Check each source and review pending progress before syncing. Your local
         checkpoints stay available.
       </p>
@@ -643,7 +645,7 @@ function Recovery({
         <p role="status">Playback: {data.playbackError}</p>
       )}
       {data?.syncError && <p role="status">Progress: {data.syncError}</p>}
-      <p className="muted">
+      <p className="muted guidance">
         The exported report contains versions, connection results and playback
         state. It excludes names, URLs, file paths, credentials and raw errors.
       </p>
@@ -665,7 +667,7 @@ function PodcastSubscriptions({ error }: { error: (s: string) => void }) {
   return (
     <section className="settings-panel">
       <h2>Find your next podcast.</h2>
-      <p className="muted">
+      <p className="muted guidance">
         Search through your Audiobookshelf server or paste an RSS URL.
         Subscriptions require server permission to manage podcasts. Review
         selected feeds before adding them; automatic audio downloads remain off.

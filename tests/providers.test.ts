@@ -6,6 +6,12 @@ import { serverUrl } from '../src/main/providers/http'
 afterEach(() => vi.unstubAllGlobals())
 describe('provider transport', () => {
   const connection = { id: 'server', provider: 'audiobookshelf' as const, name: 'Shelf', url: 'https://example.test/shelf', username: '' }
+  it('retains optional library-added dates without inventing dates for missing metadata',()=>{
+    const nav=new Navidrome({...connection,provider:'navidrome'},'secret')
+    const song={id:'track',title:'Track',created:'2026-01-02T03:04:05Z'}
+    expect(nav.song(song).addedAt).toBe(Date.parse(song.created))
+    for(const created of [undefined,null,'invalid'])expect(nav.song({...song,created}).addedAt).toBeUndefined()
+  })
   it('retains reverse-proxy paths in requests and root-relative streams', () => {
     const abs = new Audiobookshelf(connection, 'secret')
     expect(serverUrl(connection.url, 'api/libraries').href).toBe('https://example.test/shelf/api/libraries')

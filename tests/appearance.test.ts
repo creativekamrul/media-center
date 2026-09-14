@@ -3,6 +3,12 @@ vi.mock('electron',()=>({safeStorage:{}}))
 import {Store} from '../src/main/store'
 import {appearanceSchema,defaultAppearance,accentText,appStyleIds} from '../src/shared/appearance'
 describe('Custom appearance',()=>{
+ it('defaults page guidance on and preserves an explicit off preference',()=>{
+  const {showHelp,...legacy}=defaultAppearance
+  expect(appearanceSchema.parse(legacy).showHelp).toBe(true)
+  const store=new Store(':memory:')
+  try{store.set('preferences',{...store.preferences(),appearance:{...defaultAppearance,showHelp:false}});expect(store.preferences().appearance?.showHelp).toBe(false)}finally{store.close()}
+ })
  it('keeps existing themes on Original and persists every application style independently',()=>{
   const {appStyle,...legacy}=defaultAppearance
   expect(appearanceSchema.parse(legacy).appStyle).toBe('default')
