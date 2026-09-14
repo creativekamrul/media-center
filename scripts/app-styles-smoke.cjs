@@ -30,7 +30,9 @@ module.exports=async({desktop,page,artifacts})=>{
    // between baseline and the exact same design without the style attribute.
    const before=snapshot();delete document.documentElement.dataset.appStyle;const without=snapshot();document.documentElement.dataset.appStyle='default';return [before,without]
   },selectors)
-  assert.deepEqual(before,without,'Original is the existing design without overrides')
+  assert.equal(before[0][2],'none','Original removes the sidebar ribbon as requested')
+  assert.deepEqual(before[0].filter((_,i)=>i!==2),without[0].filter((_,i)=>i!==2),'Original preserves sidebar geometry and colors')
+  assert.deepEqual(before.slice(1),without.slice(1),'Original preserves the existing player and surfaces')
   await page.getByRole('button',{name:'Open mini player',exact:true}).click()
   mini=desktop.windows().find(w=>w!==page)||await desktop.waitForEvent('window')
   await mini.locator('.mini-controls .main-play').waitFor()
@@ -130,7 +132,7 @@ module.exports=async({desktop,page,artifacts})=>{
    await assertContrast(page.locator('.sidebar .nav-item.selected'),appStyle+' light selected navigation')
    await page.screenshot({animations:'disabled',path:resolve(artifacts,`app-style-${appStyle}-light.png`)})
   }
-  console.log('Application styles passed: Original unchanged, nine distinct alternatives, preview/cancel/save/reload, themes, mini synchronization, popovers, dialogs and responsive layouts.')
+  console.log('Application styles passed: Original without the sidebar ribbon, nine distinct alternatives, preview/cancel/save/reload, themes, mini synchronization, popovers, dialogs and responsive layouts.')
  }finally{
   if(mini&&!mini.isClosed())await mini.getByRole('button',{name:'Close mini player',exact:true}).click()
   await page.evaluate(p=>window.mediaCenter.savePreferences(p),original)

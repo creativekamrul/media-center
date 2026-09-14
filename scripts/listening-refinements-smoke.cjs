@@ -27,7 +27,7 @@ module.exports=async({desktop,page,artifacts})=>{
    assert.equal(await page.getByRole('button',{name:'Customize tools',exact:true}).count(),1)
    const c=page.locator('.custom-mix-card').filter({hasText:mix.name});await c.waitFor()
    assert.equal(await c.getByRole('button',{name:'Duplicate',exact:true}).count(),0)
-   const more=c.getByRole('button',{name:'More options',exact:true});const r=await more.boundingBox();assert.ok(r.width>=132&&r.height>=44)
+   const more=c.getByRole('button',{name:'More options',exact:true});const r=await more.boundingBox();assert.ok(r.width>=36&&r.height>=36&&Math.abs(r.width-r.height)<1,'Mix overflow is a compact square action');const positions=await c.locator('.mix-card-actions>button,.mix-card-actions .more-options-trigger').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().y));assert.ok(Math.max(...positions)-Math.min(...positions)<2,'Mix actions share one row')
    await more.click();await c.getByRole('button',{name:`Delete mix ${mix.name}`,exact:true}).waitFor();await page.keyboard.press('Escape')
    if(['default','retro','neon'].includes(style)){await c.screenshot({animations:'disabled',path:resolve(artifacts,`refined-mix-${style}.png`)});await mini.screenshot({animations:'disabled',path:resolve(artifacts,`refined-mini-${style}.png`)})}
   }
@@ -49,7 +49,7 @@ module.exports=async({desktop,page,artifacts})=>{
   await require('./typography-controls-smoke.cjs')({desktop,page,artifacts,mini})
   console.log('Listening refinements passed: update notice, all-style favorite/header containment, mix menus, larger controls, single-scroll lyrics, timing and native seek.')
  }finally{
-  if(mini&&!mini.isClosed())await mini.getByRole('button',{name:'Close mini player',exact:true}).click()
+  if(mini&&!mini.isClosed())await Promise.all([mini.waitForEvent('close'),page.evaluate(()=>window.mediaCenter.miniPlayer({action:'close'}))])
   await page.evaluate(async({original,screen,id})=>{await window.mediaCenter.savePreferences(original);await window.mediaCenter.savePlayingScreenPreferences(screen);await window.mediaCenter.personalChange({action:'mix-delete',id})},{original,screen,id:mix.id})
   await page.setViewportSize({width:1440,height:940})
  }
