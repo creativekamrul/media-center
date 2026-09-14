@@ -1,3 +1,4 @@
+import {useConnectionRecovery} from './useConnectionRecovery'
 import {openMixBuilder,MixPlayButton} from './MixBuilder'
 import {usePersonal} from './PersonalLibrary'
 import {Shelf} from './Shelf'
@@ -22,6 +23,7 @@ export function HomePage({error}:{error:(s:string)=>void}){
  useEffect(()=>{void api.pinnedMusic().then(setPins).catch(e=>error(message(e)))},[prefs.pins])
  const [loadError,setLoadError]=useState('')
  const [data,setData]=useState<HomeData>(),[plans,setPlans]=useState<ListenLater[]>([]),[stats,setStats]=useState<ListeningStats>(),[goal,setGoal]=useState(30),[busy,setBusy]=useState(false),[revision,setRevision]=useState(0)
+ useConnectionRecovery(()=>setRevision(n=>n+1))
  useEffect(()=>{let live=true;setBusy(true);setLoadError('');void Promise.all([api.home(revision>0),api.laterList()]).then(([d,p])=>{if(live){setData(d);setPlans(p.filter(x=>!x.done).slice(0,12))}}).catch(e=>{if(live)setLoadError(message(e))}).finally(()=>{if(live)setBusy(false)});return()=>{live=false}},[revision])
  useEffect(()=>{let live=true,inFlight=false;const refresh=async()=>{if(inFlight)return;inFlight=true;try{const [s,g]=await Promise.all([api.listeningStats(),api.dailySettings()]);if(live){setStats(s);setGoal(g.dailyGoalMinutes)}}catch(e){if(live)error(message(e))}finally{inFlight=false}};void refresh();const timer=setInterval(()=>void refresh(),15000);window.addEventListener('focus',refresh);return()=>{live=false;clearInterval(timer);window.removeEventListener('focus',refresh)}},[revision])
  const work=async(fn:()=>Promise<unknown>)=>{setBusy(true);try{await fn()}catch(e){error(message(e))}finally{setBusy(false)}}

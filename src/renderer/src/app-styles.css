@@ -180,19 +180,17 @@ html[data-theme][data-app-style]:not([data-app-style=default]) button {transitio
 
 /* Frosted brings the listening screen's translucent pills to everyday controls.
    Primary/selected controls retain the opaque, contrast-paired accent above. */
-html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(button.secondary,.more-options-trigger,.filter,.sort-button,.nav-item,.settings-rail button,.browse-tabs button,.now-tabs button,.daily-tabs button,.surface-style-toggle button) {
+html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(button.secondary,.more-options-trigger,.filter,.sort-button) {
   backdrop-filter:blur(12px) saturate(115%);
   border:1px solid var(--style-edge);box-shadow:var(--style-control-shadow);
 }
-html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(.nav-item,.settings-rail button,.browse-tabs button,.now-tabs button,.daily-tabs button,.surface-style-toggle button):not(:is(.active,.selected,[aria-pressed=true],[aria-selected=true],[aria-current])) {
-  background:var(--style-control-fill);color:var(--text);
-}
+
 html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(button.secondary,.more-options-trigger,.filter,.sort-button):hover:not(:disabled):not(:is(.active,[aria-pressed=true],[aria-expanded=true])) {
   background:color-mix(in srgb,var(--text) 14%,transparent);color:var(--text);
 }
 html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(.browse-tabs,.now-tabs,.daily-tabs) {gap:8px}
 html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(.song-row,.queue-row,.chapter-row) {border-radius:12px}
-html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(.search,.settings-search,.field>input,.field>select,select,textarea) {border-radius:14px}
+html[data-theme][data-app-style=frosted]:not([data-app-style=default]) :is(.search,.settings-search,.field>input,.field>select,select,textarea) {border-radius:8px}
 html[data-theme][data-app-style=frosted]:not([data-app-style=default]) .more-options-panel button {backdrop-filter:none;box-shadow:none;border:0}
 [data-style-variant=frosted].style-preview {background:radial-gradient(at 10% 100%,color-mix(in srgb,var(--accent) 28%,transparent),transparent 70%),var(--panel)}
 [data-style-variant=frosted] .style-preview-cards i {background:color-mix(in srgb,var(--text) 8%,transparent);border-radius:var(--style-panel-radius)}

@@ -1,10 +1,12 @@
 export const trackSortOptions=[['original','Original order'],['title','Title · A–Z'],['title-desc','Title · Z–A'],['artist','Artist · A–Z'],['album','Album · A–Z'],['added','Date added · newest'],['added-oldest','Date added · oldest'],['year','Release year · newest'],['duration','Duration · longest'],['track','Disc & track number']] as const
 export type TrackSort=typeof trackSortOptions[number][0]
 type SortableTrack={title:string;artist:string;album:string;duration:number;addedAt?:number;year?:number;discNumber?:number;trackNumber?:number}
-const compareText=(a:string,b:string)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'})
+const collator=new Intl.Collator(undefined,{numeric:true,sensitivity:'base'})
+const compareText=collator.compare
 // Preserve occurrence indexes: playlists can contain the same track more than once.
 export function sortedTrackIndexes(tracks:readonly SortableTrack[],sort:TrackSort){
  const indexes=tracks.map((_,i)=>i)
+ if(sort==='original')return indexes
  const numeric=(a:number|undefined,b:number|undefined,descending=false)=>a===undefined?(b===undefined?0:1):b===undefined?-1:(descending?b-a:a-b)
  return indexes.sort((a,b)=>{
   const x=tracks[a],y=tracks[b]

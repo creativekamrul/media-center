@@ -5,7 +5,7 @@ import {join} from 'node:path'
 import {LocalFiles} from '../src/main/local'
 import {LocalLibrary} from '../src/main/local-library'
 import type {Store} from '../src/main/store'
-import {localQuerySchema} from '../src/shared/local-library'
+import {localQuerySchema,localQueueQuerySchema} from '../src/shared/local-library'
 describe('Indexed local collection',()=>{
  let path:string,local:LocalFiles,library:LocalLibrary,values:Map<string,unknown>
  beforeEach(async()=>{path=await mkdtemp(join(tmpdir(),'media-library-test-'));values=new Map();const store={get:(k:string)=>values.get(k),set:(k:string,v:unknown)=>values.set(k,v),history:()=>[]} as unknown as Store;local=new LocalFiles(store);library=new LocalLibrary(store,local)})
@@ -55,6 +55,31 @@ describe('Indexed local collection',()=>{
   expect((await library.index(root.id,true)).files[0].addedAt).toBe(added)
   values.set(`local-index:${root.id}`,{...first,version:3,files:first.files.map(({addedAt,...file})=>file)})
   expect((await library.index(root.id)).files[0].addedAt).toBeUndefined()
+ })
+
+ it('resolves all sorted local tracks across pages, preserving duplicate playlist occurrences',async()=>{
+  const root=await local.add(path)
+  const files=Array.from({length:230},(_,i)=>({id:`${i}.wav`,name:`${i}.wav`,title:`Song ${229-i}`,artist:'Artist',album:'Album',duration:i+1,modified:1,size:7,hasCover:false}))
+  values.set(`local-index:${root.id}`,{version:4,files,updatedAt:1,warnings:[]})
+  const ids=[...files.map(f=>f.id),'12.wav'];values.set(`local-playlists:${root.id}`,[{id:'p',name:'Playlist',files:ids}])
+  const query=localQuerySchema.parse({rootId:root.id,view:'playlists',group:'p',page:1,search:'',sort:'title'})
+  const result=await library.query(query,true)
+  expect(result.tracks).toHaveLength(231)
+  expect(result.tracks[100].title).toBe('Song 100')
+  expect(result.tracks.filter(f=>f.id==='12.wav')).toHaveLength(2)
+  expect((await library.query({...query,sort:'original'},true)).tracks.map(t=>t.id)).toEqual(ids)
+  const albums=await library.query({...query,view:'albums',group:undefined,page:0})
+  expect((await library.query({...query,view:'albums',group:albums.groups[0].id},true)).tracks).toHaveLength(230)
+  expect(values.get(`local-playlists:${root.id}`)).toEqual([{id:'p',name:'Playlist',files:ids}])
+  expect(localQueueQuerySchema.safeParse({...query,page:undefined}).success).toBe(false)
+ })
+ it('refuses an oversized full queue instead of silently cutting it off',async()=>{
+  const root=await local.add(path)
+  const files=Array.from({length:5001},(_,i)=>({id:`${i}.wav`,name:`${i}.wav`,title:'Song',artist:'Artist',album:'Album',duration:1,modified:1,size:7,hasCover:false}))
+  values.set(`local-index:${root.id}`,{version:4,files,updatedAt:1,warnings:[]})
+  const query=localQuerySchema.parse({rootId:root.id,view:'songs',page:0,search:''})
+  await expect(library.query(query,true)).rejects.toThrow('5,000-track')
+  expect((await library.query(query)).tracks).toHaveLength(100)
  })
 
 })

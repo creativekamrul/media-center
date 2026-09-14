@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.0
+
+- Restore fixed neutral pill controls for Queue, Lyrics and Immersive view across every theme and style.
+- Give Frosted the simpler sidebar navigation, remove the immersive tagline, and reduce duplicate Appearance dividers.
+- Keep artwork play, favorite and menu icons readable with explicit contrasting overlay colors. Refine result rows, keyboard focus, Frosted fields and track-column alignment using the existing visual hierarchy.
+- Play and queue complete local collections in the chosen sort order across page boundaries, preserving duplicate playlist entries and the saved playlist order. Selections over the existing 5,000-track queue limit produce a clear message.
+- Retain known libraries and current results during connection failures, refresh after reconnect/wake, pause on system sleep, and retry failed playback from the correct position without replacing the queue.
+- Speed up large track sorts with a reused natural-sort collator and memoized displayed ordering.
+- Add recoverable default appearance in Settings, the tray menu, Ctrl+Shift+F9 and the --safe-appearance launch option. Previous themes and imported CSS remain available to restore.
+
 ## 1.4.0
 
 - Remember library and combined-library selections across navigation and restarts; open the first pinned view by default.

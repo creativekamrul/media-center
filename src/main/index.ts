@@ -1,3 +1,4 @@
+import {appearanceRecovery} from './appearance-recovery'
 import {installedFonts} from './installed-fonts'
 import {registerMixes} from './mixes'
 import {decoratePersonal} from './personal-display'
@@ -18,7 +19,7 @@ import { LyricsClient } from './lyrics'
 import { automaticLyrics } from './lyric-sources'
 import { progressKey } from '../shared/timeline'
 import type { LyricsResult } from '../shared/lyrics'
-import { app, BrowserWindow, dialog, globalShortcut, ipcMain, session, Tray, Menu, nativeImage, shell } from 'electron'
+import { app, BrowserWindow, dialog, globalShortcut, powerMonitor, ipcMain, session, Tray, Menu, nativeImage, shell } from 'electron'
 import { join, extname } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
@@ -45,6 +46,16 @@ let store: Store
 let player: Player
 let windowsMedia:WindowsMedia|undefined,podcastAutomation:PodcastAutomation|undefined
 let localWatcher:LocalWatcher|undefined
+function recoverAppearance(action:'get'|'start'|'restore') {
+  const active=appearanceRecovery(store,action)
+  if(action!=='get')for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('theme:state',store.preferences())
+  return active
+}
+async function appearanceRecoveryDialog(){
+  const active=recoverAppearance('get')
+  const answer=await dialog.showMessageBox({type:'question',title:'Appearance recovery',message:'Start with default appearance',detail:'Use this if imported CSS or custom colors make the app difficult to use. Your saved appearance is kept for restoration in Settings.',buttons:active?['Keep defaults','Restore saved appearance']:['Cancel','Use defaults'],defaultId:0,cancelId:0,noLink:true})
+  if(answer.response===1)recoverAppearance(active?'restore':'start')
+}
 let resetting=false
 let quitting = false
 let tray: Tray | undefined
@@ -82,6 +93,7 @@ function createWindow() {
   window.on('maximize',publishWindowState).on('unmaximize',publishWindowState).on('enter-full-screen',publishWindowState).on('leave-full-screen',publishWindowState).on('focus',publishWindowState).on('blur',publishWindowState)
   window.webContents.on('before-input-event', (event, input) => {
     if (input.type !== 'keyDown' || input.isAutoRepeat) return
+    if(input.control&&input.shift&&input.key==='F9'){event.preventDefault();void appearanceRecoveryDialog()}
     if (input.key === 'F11') { event.preventDefault(); window?.setFullScreen(!window.isFullScreen()) }
     if (input.key === 'Escape' && window?.isFullScreen()) { event.preventDefault(); window.setFullScreen(false) }
   })
@@ -108,11 +120,15 @@ function createMini() {
 if (!app.requestSingleInstanceLock()) app.quit()
 else if(process.argv.includes('--quit-for-install')) app.quit()
 else {
-  app.on('second-instance', (_event,args) => { if(args.includes('--quit-for-install')){app.quit();return}void app.whenReady().then(()=>{if(!window)createWindow();if (window?.isMinimized()) window.restore(); window?.show(); window?.focus()}) })
+  app.on('second-instance', (_event,args) => { if(args.includes('--quit-for-install')){app.quit();return}if(args.includes('--safe-appearance')&&store)recoverAppearance('start');void app.whenReady().then(()=>{if(!window)createWindow();if (window?.isMinimized()) window.restore(); window?.show(); window?.focus()}) })
   void app.whenReady().then(() => {
     session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false))
     session.defaultSession.setPermissionCheckHandler(() => false)
     store = new Store(join(app.getPath('userData'), 'media-center.sqlite'))
+    if(process.argv.includes('--safe-appearance'))recoverAppearance('start')
+    handle('theme:recovery',z.enum(['get','start','restore']),recoverAppearance)
+    powerMonitor.on('suspend',()=>{void player.suspend().catch(()=>{})})
+    powerMonitor.on('resume',()=>{store.cacheClear('music:');for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('system:resume')})
     const mpv = new Mpv(), local = new LocalFiles(store); downloads = new Downloads(join(app.getPath('userData'),'downloads'),store,provider); player = new Player(mpv, store, provider, local, downloads)
     player.on('state', state => { for(const w of [window,miniWindow]) if(w && !w.isDestroyed()) w.webContents.send('player:state',state) })
     downloads.on('state',state=>{if(window && !window.isDestroyed()) window.webContents.send('downloads:state',state)})
@@ -241,8 +257,8 @@ else {
     handle('libraries:list', z.undefined(), async () => {
       store.cacheClear('music:')
       const connections = store.connections()
-      const results = await Promise.allSettled(connections.map(c => provider(c.id).libraries()))
-      return { libraries: results.flatMap(r => r.status === 'fulfilled' ? r.value : []), errors: results.flatMap((r, i) => r.status === 'rejected' ? [`${connections[i].name}: Could not load libraries. Check the server connection and permissions.`] : []) }
+      const results = await Promise.allSettled(connections.map(async c => {const libraries=await provider(c.id).libraries();store.cacheSet('libraries:'+c.id,libraries);return libraries}))
+      return { libraries: results.flatMap((r,i) => r.status === 'fulfilled' ? r.value : store.cache<import('../shared/types').Library[]>('libraries:'+connections[i].id)?.value??[]), errors: results.flatMap((r, i) => r.status === 'rejected' ? [`${connections[i].name}: Could not load libraries. Check the server connection and permissions.`] : []) }
     })
     handle('library:browse', z.object({ library: librarySchema, page: z.number().int().min(0).max(100000), search: z.string().max(500) }).strict(), input => provider(input.library.serverId).browse(input.library, input.page, input.search))
     handle('item:detail', z.object({ serverId: id, itemId: id }).strict(), async input => {
@@ -267,7 +283,7 @@ else {
       tray = new Tray(icon); tray.setToolTip('Media Center')
       const show = () => { if (!window) createWindow(); window?.show(); window?.focus() }
       tray.on('double-click', show)
-      tray.setContextMenu(Menu.buildFromTemplate([{ label: 'Open Media Center', click: show }, { label: 'Play / pause', click: () => { void player.command({ action: 'toggle' }).catch(() => {}) } }, { label: 'Next', click: () => { void player.command({ action: 'next' }).catch(() => {}) } }, { type: 'separator' }, { label: 'Quit', click: () => app.quit() }]))
+      tray.setContextMenu(Menu.buildFromTemplate([{ label: 'Open Media Center', click: show }, { label: 'Play / pause', click: () => { void player.command({ action: 'toggle' }).catch(() => {}) } }, { label: 'Next', click: () => { void player.command({ action: 'next' }).catch(() => {}) } }, { type: 'separator' }, {label:'Appearance recovery...',click:()=>{void appearanceRecoveryDialog()}}, { label: 'Quit', click: () => app.quit() }]))
     }
     app.on('activate', () => { if (!window) createWindow() })
   })

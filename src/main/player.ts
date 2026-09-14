@@ -54,6 +54,7 @@ export class Player extends EventEmitter {
   state: PlaybackState = structuredClone(emptyPlayback)
   private session?: { provider: Audiobookshelf; data: AbsSession }
   private target?: PlayTarget
+  private retryPosition?: number
   private staged?: {
     item: QueueItem
     index: number
@@ -229,6 +230,7 @@ export class Player extends EventEmitter {
     })
   }
   private fail(message: string) {
+    if(['playing','paused'].includes(this.state.status))this.retryPosition=this.state.position
     this.state.status = 'error'
     this.state.error = message
     this.publish()
@@ -262,6 +264,7 @@ export class Player extends EventEmitter {
     })
   }
   private async load(item: QueueItem, position?: number) {
+    this.retryPosition=position
     this.generation++
     this.state.status = 'loading'
     this.state.error = undefined
@@ -272,8 +275,8 @@ export class Player extends EventEmitter {
     this.state.title = item.title
     this.state.subtitle = item.subtitle
     this.state.kind = item.target.kind
-    this.state.position = 0
-    this.state.duration = 0
+    this.state.position = position ?? 0
+    this.state.duration = item.duration ?? 0
     this.state.chapters = []
     this.fadeAttempt = ''
     this.currentAlbum = ''
@@ -1021,6 +1024,13 @@ export class Player extends EventEmitter {
       await this.commandInner({ action: 'seek', value: input.time })
     })
   }
+  suspend() {
+    this.saveResume()
+    return this.enqueue(async()=>{
+      if(this.state.status==='playing')await this.commandInner({action:'toggle'})
+      this.saveResume()
+    })
+  }
   command(command: PlayerCommand) {
     return this.enqueue(() => this.commandInner(command)).catch((error) => {
       if (this.state.status === 'loading')
@@ -1033,6 +1043,15 @@ export class Player extends EventEmitter {
       await this.cancelCrossfade()
     switch (command.action) {
       case 'toggle':
+        if(this.state.status==='error'&&this.state.queue[this.state.queueIndex]){
+          const item=this.state.queue[this.state.queueIndex],position=this.retryPosition,duration=this.state.duration
+          await this.cancelCrossfade()
+          await this.clearStaged()
+          await this.closeSession()
+          await this.mpv.command(['stop']).catch(()=>{})
+          try{await this.load(item,position)}catch(error){if(position!==undefined){this.state.position=position;this.state.duration=duration}throw error}
+          break
+        }
         if (
           this.state.status === 'idle' &&
           this.state.queue[this.state.queueIndex]

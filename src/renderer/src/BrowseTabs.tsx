@@ -53,9 +53,9 @@ export function BrowseTabs<T extends string>({options,value,onChange,label,scope
      const buttons=[...list.current!.querySelectorAll<HTMLButtonElement>('button')],index=buttons.indexOf(document.activeElement as HTMLButtonElement)
      if(index<0)return;e.preventDefault()
      const next=e.key==='Home'?0:e.key==='End'?buttons.length-1:(index+(e.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length
-     buttons[next].focus();onChange(visible[next][0])
+     buttons[next].focus();restored.current=true;onChange(visible[next][0])
     }}>
-    {visible.map(([id,name])=><button type="button" key={id} role={tabRoles?'tab':undefined} tabIndex={tabRoles?(value===id?0:-1):undefined} aria-selected={tabRoles?value===id:undefined} aria-pressed={tabRoles?undefined:value===id} className={`filter ${value===id?'active':''}`} onClick={()=>onChange(id)}><TabIcon id={id}/>{name}</button>)}
+    {visible.map(([id,name])=><button type="button" key={id} role={tabRoles?'tab':undefined} tabIndex={tabRoles?(value===id?0:-1):undefined} aria-selected={tabRoles?value===id:undefined} aria-pressed={tabRoles?undefined:value===id} className={`filter ${value===id?'active':''}`} onClick={()=>{restored.current=true;onChange(id)}}><TabIcon id={id}/>{name}</button>)}
    </div>
    {edges.overflow&&<div className="view-scroll-controls"><ShelfControls start={edges.start} end={edges.end} previousLabel="Previous pinned views" nextLabel="Next pinned views" onPrevious={()=>slide(-1)} onNext={()=>slide(1)}/></div>}
    <button ref={trigger} type="button" className="view-customize" aria-label={scope==='tools'?'Customize tools':'Customize views'} aria-haspopup="dialog" aria-expanded={editing} title="Choose and reorder pinned tabs" onClick={()=>{setDraft([...pins]);setFailure('');setEditing(true)}}><Settings2 size={16}/><span>Customize</span></button>

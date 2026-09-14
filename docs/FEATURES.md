@@ -38,7 +38,7 @@ The target is a full desktop replacement for Feishin and Audiobookshelf's web cl
 
 | Audio | ReplayGain off/track/album; clipping prevention; ten-band EQ; per-book/episode speed; timed and chapter-end sleep |
 
-| Appearance | Nine independent application styles (Original default, Soft, Precision, Outline, Bold, Retro, Editorial, Neon, Ribbon), live previews and saved cross-window choices; 13 palettes including translucent Glass and Black Glass; visual theme picker with saved Solid / Gradient surfaces and optional translucent panels; consistent palette-aware cards, fields and dialogs; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; adaptive layouts with 100/125/150/200% interface-scaling checks |
+| Appearance | Ten independent application styles (Original default, Frosted, Soft, Precision, Outline, Bold, Retro, Editorial, Neon, Ribbon), live previews and saved cross-window choices; 13 palettes including translucent Glass and Black Glass; visual theme picker with saved Solid / Gradient surfaces and optional translucent panels; consistent palette-aware cards, fields and dialogs; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; adaptive layouts with 100/125/150/200% interface-scaling checks |
 
 | Open source | GPL-3.0-only; user/developer/security/API documentation; model, provider, local-file, playback and desktop tests |
 
@@ -152,7 +152,7 @@ Research references: [Feishin](https://github.com/jeffvli/feishin), [Navidrome 0
 
 - Local music is a persistent indexed collection with nine tabs, source-scoped search/favorites/playlists, recursive tag scanning, paginated tracks, lazy covers and explicit rescans. The original folder browser remains available.
 
-- Limits: 100 results and playable tracks per page; 50,000 indexed tracks / 5,000 folders / 100,000 entries per source. Local playlists support create/play/rename/reorder/remove/delete, M3U import/export and backup inclusion. Automatic folder watching follows unique file identities within a source; metadata editing remains unsupported. Local genres display the file's combined genre tags.
+- Limits: 100 displayed results per page; complete local collection playback is available in 1.5.0 below; 50,000 indexed tracks / 5,000 folders / 100,000 entries per source. Local playlists support create/play/rename/reorder/remove/delete, M3U import/export and backup inclusion. Automatic folder watching follows unique file identities within a source; metadata editing remains unsupported. Local genres display the file's combined genre tags.
 
 - Compact artwork across track lists, queues and listening records; lazy loading with bounded cover caches. Home offers conditional duration and artist mixes plus a bounded album sampler.
 
@@ -339,7 +339,7 @@ Collection and episode controls share compact playback rows with personal/progre
 - Verified with typecheck, 209 unit tests, production build and the full Electron/MPV suite with zero renderer errors. New native checks cover footer hide/restore, all three immersive layouts at 1440×940 and 1024×720, seek/shuffle/repeat/sleep/mini controls, bounded and rapid wheel input, and skip/speed for both audiobooks and podcast episodes.
 
 - The first pinned view opens when entering Music, Local music or Library tools, even when the old default is still pinned. Explicit links and returning from detail keep their intended view.
-- Album/playlist track tables offer original order, title A–Z/Z–A, artist, album, date added, release year, duration and disc/track sorting. Header playback, Play next, Add to queue and play-from-row follow the display order without rewriting a server playlist. Manual playlist reordering uses Original order. Duplicate track occurrences remain distinct. Standalone server song searches sort the loaded page; local sorting runs before pagination (local playback retains its existing 100-track page limit).
+- Album/playlist track tables offer original order, title A–Z/Z–A, artist, album, date added, release year, duration and disc/track sorting. Header playback, Play next, Add to queue and play-from-row follow the display order without rewriting a server playlist. Manual playlist reordering uses Original order. Duplicate track occurrences remain distinct. Standalone server song searches sort the loaded page; local sorting runs before pagination (complete local queue resolution is available in 1.5.0 below).
 - Navidrome date sorting uses its optional `created` field ([0.60.3 response source](https://github.com/navidrome/navidrome/blob/v0.60.3/server/subsonic/responses/responses.go)); this is a library date, not an insertion date within a playlist. Unknown dates sort last. Local date added records first indexing and survives rescans and identified renames; legacy files without a recorded date remain unknown.
 - Now Playing places view switches and lyrics tools/appearance in one responsive header. All 13 themes and 10 application styles share restrained navigation, consistent utility controls and a compact Settings layout, with separate palette and style choices.
 
@@ -350,3 +350,11 @@ Collection and episode controls share compact playback rows with personal/progre
 - Export the current app CSS and computed palette/font tokens through a native save dialog; edit locally and re-import (512 KB maximum). The snapshot identifies the theme/style selections to use.
 - Tabs, segmented choices, action buttons, headings and selectable results have distinct treatments across the theme/style system.
 - Snowfall, Rain, Deep Ocean and Ember Glow backgrounds support saved preview/cancel and reduced motion.
+
+### Version 1.5.0 consistency and recovery
+
+- Fixed neutral Queue, Lyrics and Immersive view pills, quiet Frosted navigation, readable artwork overlays, distinct result rows/cards, consistent keyboard focus, fewer Appearance dividers and tighter track columns at desktop widths. The immersive tagline is removed.
+- Local Play, Play next, Queue and play-from-row resolve the full filtered/sorted collection, independent of the 100-row display page. Original playlist order and duplicate occurrences are preserved. The existing 5,000-item queue bound remains: oversized selections fail explicitly and can be narrowed with search. Personal selection tools still operate on the displayed/selected rows.
+- Known server libraries remain in the picker during a failed refresh, with named connection errors and retry. Current music/book/podcast results remain visible on same-view refresh failures. Online/wake events refresh library reads; sleep pauses audio and saves local position. Failed playback can be retried with the existing play control, keeping queue order and correct whole-book/episode position. Writes are not automatically replayed, and offline progress reconciliation still requires review.
+- Natural track sorting reuses an Intl.Collator and server track-list ordering is memoized. A synthetic 15,000-title comparison is available with `node scripts/sort-benchmark.cjs`; timings depend on the machine.
+- Appearance recovery is available from Settings, the native tray menu, Ctrl+Shift+F9 and `--safe-appearance`. It retains a saved theme/appearance/CSS snapshot across restarts. Restore changes only appearance, preserving audio preferences changed during recovery.

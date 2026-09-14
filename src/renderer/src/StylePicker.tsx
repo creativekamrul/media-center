@@ -3,7 +3,7 @@ import type {Preferences} from '../../shared/types'
 
 const styles: {id:AppStyle;name:string;description:string}[] = [
   {id:'default',name:'Original',description:'Familiar pill controls and open, balanced surfaces.'},
-  {id:'frosted',name:'Frosted',description:'Translucent pill buttons, delicate borders and softly layered panels.'},
+  {id:'frosted',name:'Frosted',description:'Glass panels, quiet navigation and translucent action buttons.'},
   {id:'soft',name:'Soft',description:'Soft corners, quiet tonal controls and relaxed spacing.'},
   {id:'precision',name:'Precision',description:'Crisp controls, layered panels, and subtle edge highlights.'},
   {id:'outline',name:'Outline',description:'Square corners, fine rules, and a flat, structured layout.'},

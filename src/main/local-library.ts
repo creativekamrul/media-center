@@ -62,7 +62,7 @@ export class LocalLibrary {
   if(input.action==='update'){if(!lists.some(p=>p.id===input.id))throw Error('This playlist no longer exists.');this.store.set(key,lists.map(p=>p.id===input.id?{...p,name:input.name,files:input.files}:p))}
   else this.store.set(key,[...lists,{id:randomUUID(),name:input.name,files:input.files}])
  }
- async query(input:LocalQuery):Promise<LocalPageData>{
+ async query(input:LocalQuery, complete=false):Promise<LocalPageData>{
   const index=await this.index(input.rootId,input.refresh),favorites=new Set(this.store.get<string[]>(`local-favorites:${input.rootId}`)??[])
   const recent=new Map(this.store.history().filter(h=>h.item.target.kind==='local-file'&&h.item.target.rootId===input.rootId).map(h=>[h.item.target.kind==='local-file'?h.item.target.fileId:'',h.playedAt]))
   const playlists=this.store.get<LocalPlaylist[]>(`local-playlists:${input.rootId}`)??[]
@@ -87,6 +87,8 @@ export class LocalLibrary {
   else if(input.view!=='playlists'||!input.group)files=sortedTrackIndexes(files,'title').map(i=>files[i])
   groups.sort((a,b)=>a.title.localeCompare(b.title,undefined,{numeric:true}))
   const grouped=['albums','artists','genres','playlists'].includes(input.view)&&input.group===undefined
-  return {tracks:grouped?[]:files.slice(input.page*100,(input.page+1)*100).map(f=>({...f,favorite:favorites.has(f.id)})),groups:groups.slice(input.page*100,(input.page+1)*100),total:grouped?groups.length:files.length,trackCount:index.files.length,page:input.page,updatedAt:index.updatedAt,warnings:index.warnings}
+  if(complete&&grouped)throw Error('Open a collection before queuing its tracks.')
+  if(complete&&files.length>5000)throw Error('This selection exceeds the 5,000-track queue limit. Narrow your search before playing it.')
+  return {tracks:grouped?[]:(complete?files:files.slice(input.page*100,(input.page+1)*100)).map(f=>({...f,favorite:favorites.has(f.id)})),groups:groups.slice(input.page*100,(input.page+1)*100),total:grouped?groups.length:files.length,trackCount:index.files.length,page:input.page,updatedAt:index.updatedAt,warnings:index.warnings}
  }
 }

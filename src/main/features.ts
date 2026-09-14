@@ -1,7 +1,7 @@
 import {browseAllMusic,musicQuerySchema} from './music-libraries'
 import {UndoJournal,assertUnchanged} from './undo'
 import {LocalLibrary} from './local-library'
-import {localQuerySchema,localPlaylistSchema} from '../shared/local-library'
+import {localQuerySchema,localQueueQuerySchema,localPlaylistSchema} from '../shared/local-library'
 import { customCssSchema } from '../shared/custom-css'
 import {defaultPlayingScreen,playingScreenSchema} from '../shared/playing-screen'
 import { appearanceSchema } from '../shared/appearance'
@@ -47,6 +47,10 @@ export function registerFeatures(handle: Handle, store: Store, player: Player, l
   handle('queue:edit', z.union([z.object({ action: z.enum(['append','next']), items: z.array(queueItemSchema).min(1).max(5000) }).strict(), z.object({ action: z.enum(['remove','jump']), index }).strict(), z.object({ action: z.literal('move'), from: index, to: index }).strict(), z.object({ action: z.enum(['clear','clear-upcoming','restore']) }).strict(), z.object({ action: z.literal('sleep-chapter'), enabled: z.boolean() }).strict()]), async i => {await player.edit(i,(before,after,index)=>{if(['remove','clear-upcoming','clear'].includes(i.action))undo?.add('queue edit',()=>player.restoreQueueEdit(before,index,after))})})
   const localLibrary=new LocalLibrary(store,local)
   handle('local:library',localQuerySchema,i=>localLibrary.query(i))
+  handle('local:queue',localQueueQuerySchema,async i=>{
+    const result=await localLibrary.query({...i,page:0},true)
+    return result.tracks.map(f=>({target:{kind:'local-file' as const,serverId:'local' as const,rootId:i.rootId,fileId:f.id},title:f.title,subtitle:f.artist||f.name,duration:f.duration,context:f.album}))
+  })
   handle('local:playlist',localPlaylistSchema,async i=>{const key='local-playlists:'+i.rootId,before=store.get(key)??[];await localLibrary.playlist(i);const after=store.get(key);undo?.add('local playlist edit',async()=>{assertUnchanged(after,store.get(key));store.set(key,before)})})
   handle('local:favorite',z.object({rootId:id,fileId:z.string().min(1).max(4096),favorite:z.boolean()}).strict(),async i=>{const key='local-favorites:'+i.rootId,before=store.get(key)??[];await localLibrary.favorite(i.rootId,i.fileId,i.favorite);const after=store.get(key);undo?.add('local favorite change',async()=>{assertUnchanged(after,store.get(key));store.set(key,before)})})
   handle('local:roots', z.undefined(), () => local.roots())

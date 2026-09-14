@@ -87,7 +87,7 @@ module.exports=async({desktop,page,artifacts})=>{
    const dialog=page.getByRole('dialog',{name:'Lyrics appearance',exact:true});await dialog.waitFor()
    if(id!=='default'){
     assert.equal((await dialog.evaluate(styleOf)).radius,await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--style-panel-radius').trim().replace('6px 28px 6px 28px','6px 28px')))
-    assert.equal((await dialog.getByLabel('Immersive layout',{exact:true}).evaluate(styleOf)).radius,id==='frosted'?'14px':await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--style-control-radius').trim()))
+    assert.equal((await dialog.getByLabel('Immersive layout',{exact:true}).evaluate(styleOf)).radius,id==='frosted'?'8px':await page.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--style-control-radius').trim()))
    }
    await dialog.getByRole('button',{name:'Cancel',exact:true}).click()
    await view.getByRole('button',{name:'Classic view',exact:true}).click()

@@ -153,7 +153,7 @@ html[data-show-help=false] .guidance {display:none!important}
 html[data-theme][data-app-style=default] .sidebar .nav-item.selected {box-shadow:none!important}
 html[data-theme] .browse-tabs>button.filter {border:0!important;border-radius:4px 4px 0 0!important;background:transparent!important;box-shadow:none!important;color:var(--muted)!important;min-height:42px;padding:10px 16px}
 html[data-theme] .browse-tabs>button.filter.active {color:var(--text)!important;box-shadow:inset 0 -2px var(--accent)!important}
-html[data-theme][data-app-style=frosted] :is(.browse-tabs>button.filter,.pinned-tab-list>button) {backdrop-filter:blur(12px)!important}
+html[data-theme][data-app-style=frosted] :is(.browse-tabs>button.filter,.pinned-tab-list>button) {backdrop-filter:none!important}
 html[data-theme][data-app-style=frosted] :is(.browse-tabs>button.filter:hover,.pinned-tab-list>button:hover) {background:color-mix(in srgb,var(--text) 5%,transparent)!important}
 .queue-header-meta,.queue-pagination {display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .queue-header-meta {margin-left:auto;color:var(--muted);font-size:12px}
@@ -168,7 +168,7 @@ html[data-theme] .mix-card-actions>button {height:40px;min-height:40px;padding:8
 html[data-theme] .mix-card-actions>.more-options>.more-options-trigger {height:40px;min-height:40px;width:40px;min-width:40px;padding:0;justify-content:center}
 .playlist-destination {display:flex;align-items:center;margin:0;flex:0 1 240px;min-width:160px}
 .playlist-destination>select {width:100%;min-height:42px;margin:0}
-@container(min-width:1201px) {
+@container(min-width:1051px) {
  .customizable-table .song-row:not(.has-row-tools) {grid-template-columns:20px minmax(240px,1fr) auto}
  .customizable-table:has(.track-column:nth-child(6)) .song-row:not(.has-row-tools) {grid-template-columns:20px minmax(0,1fr)}
 }
@@ -238,11 +238,63 @@ html[data-theme][data-app-style=frosted] .result-card {background:color-mix(in s
 html[data-theme][data-app-style] :is(.section-title,.library-heading,.panel-heading,.settings-group-title) {border-radius:0;box-shadow:none;background:transparent}
 
 /* Foreground pairs follow the surface, including secondary text inside a selection. */
-html[data-theme][data-app-style] :is(button.primary,button.main-play,button.card-play) {--muted:var(--accent-text,#101010);color:var(--accent-text,#101010)}
-html[data-theme][data-app-style] :is(button.primary,button.main-play,button.card-play) :is(strong,span,small,p) {color:inherit}
+html[data-theme][data-app-style] :is(button.primary,button.main-play) {--muted:var(--accent-text,#101010);color:var(--accent-text,#101010)}
+html[data-theme][data-app-style] :is(button.primary,button.main-play) :is(strong,span,small,p) {color:inherit}
 html[data-theme][data-app-style] :is(.queue-row,.song-row,.local-library-track,.command-result,.playlist-choice,.personal-shelf-card) {color:var(--text)}
 html[data-theme][data-app-style] :is(.queue-row,.song-row,.local-library-track,.command-result,.playlist-choice,.personal-shelf-card) strong {color:var(--text)}
 html[data-theme][data-app-style] :is(.queue-row,.song-row,.local-library-track,.command-result,.playlist-choice,.personal-shelf-card) small {color:var(--muted)}
 html[data-theme][data-app-style] .queue-row.current {background:color-mix(in srgb,var(--text) 8%,var(--panel));color:var(--text)}
 html[data-theme][data-app-style] .result-card:disabled {opacity:.65}
 html[data-theme][data-app-style] :is(input,textarea)::placeholder {color:var(--muted);opacity:1}
+
+/* Now Playing's familiar neutral pills deliberately stay independent of theme/style. */
+html[data-theme][data-app-style] .now-header-actions .now-tabs {gap:8px;border:0;background:none;backdrop-filter:none;box-shadow:none;padding:0}
+html[data-theme][data-app-style] .now-header-actions button.now-view-button {
+ border:1px solid #ffffff26!important;border-radius:999px!important;background:#232323!important;color:#f4f4f5!important;
+ box-shadow:none!important;backdrop-filter:none!important;filter:none!important;font:600 13px/20px 'Segoe UI',sans-serif!important;
+ height:42px;min-height:42px;padding:10px 18px!important;transition:none!important;
+}
+html[data-theme][data-app-style] .now-header-actions button.now-view-button[aria-pressed=true] {background:#eeeeee!important;color:#111111!important;border-color:#eeeeee!important}
+html[data-theme][data-app-style] .now-header-actions button.now-view-button:hover:not(:disabled):not([aria-pressed=true]) {background:#333333!important}
+html[data-theme][data-app-style] .now-header-actions button.now-view-button:focus-visible {outline:2px solid #ffffff;outline-offset:3px}
+html[data-theme][data-app-style] .now-header-actions button.now-view-button:disabled {opacity:.55;cursor:default}
+.immersive-header-actions {margin-left:auto}
+/* Frosted keeps glass on cards while navigation uses the clean Original structure. */
+html[data-theme][data-app-style=frosted] .sidebar .nav-item.selected {box-shadow:none!important}
+html[data-theme][data-app-style=frosted] :is(.browse-tabs:not(.concise-tabs),.daily-tabs) {background:transparent;backdrop-filter:none;box-shadow:none}
+/* Use one section divider, not two adjacent borders around the CSS tools/footer. */
+html[data-theme][data-app-style] .theme-preferences .appearance-editor {border-bottom:0;margin-bottom:0;padding-bottom:16px}
+html[data-theme][data-app-style] .theme-preferences .css-import {border:0;margin:0;padding:16px 0}
+html[data-theme][data-app-style] .theme-preferences>.settings-actions {border-top:1px solid var(--line);margin-top:8px;padding-top:20px}
+/* Artwork is unpredictable: overlay icons need their own opaque contrast pair. */
+html[data-theme][data-app-style] :is(button.card-play,.card-open,button.card-favorite,button.card-more) {
+ background:#171a1d!important;color:#ffffff!important;--muted:#ffffff;border:1px solid #ffffff40!important;
+ border-radius:50%!important;box-shadow:0 2px 8px #0005!important;backdrop-filter:none!important;
+}
+html[data-theme][data-app-style] :is(button.card-play,.card-open,button.card-favorite,button.card-more):hover:not(:disabled) {background:#30343a!important;color:#ffffff!important}
+html[data-theme][data-app-style] button.card-favorite.active {background:#eeeeee!important;color:#111111!important;border-color:#eeeeee!important}
+html[data-theme][data-app-style] :is(button.card-play,.card-open,button.card-favorite,button.card-more):focus-visible {outline:2px solid #ffffff;outline-offset:3px}
+
+/* Collection and search results are rows/cards, never primary action pills. */
+html[data-theme][data-app-style] :is(button.playlist-choice,button.command-result,button.chapter-row,button.file-row,button.folder-card,button.local-group-open) {
+ color:var(--text);background:var(--surface-quiet);border:1px solid var(--line);
+ border-radius:8px;box-shadow:none;text-align:left;white-space:normal;
+}
+html[data-theme][data-app-style] :is(button.playlist-choice,button.command-result,button.chapter-row,button.file-row,button.folder-card,button.local-group-open):hover:not(:disabled) {
+ background:color-mix(in srgb,var(--text) 7%,var(--panel));color:var(--text);border-color:var(--control-border);
+}
+html[data-theme][data-app-style] :is(button.playlist-choice,button.command-result,button.chapter-row,button.file-row):is(.active,.selected,[aria-selected=true],[aria-pressed=true]) {
+ background:color-mix(in srgb,var(--accent) 10%,var(--panel));color:var(--text);border-color:var(--accent);
+}
+html[data-theme][data-app-style] :is(.playlist-choice,.command-result,.chapter-row,.file-row,.folder-card,.local-group-open) :is(small,.muted) {color:var(--muted)}
+html[data-theme][data-app-style] :is(.playlist-choice,.command-result,.chapter-row,.file-row,.folder-card,.local-group-open) strong {color:var(--text)}
+html[data-theme][data-app-style=frosted] :is(button.playlist-choice,button.folder-card,button.local-group-open) {background:color-mix(in srgb,var(--panel) 80%,transparent);backdrop-filter:blur(16px)}
+html[data-theme][data-app-style] :is(button,input,select,textarea,summary,a,[tabindex="0"]):focus-visible {outline:2px solid var(--text);outline-offset:3px}
+html[data-theme][data-app-style] :is(.song-title,.media-card,.local-group-open) {min-width:0}
+html[data-theme][data-app-style] :is(.library-toolbar,.library-view-actions,.settings-actions) {align-items:center}
+html[data-theme][data-app-style] :is(.media-card,.local-group-open) .art {flex-shrink:0}
+.appearance-recovery {display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 0;flex-wrap:wrap}
+.appearance-recovery>div {flex:1 1 300px;min-width:0}
+.appearance-recovery h3 {margin:0 0 8px}
+.appearance-recovery p {margin:0 0 6px}
+.appearance-recovery>button {flex:0 0 auto}

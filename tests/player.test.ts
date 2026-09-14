@@ -28,6 +28,54 @@ describe('playback coordination', () => {
     player = new Player(mpv, store, id => id === 'n' ? nav : abs)
   })
   afterEach(async () => { await player.shutdown(); vi.useRealTimers() })
+
+  it.each(['audiobook','podcast-episode'] as const)('retries %s at the whole-item position without changing queue identity',async kind=>{
+    const items=kind==='audiobook'?queue:[{target:{kind:'podcast-episode' as const,serverId:'s',showId:'show',episodeId:'ep'},title:'Episode',subtitle:''}]
+    if(kind==='podcast-episode')vi.mocked(abs.detail).mockResolvedValue({kind:'podcast-show',id:'show',serverId:'s',libraryId:'p',title:'Show',subtitle:'Host',description:'',author:'Host',episodeCount:1,episodes:[{id:'ep',title:'Episode',duration:1000}]} as Awaited<ReturnType<typeof abs.detail>>)
+    await player.play(items,0)
+    mpv.emit('event',{event:'property-change',name:'time-pos',data:125})
+    expect(player.state.position).toBe(525)
+    mpv.emit('event',{event:'end-file',reason:'error'})
+    expect(player.state.status).toBe('error')
+    await player.command({action:'toggle'})
+    expect(player.state.status).toBe('playing')
+    expect(player.state.position).toBe(525)
+    expect(player.state.queue).toEqual(items)
+    expect(abs.start).toHaveBeenLastCalledWith(items[0].target,'device')
+    expect(mpv.load).toHaveBeenLastCalledWith(expect.any(String),expect.objectContaining({start:'125'}))
+  })
+  it('keeps server resume when the first attempt fails before audio starts',async()=>{
+    vi.mocked(abs.start).mockRejectedValueOnce(new Error('Server unavailable'))
+    await expect(player.play(queue,0)).rejects.toThrow('Server unavailable')
+    await player.command({action:'toggle'})
+    expect(player.state.position).toBe(450)
+    expect(player.state.status).toBe('playing')
+  })
+  it('retains the failed music position and shuffle state across repeated retries',async()=>{
+    const music=[{target:{kind:'music-track' as const,serverId:'n',trackId:'song'},title:'Song',subtitle:'Artist',duration:300}]
+    await player.play(music,0)
+    player.state.shuffle=true
+    mpv.emit('event',{event:'property-change',name:'time-pos',data:65})
+    mpv.emit('event',{event:'end-file',reason:'error'})
+    vi.mocked(nav.track).mockRejectedValueOnce(new Error('Server unavailable'))
+    await expect(player.command({action:'toggle'})).rejects.toThrow('Server unavailable')
+    expect(player.state.position).toBe(65)
+    await player.command({action:'toggle'})
+    expect(player.state.position).toBe(65)
+    expect(player.state.shuffle).toBe(true)
+    expect(player.state.queue).toEqual(music)
+  })
+  it('suspends playing audio without resuming it automatically or losing the queue',async()=>{
+    await player.play(queue,0)
+    const before=player.state.position
+    await player.suspend()
+    expect(player.state.status).toBe('paused')
+    expect(player.state.position).toBe(before)
+    expect(player.state.queue).toEqual(queue)
+    await player.suspend()
+    expect(player.state.status).toBe('paused')
+    expect(testStore.get('resume:'+progressKey(queue[0].target))).toMatchObject({position:before})
+  })
   it.each(['audiobook','podcast-episode'] as const)('private listening preserves %s resume without history or listening-time deltas',async kind=>{
     const items=kind==='audiobook'?queue:[{target:{kind:'podcast-episode' as const,serverId:'s',showId:'show',episodeId:'ep'},title:'Episode',subtitle:''}]
     if(kind==='podcast-episode')vi.mocked(abs.detail).mockResolvedValue({kind:'podcast-show',id:'show',serverId:'s',libraryId:'p',title:'Show',subtitle:'Host',description:'',author:'Host',episodeCount:1,episodes:[{id:'ep',title:'Episode',duration:1000}]} as Awaited<ReturnType<typeof abs.detail>>)

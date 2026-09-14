@@ -47,6 +47,8 @@ export interface DesktopAPI extends importPersonalAPI, DailyAPI, ExperienceAPI, 
   installedFonts():Promise<string[]>
   importThemeCss(): Promise<string | null>
   exportThemeCss(css:string): Promise<boolean>
+  appearanceRecovery(action:'get'|'start'|'restore'):Promise<boolean>
+  onSystemResume(listener:()=>void):()=>void
   previewTheme(preferences: Preferences | null): Promise<void>
   fullscreen(action: 'toggle' | 'exit'): Promise<void>
   updateState(): Promise<UpdateState>
@@ -89,6 +91,7 @@ export interface DesktopAPI extends importPersonalAPI, DailyAPI, ExperienceAPI, 
   localAdd(): Promise<LocalRoot | null>
   localRemove(id: string): Promise<void>
   localBrowse(input: { rootId: string; folder: string }): Promise<LocalFolder>
+  localQueue(input: import('./local-library').LocalQueueQuery): Promise<QueueItem[]>
   localLibrary(input: import('./local-library').LocalQuery): Promise<import('./local-library').LocalPageData>
   localFavorite(input:{rootId:string;fileId:string;favorite:boolean}):Promise<void>
   localPlaylist(input:import('./local-library').LocalPlaylistCommand):Promise<void>
