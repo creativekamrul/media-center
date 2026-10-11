@@ -1,5 +1,61 @@
 # Changelog
 
+## 2.0.0-beta.1
+
+- Liquid Glass palette with restrained translucent surfaces, readable menus, shared focus treatment and reduced-motion support. All existing palettes keep distinct colors and application styles keep their control shapes; tabs, cards and action buttons have separate roles.
+- Home gains configurable source shortcuts, Jellyfin Continue watching and recently added shelves. Existing Home ordering and hidden sections migrate without being discarded.
+- Search adds Jellyfin music, albums, artists, movies and series beside Navidrome, Audiobookshelf and local results, with source and media-type filters. Opening a Jellyfin result goes directly to its detail/library page.
+- Jellyfin queue inspection, current-item following and direct queue selection; playback shortcuts and command-palette transport use the explicitly selected engine. Pausing music after switching from Jellyfin keeps music controls active.
+- Video stays full-window when controls are shown or hidden, with compact left-aligned transport, right-aligned options, and a full-width timeline.
+- Video option panels cover the native picture without shifting or resizing it. Five-second back/forward controls match the arrow-key shortcuts.
+- Fullscreen video controls hide after inactivity and return on pointer movement or keyboard input. Left/right and skip buttons seek five seconds. Preferred languages, text subtitle size/background, and optional next-video countdown are saved on this device.
+- Downloads show storage usage, status/search filters and explicit offline capability information. Existing pause, resume, retry and position-reconciliation behavior is retained.
+- Connection health overview with Test all servers and first-run source guidance, alongside existing connection editing, backups and recovery.
+- Diagnostics include credential-free Jellyfin playback/track-count status. Personal backups include video preferences.
+
+This is a prerelease for testing, not a stable release. Jellyfin still uses its own queue and requires a network connection. Spotify, Plex, manga, Jellyfin offline downloads/playlist editing, and unsupported Jellyfin library types are not implemented. Hardware HDR/codec behavior and the user's real servers require acceptance testing.
+
+
+## 1.6.0-beta.5 — cinematic Jellyfin detail pages
+
+- Redesign movie, series and episode details with large backdrops, server logo artwork or a title fallback, centered metadata and restrained translucent icon controls.
+- Add server-provided ratings, studios, directors, cast and similar titles. Series pages include Next up and seasons.
+- Simplify detail-page navigation and preserve themed colors, accessible actions and reduced-motion support.
+
+## 1.6.0-beta.4 — a dedicated Jellyfin home
+
+- Replace fixed Movies/TV sidebar entries and the Music source switch with one Jellyfin destination.
+- Discover and display each server's own music, movie and TV library names, with remembered server/library selection and separate browsing preferences.
+- Add a featured artwork carousel, Continue watching, recently added shelves and library shortcuts. Use theme-aware surfaces, restrained motion and reduced-motion support.
+- Keep native original-file playback, fullscreen, subtitle/audio controls and statistics from beta.3.
+
+## 1.6.0-beta.3 — fullscreen and playback polish
+
+- Remove the exposed app strip above fullscreen Jellyfin video and follow the actual window title-bar height.
+- Give the seek bar a full-width aligned row and expose CC, audio tracks and playback options directly in the player.
+- Include Jellyfin music, movies and TV in local listening statistics and personal backups. Exclude paused, buffering, private and skipped time.
+
+
+## 1.6.0-beta.2 — embedded video and server management
+
+- Play movies and TV inside Media Center through a native child video surface, with app fullscreen, responsive resizing, browsing return and accessible playback controls.
+- Edit and test saved Jellyfin, Navidrome and Audiobookshelf servers. Changes are tested before saving; IDs and saved credentials are retained when appropriate.
+- Require credentials again when changing an endpoint or username. Failed edits keep the previous working connection.
+
+
+## 1.6.0-beta.1 — local Jellyfin preview
+
+- Connect multiple Jellyfin accounts/servers using encrypted access tokens; target the 10.11.11 API.
+- Browse Jellyfin music from Music, with albums, songs, artists, playlists and favorites; add Movies and TV shows with seasons, episodes, search, sorting and Continue watching.
+- Play original media through native MPV with an authenticated local relay, byte-range seeking and no server transcoding fallback.
+- Add a native video window with fullscreen, subtitles, audio tracks, chapters, hardware decoding when supported, and controls in Media Center.
+- Report playback and watched/favorite changes to Jellyfin, preserve local session checkpoints, and offer explicit saved-session recovery.
+- Play complete music collections, retain playlist duplicates, and advance through episodes with an automatic-next switch.
+- Route media keys/Windows media controls to the active player and pause other playback when switching sources.
+
+This preview uses a dedicated Jellyfin queue and native video window. Jellyfin playlist editing, a combined Navidrome/Jellyfin queue, Live TV, downloads, intro skipping and embedded video inside the browsing window are not included. HDR/Dolby Vision and hardware-specific formats require testing on the user's display and GPU.
+
+
 ## 1.5.0
 
 - Restore fixed neutral pill controls for Queue, Lyrics and Immersive view across every theme and style.

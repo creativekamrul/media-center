@@ -5,7 +5,7 @@ export function serverUrl(base: string, path: string): URL {
 }
 export async function request(url: URL | string, init: RequestInit = {}): Promise<Response> {
   let response: Response
-  try { response = await fetch(url, { ...init, signal: AbortSignal.timeout(20000), redirect: 'error' }) }
+  try { response = await fetch(url, { ...init, signal: init.signal ?? AbortSignal.timeout(20000), redirect: 'error' }) }
   catch { throw new Error('Cannot reach the server. Check its address, certificate, and connection. Use the final server URL if it redirects.') }
   if (response.status === 401 || response.status === 403) throw new Error('The server refused access. Check your credentials and library permissions.')
   if (!response.ok) throw new Error(`Server request failed (HTTP ${response.status}).`)

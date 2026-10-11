@@ -54,7 +54,7 @@ module.exports=async({desktop,page,artifacts})=>{
   await editor.getByLabel('Find album artwork',{exact:true}).fill('Semantic card fixture');await editor.getByRole('button',{name:'Search covers',exact:true}).click();await editor.getByRole('button',{name:/Selectable release/}).click()
   await editor.getByRole('button',{name:'Use this cover',exact:true}).waitFor()
   const before=await page.evaluate(()=>window.mediaCenter.preferences())
-  for(const theme of ['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass'])for(const appStyle of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']){
+  for(const theme of ['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass','liquid-glass'])for(const appStyle of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']){
    await page.evaluate(p=>window.mediaCenter.savePreferences(p),{...before,theme,appearance:{...before.appearance,appStyle}})
    await page.waitForFunction(({theme,appStyle})=>document.documentElement.dataset.theme===theme&&document.documentElement.dataset.appStyle===appStyle,{theme,appStyle})
    const geometry=await editor.evaluate(el=>{const tab=el.querySelector('[role=tab][aria-selected=true]'),card=el.querySelector('.result-card'),action=[...el.querySelectorAll('button')].find(b=>b.textContent==='Use this cover'),heading=el.querySelector('h3');const t=getComputedStyle(tab),c=getComputedStyle(card),a=getComputedStyle(action),h=getComputedStyle(heading);return {tabFill:t.backgroundColor,tabRadius:parseFloat(t.borderTopLeftRadius),cardRadius:parseFloat(c.borderTopLeftRadius),cardFill:c.backgroundColor,actionFill:a.backgroundColor,cardHeight:card.getBoundingClientRect().height,headingFill:h.backgroundColor}})
@@ -69,7 +69,7 @@ module.exports=async({desktop,page,artifacts})=>{
   await page.getByRole('button',{name:'Open now playing',exact:true}).click();await page.getByRole('button',{name:'Lyrics',exact:true}).click()
   await page.getByRole('button',{name:'Lyrics tools',exact:true}).click();await page.getByRole('button',{name:'Find lyrics',exact:true}).click()
   const lyrics=page.getByRole('dialog',{name:'Find lyrics for this song',exact:true});await lyrics.getByRole('button',{name:'Search lyrics',exact:true}).click();await lyrics.locator('.lyric-result').first().click()
-  for(const theme of ['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass'])for(const appStyle of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']){
+  for(const theme of ['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass','liquid-glass'])for(const appStyle of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']){
    await page.evaluate(p=>window.mediaCenter.savePreferences(p),{...before,theme,appearance:{...before.appearance,appStyle}})
    await page.waitForFunction(({theme,appStyle})=>document.documentElement.dataset.theme===theme&&document.documentElement.dataset.appStyle===appStyle,{theme,appStyle})
    await contrast(lyrics.locator('.lyric-result>:is(strong,span,small)'))
@@ -77,8 +77,8 @@ module.exports=async({desktop,page,artifacts})=>{
    if(theme==='black-glass'&&appStyle==='frosted')await page.screenshot({path:resolve(artifacts,'lyrics-result-contrast-140.png')})
   }
   await lyrics.getByRole('button',{name:'Close dialog',exact:true}).click()
-  console.log('Result contrast passed: titles, artists and metadata in selected/unselected and hovered artwork/lyrics results across 130 combinations.')
-  console.log('Semantic UI passed: actual editor tabs, artwork result cards, action buttons and headings stay distinct across all 130 theme/style combinations.')
+  console.log('Result contrast passed: titles, artists and metadata in selected/unselected and hovered artwork/lyrics results across 140 combinations.')
+  console.log('Semantic UI passed: actual editor tabs, artwork result cards, action buttons and headings stay distinct across all 140 theme/style combinations.')
   console.log('1.4 checks passed: guidance persistence, CSS export/import, normal and immersive queue auto-follow across pages, compact pagination, four backgrounds and reduced motion.')
  }finally{
   await desktop.evaluate(({dialog})=>{if(globalThis.__fetch140)globalThis.fetch=globalThis.__fetch140;if(globalThis.__save140)dialog.showSaveDialog=globalThis.__save140;if(globalThis.__open140)dialog.showOpenDialog=globalThis.__open140})

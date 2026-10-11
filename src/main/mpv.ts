@@ -14,17 +14,17 @@ export class Mpv extends EventEmitter {
   private sequence = 0
   private buffer = ''
   private ready?: Promise<void>
-  async start(path: string): Promise<void> {
+  async start(path: string, video = false, windowId?: string): Promise<void> {
     if (this.socket && !this.socket.destroyed) return
     if (this.ready) return this.ready
     if (!path) throw new Error('Choose your MPV executable in Settings before playing audio.')
-    this.ready = this.launch(path).finally(() => { this.ready = undefined })
+    this.ready = this.launch(path, video, windowId).finally(() => { this.ready = undefined })
     return this.ready
   }
-  private async launch(path: string) {
+  private async launch(path: string, video = false, windowId?: string) {
     this.endpoint = process.platform === 'win32' ? `\\\\.\\pipe\\media-center-${randomUUID()}` : join(tmpdir(), `media-center-${randomUUID()}.sock`)
     let launchError: Error | undefined
-    const child = spawn(path, ['--idle=yes', '--no-config', '--no-terminal', '--input-terminal=no', '--video=no', '--audio-display=no', '--cache=yes', '--demuxer-max-bytes=64MiB', '--demuxer-readahead-secs=30', `--input-ipc-server=${this.endpoint}`], { windowsHide: true, shell: false, stdio: 'ignore' })
+    const child = spawn(path, ['--idle=yes', '--no-config', '--no-terminal', '--input-terminal=no', ...(video ? ['--video=auto', '--hwdec=auto-safe', '--osc=yes', '--input-default-bindings=yes', '--keep-open=no'] : ['--video=no']), ...(windowId ? [`--wid=${windowId}`, '--osc=no', '--input-default-bindings=no', '--input-vo-keyboard=no', '--input-cursor=no'] : []), '--audio-display=no', '--cache=yes', video ? '--demuxer-max-bytes=256MiB' : '--demuxer-max-bytes=64MiB', '--demuxer-readahead-secs=30', `--input-ipc-server=${this.endpoint}`], { windowsHide: true, shell: false, stdio: 'ignore' })
     this.process = child
     child.on('error', () => { launchError = new Error('MPV could not start. Select a valid MPV executable.'); this.emit('failure', launchError.message) })
     child.on('exit', () => {
@@ -44,7 +44,7 @@ export class Mpv extends EventEmitter {
         socket.on('data', data => this.receive(data.toString()))
         socket.on('error', () => { this.rejectPending(); this.emit('failure', 'Lost the local MPV connection.') })
         socket.on('close', () => this.rejectPending())
-        for (const [index, name] of ['time-pos', 'pause', 'audio-codec-name', 'audio-params', 'volume', 'paused-for-cache'].entries()) await this.command(['observe_property', index + 1, name])
+        for (const [index, name] of ['time-pos', 'pause', 'audio-codec-name', 'audio-params', 'volume', 'paused-for-cache', ...(video ? ['duration','fullscreen','track-list','chapter-list','video-params','hwdec-current'] : [])].entries()) await this.command(['observe_property', index + 1, name])
         return
       }
       await new Promise(resolve => setTimeout(resolve, 150))
@@ -80,12 +80,12 @@ export class Mpv extends EventEmitter {
     let finish: (error?: Error) => void = () => {}
     let cleanup = () => {}
     const loaded = new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => finish(new Error('MPV could not load the audio stream within 20 seconds.')), 20000)
+      const timer = setTimeout(() => finish(new Error('MPV could not load the media stream within 20 seconds.')), 20000)
       const onEvent = (event: { event: string; reason?: string }) => {
         if (event.event === 'file-loaded') finish()
-        if (event.event === 'end-file' && event.reason === 'error') finish(new Error('MPV could not open this audio stream.'))
+        if (event.event === 'end-file' && event.reason === 'error') finish(new Error('MPV could not open this media stream.'))
       }
-      const onFailure = () => finish(new Error('MPV disconnected while loading audio.'))
+      const onFailure = () => finish(new Error('MPV disconnected while loading media.'))
       cleanup = () => { clearTimeout(timer); this.off('event', onEvent); this.off('failure', onFailure) }
       finish = error => { cleanup(); error ? reject(error) : resolve() }
       this.on('event', onEvent); this.on('failure', onFailure)

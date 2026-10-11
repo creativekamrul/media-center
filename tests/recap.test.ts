@@ -36,7 +36,7 @@ describe('listening recap',()=>{
   expect(recapRangeSchema.safeParse({start:'2024-02-29',end:'2024-02-29'}).success).toBe(true)
  })
  it('supports every palette in settings and rejects unknown theme identifiers',()=>{
-  expect(themes).toHaveLength(13)
+  expect(themes).toHaveLength(14)
   for(const theme of themes)expect(preferenceSchema.safeParse({...defaultPreferences,theme:theme.id}).success).toBe(true)
   expect(preferenceSchema.safeParse({...defaultPreferences,theme:'unknown'}).success).toBe(false)
  })

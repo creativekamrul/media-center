@@ -16,7 +16,7 @@ module.exports=async({desktop,page,artifacts})=>{
  assert.equal(await page.locator('.window-drag-area').evaluate(el=>getComputedStyle(el).getPropertyValue('-webkit-app-region')),'drag')
  assert.equal(await page.locator('.window-controls>button').first().evaluate(el=>getComputedStyle(el).getPropertyValue('-webkit-app-region')),'no-drag')
  assert.equal(await page.evaluate(()=>window.mediaCenter.windowControl('invalid').then(()=>false,()=>true)),true)
- for(const theme of ['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass']){
+ for(const theme of ['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass','liquid-glass']){
   await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme)
   const match=await page.locator('.window-titlebar').evaluate(el=>{const p=document.createElement('div');p.style.background='var(--panel)';el.append(p);const same=getComputedStyle(p).backgroundColor===getComputedStyle(el).backgroundColor;p.remove();return same})
   assert.equal(match,true,'Title bar follows '+theme)

@@ -1,3 +1,4 @@
+import type {JfState} from '../shared/jellyfin'
 import { embeddedLyrics } from './embedded-lyrics'
 
 import { validateArtwork } from './artwork-image'
@@ -115,6 +116,7 @@ export function diagnosticsReport(
   state: RecoveryState,
   player: Player['state'],
   counts: { roots: number; downloads: number },
+  jellyfin?:JfState,
 ) {
   return {
     version,
@@ -142,6 +144,7 @@ export function diagnosticsReport(
       hasSyncError: !!player.syncError,
       queueLength: player.queue.length,
     },
+    jellyfin:jellyfin?{status:jellyfin.status,kind:jellyfin.queue[jellyfin.index]?.kind??null,queueLength:jellyfin.queue.length,hasPlaybackError:!!jellyfin.error,hasSyncError:!!jellyfin.syncError,buffering:jellyfin.buffering,fullscreen:jellyfin.fullscreen,audioTracks:jellyfin.tracks.filter(t=>t.type==='audio').length,subtitleTracks:jellyfin.tracks.filter(t=>t.type==='sub').length}:undefined,
     ...counts,
     privacy:
       'No credentials, addresses, paths, source names, track names or raw error messages included.',
@@ -159,6 +162,7 @@ export function registerStudio(
   window: () => BrowserWindow,
   themeChanged: () => void,
   downloadCount: () => number,
+  jellyfinState?:()=>JfState|undefined,
 ) {
   const profiles = () =>
     z
@@ -538,6 +542,7 @@ export function registerStudio(
         await recovery(),
         player.state,
         { roots: local.roots().length, downloads: downloadCount() },
+        jellyfinState?.(),
       ),
       r = await dialog.showSaveDialog(window(), {
         title: 'Export privacy-safe diagnostics',

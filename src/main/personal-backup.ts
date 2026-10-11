@@ -1,3 +1,4 @@
+import {jfVideoPreferences} from '../shared/jellyfin'
 import {coverSource} from '../shared/artwork-source'
 import {personalStateSchema,type MediaRef} from '../shared/personal-library'
 import {validateArtwork} from './artwork-image'
@@ -46,6 +47,7 @@ export const personalExtraSchema = z
     personal:personalStateSchema.default({}),
     covers:z.array(z.object({key:z.string().min(1).max(10000),source:z.string().max(2048).refine(coverSource).optional(),image:z.string().max(7*1024*1024).regex(/^data:image\/png;base64,[A-Za-z0-9+/=]+$/).refine(v=>{try{validateArtwork(Buffer.from(v.split(',')[1],'base64'),true);return true}catch{return false}})}).strict()).max(250).default([]),
     experience: experienceSchema,
+    videoPreferences:jfVideoPreferences.optional(),
     playingScreen: playingScreenSchema,
     profiles: z.array(profileSchema).max(30).default([]),
     transitions: transitionSchema.default({ seconds: 0, preserveAlbums: true }),
@@ -118,13 +120,13 @@ export const personalExtraSchema = z
         z
           .object({
             day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-            target: targetSchema,
+            target: z.union([targetSchema,z.object({kind:z.enum(['jellyfin-music','jellyfin-movie','jellyfin-episode']),serverId:id,itemId:id}).strict()]),
             kind: z.enum([
               'music-track',
               'audiobook',
               'podcast-episode',
               'local-file',
-              'radio',
+              'radio','jellyfin-music','jellyfin-movie','jellyfin-episode',
             ]),
             title: text,
             subtitle: text,
@@ -159,6 +161,7 @@ export function exportExtra(store: Store) {
       .filter((r) => r.value)
       .map((r) => ({ device: r.key.slice(15), value: r.value })),
     experience: store.get('experience') ?? {},
+    videoPreferences:store.get('jellyfin:video-preferences')??{},
     playingScreen: store.get('playingScreen') ?? defaultPlayingScreen,
     history: store.history(),
     local: (store.get<{ id: string }[]>('localRoots') ?? []).map((r) => ({
@@ -211,6 +214,7 @@ export function restoreExtra(
   const personal={...extra.personal,mixes:extra.personal.mixes.map(m=>({...m,sources:m.sources.map(s=>s.kind==='local'?{...s,rootId:folder(s.rootId)}:{...s,serverId:server(s.serverId)})})),shelves:extra.personal.shelves.map(s=>({...s,entries:s.entries.map(ref)})),trips:extra.personal.trips.map(t=>({...t,items:t.items.map(remap)})),shows:Object.fromEntries(Object.entries(extra.personal.shows).map(([k,v])=>{const [source,show]=z.tuple([z.string(),z.string()]).parse(JSON.parse(k));return [JSON.stringify([server(source),show]),v]})),metadata:Object.fromEntries(Object.entries(extra.personal.metadata).map(([k,v])=>[personalKey(k),v]))}
   const values: Record<string, unknown> = {
     'personal-library':personal,
+    ...(extra.videoPreferences?{'jellyfin:video-preferences':extra.videoPreferences}:{}),
     listeningProfiles: extra.profiles,
     transitions: extra.transitions,
     profileSpeed: extra.profileSpeed,
@@ -255,6 +259,7 @@ export function restoreExtra(
   for (const o of extra.offsets)
     values['lyric-offset:' + key(o.key)] = o.seconds
   const stats = extra.stats.map((r) => {
+    if(r.target.kind.startsWith('jellyfin-'))return r // Historical identity only; never a generic playback target.
     const target =
       r.target.kind === 'local-file'
         ? { ...r.target, rootId: folder(r.target.rootId) }

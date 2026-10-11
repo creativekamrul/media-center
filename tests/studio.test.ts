@@ -1,3 +1,4 @@
+import {emptyJfState} from '../src/shared/jellyfin'
 import {applyProfilePreferences} from '../src/main/studio-preferences'
 import { embeddedLyrics } from '../src/main/embedded-lyrics'
 import { validateArtwork } from '../src/main/artwork-image'
@@ -149,6 +150,7 @@ describe('Studio data and undo', () => {
         },
         state,
         { roots: 1, downloads: 0 },
+        {...emptyJfState,error:"secret password",syncError:"secret server",codec:"secret codec",tracks:[{id:1,type:"sub",title:"secret filename",selected:true}]},
       ),
     )
     expect(report).not.toContain('secret')

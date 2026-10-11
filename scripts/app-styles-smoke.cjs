@@ -54,7 +54,7 @@ module.exports=async({desktop,page,artifacts})=>{
    const saved=await page.evaluate(()=>window.mediaCenter.preferences())
    assert.equal(saved.appearance.appStyle,id);assert.equal(saved.theme,base.theme);assert.deepEqual(saved.appearance.colors,base.appearance.colors)
    await page.getByRole('button',{name:'Home',exact:true}).click()
-   if(['precision','outline'].includes(id))assert.notEqual((await page.locator('.sidebar .nav-item.selected').evaluate(styleOf)).shadow,'none','Selected navigation uses its style marker')
+   assert.equal((await page.locator('.sidebar .nav-item.selected').evaluate(styleOf)).shadow,'none','Sidebar selections use a quiet surface without an edge ribbon')
    fingerprints.push(JSON.stringify(await page.locator('.player-bar .main-play').evaluate(styleOf)))
    assert.equal((await mini.locator('.mini-controls .main-play').evaluate(styleOf)).radius,(await page.locator('.player-bar .main-play').evaluate(styleOf)).radius)
    await mini.getByRole('button',{name:'Play',exact:true}).click();await page.waitForFunction(async()=>(await window.mediaCenter.playback()).status==='playing')
@@ -96,7 +96,7 @@ module.exports=async({desktop,page,artifacts})=>{
   }
   assert.equal(new Set(fingerprints).size,10,'All styles have distinct control construction')
   await page.getByRole('button',{name:'Settings',exact:true}).click()
-  const themes=['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass']
+  const themes=['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass','liquid-glass']
   const styles=['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']
   for(const theme of themes)for(const appStyle of styles){
    await page.evaluate(p=>window.mediaCenter.savePreferences(p),{...base,theme,appearance:{...base.appearance,appStyle}})
@@ -108,7 +108,7 @@ module.exports=async({desktop,page,artifacts})=>{
   await page.evaluate(p=>window.mediaCenter.savePreferences(p),{...base,theme:'midnight',appearance:{...base.appearance,appStyle:'frosted'}})
   await page.locator('.settings-heading').scrollIntoViewIfNeeded()
   await page.screenshot({animations:'disabled',path:resolve(artifacts,'refined-settings-frosted.png')})
-  console.log('All 130 theme/style combinations passed selected-navigation contrast and viewport checks; all styles use one Now Playing toolbar.')
+  console.log('All 140 theme/style combinations passed selected-navigation contrast and viewport checks; all styles use one Now Playing toolbar.')
   await page.getByRole('button',{name:'Music',exact:true}).click()
   const tabs=page.locator('.concise-tabs')
   await page.evaluate(()=>window.mediaCenter.saveNavigation({action:'view-pins',viewPins:{music:['albums','songs','artists','playlists']}}))

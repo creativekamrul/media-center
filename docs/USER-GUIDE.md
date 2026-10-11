@@ -308,3 +308,35 @@ For **Blurred artwork**, open **Lyrics appearance** (or **Appearance** in immers
 Immersive view hides the bottom player and puts playback controls below the cover: previous/play/next, shuffle, repeat, seeking, sleep timer, volume and mini-player access. Audiobooks and podcasts also show playback speed and 15-second back / 30-second forward controls. Use **Classic view** to restore the normal layout and bottom player.
 
 Hover over the volume icon, slider or percentage and scroll up to raise volume or down to lower it. A typical wheel step changes volume by five points; small trackpad movements accumulate. Volume stays between 0% and 100%, and the page does not scroll while adjusting it. Ctrl+scroll retains its usual zoom behavior.
+
+
+## Jellyfin (1.6.0 preview)
+
+In Settings → Servers, use the Jellyfin connection form. Enter the final server address (including any reverse-proxy base path), username and password. The password is exchanged for an access token; only the token is stored, encrypted with Windows credential protection. Reconnecting the same server and account updates the token. Select your mpv.exe under Playback if you have not already configured it.
+
+Open Jellyfin in the sidebar. Choose a server to see its own library names, including music. Overview includes featured titles, Continue watching and recently added shelves. The featured banner's arrows change titles; it does not advance while you are reading. Use the library tabs or shortcuts to open a library. Jellyfin music is separate from the main Music section. Open albums, artists, playlists, series or seasons to browse children. Play all resolves the entire playable collection, up to the existing 5,000-item queue limit. Playlist duplicates are retained. Play on an episode starts a series queue at that episode, including later seasons. Automatic next playback can be disabled in Playback options.
+
+Movies and episodes play inside Media Center. Use Space to pause, F for app fullscreen, or the playback dock. Back to browsing hides the video and leaves fullscreen; click the current title in the dock to return. The dock has visible CC and Audio buttons for subtitle and audio-track selection. More playback options includes chapters and automatic-next controls. Escape closes an open options panel. Stop ends playback and closes the video view. Retry recovers from an interrupted stream at the retained position. Music uses the same original-file path without a video window.
+
+Media Center requests Direct Play only. It will show an error when Jellyfin cannot supply an original file. It never silently enables transcoding. Smooth playback requires sufficient network bandwidth for the original bitrate and a computer capable of decoding it. MPV uses hardware decoding where supported and local decoding otherwise. Supported external SRT/ASS/SSA/VTT subtitles render locally. Embedded subtitle tracks remain available through MPV.
+
+Progress is reported on start, pause, seek, periodically and on stop. If synchronization fails, a visible message and Retry sync action appear. Fresh server progress is used for normal playback; Resume saved session explicitly uses this device's last session instead. No media starts automatically after restarting the app.
+
+Saved servers have Edit and Test connection buttons in Settings. Leave the credential field blank to retain the saved credential when the address and username are unchanged. Changes are tested before saving; failed edits leave the previous connection intact. Changing the endpoint or username requires entering credentials again.
+
+Jellyfin playback contributes to local Listening stats: music, movies and TV shows are counted separately. Paused, buffering and skipped time are excluded, and Private listening suppresses new statistics. These totals describe playback on this device, not imported Jellyfin history.
+
+Open a movie, series or episode to see its backdrop and title artwork, playback/resume actions, watched/favorite controls and available metadata. Series include Next up and seasons. Cast and More like this appear when provided by your server. Back to library returns to browsing.
+
+
+## Media Center 2.0 preview
+
+Choose **Liquid Glass** under Settings → Appearance → Themes, then Save theme. The existing application styles remain available. System reduced-motion and reduced-transparency preferences are respected.
+
+Customize Home to place Your sources, Continue watching and Recently added on Jellyfin where you prefer. Existing layouts keep their section order; newly introduced sections are appended. Search (Ctrl+K by default) can be filtered by media type and source. Jellyfin results open their own library/detail pages. Searches and shelves have per-source limits; unavailable sources are reported.
+
+In video playback, More playback options contains the queue and Video preferences. Language defaults apply to the next video; use CC/Audio for the current video's tracks. Text subtitle size/background changes apply immediately; bitmap subtitles keep their original appearance. The optional 5/10-second next-video countdown can be cancelled, or skipped with Play now. Fullscreen controls hide after about three seconds of inactivity; move the pointer or press a key to reveal them. Space pauses, arrows and the back/forward buttons seek five seconds, F toggles fullscreen, and Esc returns to browsing.
+
+Downloads distinguishes ready, downloading, queued, paused and failed items. Batch controls act on visible results when filters are set. Navidrome/ Audiobookshelf downloads and selected local files support offline playback; Jellyfin needs a connection in this preview.
+
+Settings → Connection health → Test all servers checks saved connections without changing their credentials. This reports an explicit check, not continuous monitoring. Existing Edit/Test controls remain beside each server. Diagnostics include playback state without names, credentials, paths or raw error strings. Video preferences are included in personal backups; restart after restoring them to apply them to the native player.

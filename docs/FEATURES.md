@@ -358,3 +358,36 @@ Collection and episode controls share compact playback rows with personal/progre
 - Known server libraries remain in the picker during a failed refresh, with named connection errors and retry. Current music/book/podcast results remain visible on same-view refresh failures. Online/wake events refresh library reads; sleep pauses audio and saves local position. Failed playback can be retried with the existing play control, keeping queue order and correct whole-book/episode position. Writes are not automatically replayed, and offline progress reconciliation still requires review.
 - Natural track sorting reuses an Intl.Collator and server track-list ordering is memoized. A synthetic 15,000-title comparison is available with `node scripts/sort-benchmark.cjs`; timings depend on the machine.
 - Appearance recovery is available from Settings, the native tray menu, Ctrl+Shift+F9 and `--safe-appearance`. It retains a saved theme/appearance/CSS snapshot across restarts. Restore changes only appearance, preserving audio preferences changed during recovery.
+
+
+## Jellyfin local preview (1.6.0-beta.4)
+
+Jellyfin 10.11.11 contract support: encrypted account connections; explicit music/movie/TV library discovery; albums, songs, artists, playlist contents, seasons and episodes; search, pagination, server ordering, favorites and watched status. One Jellyfin sidebar destination contains server-provided music, movie and TV library names. Its overview has a featured artwork slider, Continue watching, recently added shelves and library shortcuts. Server/library selection and library-specific browsing preferences are retained. Unknown library types, Jellyfin box sets, books/comics, Live TV and other services are not yet supported.
+
+Original-file playback is provided by MPV in an embedded native child window, with audio-only playback remaining windowless. A loopback relay keeps the Jellyfin token in main, rejects redirects, forwards byte ranges, and streams with backpressure. PlaybackInfo disables transcoding and remuxing; no HLS fallback or browser decoder exists. Supported external text subtitles are fetched through the same relay; embedded tracks are selected locally. Remote bandwidth and client decoding speed still bound playback performance.
+
+The Jellyfin playback dock supports pause, seek, next/previous, volume, fullscreen, audio/subtitle tracks, chapters, and automatic episode advance. Jellyfin sessions receive DirectPlay progress. Uncertain progress remains visible with a local checkpoint; fresh server resume is the default, with an explicit Resume saved session action. Media switching pauses the other engine. Queue identity includes server, explicit item kind and item ID.
+
+Known gaps: Jellyfin has a dedicated queue, not a unified Navidrome/Jellyfin queue. No Jellyfin playlist editing, downloads, Live TV, intro/credits skipping, source-version picker, or immersive music lyrics in this preview. Video is embedded into the Windows app; MPV retains local decoding. HDR/Dolby Vision, bit-perfect output and specific GPU/codec combinations are not verified by synthetic fixture tests. Real JellyBean server acceptance testing is still needed.
+
+Saved Jellyfin, Navidrome and Audiobookshelf servers support Edit and Test connection. Failed validation preserves the saved configuration; successful edits retain the server ID. Passwords/tokens are never prefilled in the renderer.
+
+Jellyfin music, movies and TV contribute separate local statistics categories. Playback sampling excludes paused, buffering, private and skipped time; personal backups preserve this history. Fullscreen follows the window chrome height, with visible CC/audio controls and an aligned full-width seeker.
+
+Movie, series and episode detail pages now have cinematic backdrops, optional title logos, metadata and cast shelves. Series use Jellyfin NextUp and season discovery; More like this uses server recommendations. Absent metadata is omitted. Cast biographies, external-provider links, trailers and media-source selection are not part of this preview.
+
+
+## 2.0.0-beta.1 — local preview
+
+- Liquid Glass palette with restrained translucent surfaces, readable menus, shared focus treatment and reduced-motion support. All existing palettes keep distinct colors and application styles keep their control shapes; tabs, cards and action buttons have separate roles.
+- Home gains configurable source shortcuts, Jellyfin Continue watching and recently added shelves. Existing Home ordering and hidden sections migrate without being discarded.
+- Search adds Jellyfin music, albums, artists, movies and series beside Navidrome, Audiobookshelf and local results, with source and media-type filters. Opening a Jellyfin result goes directly to its detail/library page.
+- Jellyfin queue inspection, current-item following and direct queue selection; playback shortcuts and command-palette transport use the explicitly selected engine. Pausing music after switching from Jellyfin keeps music controls active.
+- Fullscreen video controls hide after inactivity and return on pointer movement or keyboard input. Left/right and skip buttons seek five seconds. Preferred languages, text subtitle size/background, and optional next-video countdown are saved on this device.
+- Downloads show storage usage, status/search filters and explicit offline capability information. Existing pause, resume, retry and position-reconciliation behavior is retained.
+- Connection health overview with Test all servers and first-run source guidance, alongside existing connection editing, backups and recovery.
+- Diagnostics include credential-free Jellyfin playback/track-count status. Personal backups include video preferences.
+
+This is a local test build, not a published stable release. Jellyfin still uses its own queue and requires a network connection. Spotify, Plex, manga, Jellyfin offline downloads/playlist editing, and unsupported Jellyfin library types are not implemented. Hardware HDR/codec behavior and the user's real servers require acceptance testing.
+
+Video controls overlay a stable full-window playback surface. Showing bars or opening options does not resize the picture; five-second skips use serialized native playback positions.

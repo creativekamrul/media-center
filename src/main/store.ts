@@ -34,16 +34,17 @@ export class Store {
       this.db.exec('COMMIT');if(scope==='all')this.resetComplete=true
     }catch(e){this.db.exec('ROLLBACK');throw e}
   }
-  recordListening(item: QueueItem, seconds: number, finished = false) {
+  recordListening(item: Pick<QueueItem,'title'|'subtitle'> & {target:QueueItem['target']|{kind:'jellyfin-music'|'jellyfin-movie'|'jellyfin-episode';serverId:string;itemId:string}}, seconds: number, finished = false) {
     if(this.resetComplete)return
     const now = new Date(), day = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
     this.db.prepare('INSERT INTO listening VALUES (?,?,?,?,?,?,?) ON CONFLICT(day,target) DO UPDATE SET seconds=seconds+excluded.seconds,finished=MAX(finished,excluded.finished),title=excluded.title,subtitle=excluded.subtitle').run(day, JSON.stringify(item.target), item.target.kind, item.title, item.subtitle, Math.max(0, seconds), Number(finished))
   }
+  recordJellyfinListening(item:import('../shared/jellyfin').JfItem,seconds:number){this.recordListening({title:item.title,subtitle:item.subtitle,target:{kind:item.kind==='Audio'?'jellyfin-music':item.kind==='Movie'?'jellyfin-movie':'jellyfin-episode',serverId:item.serverId,itemId:item.id}},seconds)}
   listeningStats(): ListeningStats {
-    const rows = this.db.prepare("SELECT day,SUM(seconds) seconds,SUM(CASE WHEN kind='music-track' THEN seconds ELSE 0 END) music,SUM(CASE WHEN kind='audiobook' THEN seconds ELSE 0 END) books,SUM(CASE WHEN kind='podcast-episode' THEN seconds ELSE 0 END) podcasts,SUM(CASE WHEN kind='local-file' THEN seconds ELSE 0 END) local FROM listening WHERE day >= date('now','localtime','-29 days') GROUP BY day ORDER BY day").all() as unknown as ListeningStats['days']
+    const rows = this.db.prepare("SELECT day,SUM(seconds) seconds,SUM(CASE WHEN kind IN ('music-track','jellyfin-music') THEN seconds ELSE 0 END) music,SUM(CASE WHEN kind='audiobook' THEN seconds ELSE 0 END) books,SUM(CASE WHEN kind='podcast-episode' THEN seconds ELSE 0 END) podcasts,SUM(CASE WHEN kind='local-file' THEN seconds ELSE 0 END) local,SUM(CASE WHEN kind='jellyfin-movie' THEN seconds ELSE 0 END) movies,SUM(CASE WHEN kind='jellyfin-episode' THEN seconds ELSE 0 END) tv FROM listening WHERE day >= date('now','localtime','-29 days') GROUP BY day ORDER BY day").all() as unknown as ListeningStats['days']
     const counts = this.db.prepare("SELECT COUNT(DISTINCT CASE WHEN kind='audiobook' AND finished=1 THEN target END) books,COUNT(DISTINCT CASE WHEN kind='podcast-episode' AND finished=1 THEN target END) episodes FROM listening").get()!
     const top = this.db.prepare('SELECT target,title,subtitle,SUM(seconds) seconds FROM listening GROUP BY target ORDER BY seconds DESC LIMIT 12').all() as unknown as (ListeningStats['top'][number]&{target:string})[]
-    return { days: listeningDays(rows), totalSeconds: rows.reduce((n,r) => n+r.seconds,0), finishedBooks: Number(counts.books), finishedEpisodes: Number(counts.episodes), top:top.map(({target,...row})=>({...row,item:this.history().find(h=>JSON.stringify(h.item.target)===target)?.item??{target:JSON.parse(target),title:row.title,subtitle:row.subtitle}})) }
+    return { days: listeningDays(rows), totalSeconds: rows.reduce((n,r) => n+r.seconds,0), finishedBooks: Number(counts.books), finishedEpisodes: Number(counts.episodes), top:top.map(({target,...row})=>({...row,item:JSON.parse(target).kind.startsWith('jellyfin-')?undefined:this.history().find(h=>JSON.stringify(h.item.target)===target)?.item??{target:JSON.parse(target),title:row.title,subtitle:row.subtitle}})) }
   }
   listeningRecap(input: RecapRange): ListeningRecap {
     const {start,end}=recapRangeSchema.parse(input), params=[start,end]
@@ -52,7 +53,7 @@ export class Store {
     const top=this.db.prepare('SELECT title,subtitle,kind,SUM(seconds) seconds FROM listening WHERE day BETWEEN ? AND ? GROUP BY target HAVING SUM(seconds)>0 ORDER BY seconds DESC,target LIMIT 5').all(...params) as unknown as ListeningRecap['top']
     const days=this.db.prepare('SELECT day,SUM(seconds) seconds FROM listening WHERE day BETWEEN ? AND ? GROUP BY day HAVING SUM(seconds)>0 ORDER BY day').all(...params) as unknown as ListeningRecap['days']
     const insights=recapInsights(start,end,days)
-    const artistsFor=(a:string,b:string)=>this.db.prepare("SELECT subtitle name,SUM(seconds) seconds FROM listening WHERE day BETWEEN ? AND ? AND kind IN ('music-track','local-file') AND TRIM(subtitle)<>'' GROUP BY subtitle HAVING SUM(seconds)>0 ORDER BY seconds DESC,subtitle LIMIT 10").all(a,b) as unknown as ListeningRecap['artists']
+    const artistsFor=(a:string,b:string)=>this.db.prepare("SELECT subtitle name,SUM(seconds) seconds FROM listening WHERE day BETWEEN ? AND ? AND kind IN ('music-track','local-file','jellyfin-music') AND TRIM(subtitle)<>'' GROUP BY subtitle HAVING SUM(seconds)>0 ORDER BY seconds DESC,subtitle LIMIT 10").all(a,b) as unknown as ListeningRecap['artists']
     const prior=Number(this.db.prepare('SELECT COALESCE(SUM(seconds),0) seconds FROM listening WHERE day BETWEEN ? AND ?').get(insights.priorStart,insights.priorEnd)!.seconds)
     return {calendarDays:insights.calendarDays,longestStreak:insights.longestStreak,peakDay:insights.peakDay,averageSeconds:Number(totals.seconds)/insights.calendarDays,artists:artistsFor(start,end),comparison:{start:insights.priorStart,end:insights.priorEnd,totalSeconds:prior,changePercent:prior>0?(Number(totals.seconds)-prior)/prior*100:null,artists:artistsFor(insights.priorStart,insights.priorEnd)},start,end,totalSeconds:Number(totals.seconds),activeDays:Number(totals.days),uniqueItems:Number(totals.items),finishedBooks:Number(totals.books),finishedEpisodes:Number(totals.episodes),kinds,top,days}
   }
@@ -79,7 +80,7 @@ export class Store {
     if(this.resetComplete)throw Error('The application has been reset.')
     if (!safeStorage.isEncryptionAvailable()) throw new Error('OS credential encryption is unavailable. Credentials have not been saved.')
     const { secret, ...fields } = input; const config: Connection = { ...fields, id }
-    this.db.prepare('INSERT INTO servers VALUES (?, ?, ?)').run(id, JSON.stringify(config), safeStorage.encryptString(secret))
+    this.db.prepare('INSERT INTO servers VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET config=excluded.config, secret=excluded.secret').run(id, JSON.stringify(config), safeStorage.encryptString(secret))
     return config
   }
   removeConnection(id: string) { this.db.prepare('DELETE FROM servers WHERE id = ?').run(id) }

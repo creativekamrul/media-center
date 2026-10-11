@@ -1,3 +1,4 @@
+import type { JellyfinAPI } from './jellyfin'
 import type {PersonalAPI as importPersonalAPI} from './personal-library'
 import type {StudioAPI as importStudioAPI} from './studio'
 import type {ExperienceAPI} from './experience'
@@ -40,7 +41,7 @@ export interface UpdateState {
   status: 'unavailable' | 'idle' | 'checking' | 'up-to-date' | 'available' | 'downloading' | 'ready' | 'installing' | 'error'
   version?: string; percent?: number; transferred?: number; total?: number; checkedAt?: number; error?: string
 }
-export interface DesktopAPI extends importPersonalAPI, DailyAPI, ExperienceAPI, importStudioAPI {
+export interface DesktopAPI extends JellyfinAPI, importPersonalAPI, DailyAPI, ExperienceAPI, importStudioAPI {
   windowControl(action:'get'|'minimize'|'maximize'|'close'):Promise<WindowState>
   onWindowState(listener:(state:WindowState)=>void):()=>void
   releaseNews(action:'get'|'seen'|'changelog'):Promise<{version:string;unread:boolean}>
@@ -58,6 +59,8 @@ export interface DesktopAPI extends importPersonalAPI, DailyAPI, ExperienceAPI, 
   onUpdate(listener: (state: UpdateState) => void): () => void
   settings(): Promise<Settings>
   saveConnection(input: ConnectionInput): Promise<Connection>
+  updateConnection(input: ConnectionInput & {id:string}): Promise<Connection>
+  testConnection(id:string): Promise<string>
   removeConnection(id: string): Promise<void>
   chooseMpv(): Promise<string | null>
   setAudio(input: { exclusive: boolean; audioDevice: string }): Promise<void>

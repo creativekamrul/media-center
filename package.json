@@ -1,8 +1,8 @@
 {
   "name": "media-center",
-  "version": "1.5.0",
+  "version": "2.0.0-beta.1",
   "private": true,
-  "description": "A desktop home for music, audiobooks, and podcasts",
+  "description": "A desktop home for music, audiobooks, podcasts, movies and TV",
   "author": "Media Center",
   "main": "out/main/index.js",
   "scripts": {

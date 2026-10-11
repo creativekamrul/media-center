@@ -205,6 +205,7 @@ async function main() {
     assert.equal(saved.connections.length, 2)
     assert.ok(!JSON.stringify(saved).includes('test-token'))
     assert.ok(!JSON.stringify(saved).includes('test-password'))
+    for(const server of saved.connections){await page.getByRole('button',{name:'Test '+server.name,exact:true}).click();await page.getByRole('button',{name:'Test '+server.name,exact:true}).waitFor();await page.getByRole('button',{name:'Edit '+server.name,exact:true}).click();await page.getByLabel('Connection name',{exact:true}).fill(server.name);await page.getByRole('button',{name:'Test & save changes',exact:true}).click();await page.getByRole('button',{name:'Test & connect',exact:true}).waitFor();assert.equal((await page.evaluate(()=>window.mediaCenter.settings())).connections.find(c=>c.name===server.name).id,server.id)}
     const navId = saved.connections.find(c => c.provider === 'navidrome').id, absId = saved.connections.find(c => c.provider === 'audiobookshelf').id
     await page.getByRole('button', {name:'Music',exact:true}).click()
     await page.getByLabel('Music library',{exact:true}).waitFor()
@@ -411,4 +412,4 @@ async function main() {
     server.closeAllConnections(); await new Promise(resolve => server.close(resolve))
   }
 }
-main().catch(error => { console.error(error); process.exitCode = 1 })
+(process.env.MEDIA_CENTER_JELLYFIN_ONLY==='1'?require('./jellyfin-smoke.cjs').main():main()).catch(error => { console.error(error); process.exitCode = 1 })

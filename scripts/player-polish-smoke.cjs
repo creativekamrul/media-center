@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');const {resolve}=require('node:path')
 module.exports=async({desktop,page,artifacts})=>{
  const saved=await page.evaluate(()=>window.mediaCenter.preferences())
- const themes=['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass'],styles=['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']
+ const themes=['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass','liquid-glass'],styles=['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']
  const select=async(theme,appStyle)=>{await page.evaluate(p=>window.mediaCenter.savePreferences(p),{...saved,customCss:undefined,theme,appearance:{...saved.appearance,colors:{},appStyle}});await page.waitForFunction(({theme,appStyle})=>document.documentElement.dataset.theme===theme&&document.documentElement.dataset.appStyle===appStyle,{theme,appStyle})}
  try{
   await page.evaluate(async()=>{const a=window.mediaCenter,nav=(await a.libraries()).libraries.find(l=>l.kind==='music');await a.command({action:'volume',value:0});await a.play({queue:[{target:{kind:'music-track',serverId:nav.serverId,trackId:'transport-fixture'},title:'Player polish · Test fixture',subtitle:'Fixture artist',duration:600}],index:0})})
@@ -34,6 +34,6 @@ module.exports=async({desktop,page,artifacts})=>{
   assert.deepEqual(await page.locator('.css-import').evaluate(el=>{const s=getComputedStyle(el);return [s.borderTopWidth,s.borderBottomWidth]}),['0px','0px'])
   assert.equal(await page.locator('.appearance-editor').evaluate(el=>getComputedStyle(el).borderBottomWidth),'0px')
   await page.locator('.css-import').scrollIntoViewIfNeeded();await page.screenshot({path:resolve(artifacts,'settings-single-divider.png')})
-  console.log('Player polish passed: fixed neutral pills and readable artwork overlays across all 130 combinations, clean Frosted navigation, no immersive tagline, single Settings divider.')
+  console.log('Player polish passed: fixed neutral pills and readable artwork overlays across all 140 combinations, clean Frosted navigation, no immersive tagline, single Settings divider.')
  }finally{await page.evaluate(async saved=>{await window.mediaCenter.command({action:'stop'});await window.mediaCenter.savePreferences(saved)},saved);await page.setViewportSize({width:1440,height:940})}
 }

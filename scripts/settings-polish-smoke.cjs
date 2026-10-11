@@ -21,7 +21,7 @@ module.exports=async({desktop,page,artifacts})=>{
  await page.getByLabel('ReplayGain',{exact:true}).selectOption('track')
  await page.getByRole('button',{name:'Save audio preferences',exact:true}).click()
  await page.waitForFunction(async()=>{const p=await window.mediaCenter.preferences();return p.theme==='rose'&&p.replayGain==='track'})
- for(const name of ['Forest','Charcoal','Glass','Midnight','Ocean','Rose','Lavender','Ember','Coffee','Nord','Monochrome','Aubergine','Black Glass']){
+ for(const name of ['Forest','Charcoal','Glass','Midnight','Ocean','Rose','Lavender','Ember','Coffee','Nord','Monochrome','Aubergine','Black Glass','Liquid Glass']){
   await page.getByRole('button',{name,exact:true}).click()
   await page.waitForFunction(id=>document.documentElement.dataset.theme===id,name.toLowerCase().replace(' ','-'))
   for(const style of ['Gradient','Solid']) {
@@ -95,5 +95,5 @@ module.exports=async({desktop,page,artifacts})=>{
  }finally{await desktop.evaluate(({dialog})=>{dialog.showOpenDialog=globalThis.__themeDialog;delete globalThis.__themeDialog})}
  await page.evaluate(p=>window.mediaCenter.savePreferences(p),original)
  await page.emulateMedia({reducedMotion:'no-preference'})
- console.log('Settings polish: six sections, 13 themes, shared saves, CSS preview/removal, mini restrictions and fullscreen passed')
+ console.log('Settings polish: six sections, 14 themes, shared saves, CSS preview/removal, mini restrictions and fullscreen passed')
 }

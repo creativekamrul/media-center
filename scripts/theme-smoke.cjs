@@ -13,8 +13,8 @@ module.exports=async function themeSmoke(page,artifacts){
  await page.getByLabel('Enable Discord Rich Presence',{exact:true}).check();assert.equal(await page.getByRole('button',{name:'Save Discord preferences',exact:true}).isEnabled(),true);await discordId.fill('invalid');assert.equal(await page.getByRole('button',{name:'Save Discord preferences',exact:true}).isDisabled(),true);await discordId.fill('');await page.getByLabel('Enable Discord Rich Presence',{exact:true}).uncheck()
  await page.locator('.discord-diagnostics').scrollIntoViewIfNeeded()
  await page.screenshot({path:resolve(artifacts,'discord-settings.png')})
- assert.equal(await page.locator('.theme-swatch').count(),13)
- for(const name of ['Glass','Midnight','Ocean','Rose','Lavender','Ember','Coffee','Nord','Monochrome','Aubergine','Black Glass']){
+ assert.equal(await page.locator('.theme-swatch').count(),14)
+ for(const name of ['Glass','Midnight','Ocean','Rose','Lavender','Ember','Coffee','Nord','Monochrome','Aubergine','Black Glass','Liquid Glass']){
   await page.getByRole('button',{name,exact:true}).click()
   await page.getByRole('button',{name:'Save audio preferences',exact:true}).click()
   await page.waitForFunction(id=>document.documentElement.dataset.theme===id,name.toLowerCase().replace(' ','-'))

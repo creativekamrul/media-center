@@ -2,6 +2,16 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopAPI, PlaybackState, UpdateState } from '../shared/types'
 
 const api: DesktopAPI = {
+ jfPointerActive:()=>ipcRenderer.invoke('jellyfin:pointer-active'),
+ jfVideoBounds:i=>ipcRenderer.invoke('jellyfin:video-bounds',i),
+ jfTest:id=>ipcRenderer.invoke('jellyfin:test',id),
+ jfConnections:()=>ipcRenderer.invoke('jellyfin:connections'),
+ jfConnect:i=>ipcRenderer.invoke('jellyfin:connect',i),jfRemove:id=>ipcRenderer.invoke('jellyfin:remove',id),
+ jfLibraries:id=>ipcRenderer.invoke('jellyfin:libraries',id),jfBrowse:i=>ipcRenderer.invoke('jellyfin:browse',i),
+ jfRelated:i=>ipcRenderer.invoke('jellyfin:related',i),jfNextUp:i=>ipcRenderer.invoke('jellyfin:next-up',i),jfDetail:i=>ipcRenderer.invoke('jellyfin:detail',i),jfCover:i=>ipcRenderer.invoke('jellyfin:cover',i),
+ jfMark:i=>ipcRenderer.invoke('jellyfin:mark',i),jfPlay:i=>ipcRenderer.invoke('jellyfin:play',i),
+ jfPlayCollection:i=>ipcRenderer.invoke('jellyfin:collection',i),jfPlayback:()=>ipcRenderer.invoke('jellyfin:get'),jfCommand:i=>ipcRenderer.invoke('jellyfin:command',i),
+ onJfPlayback:fn=>{const cb=(_e:unknown,s:import('../shared/jellyfin').JfState)=>fn(s);ipcRenderer.on('jellyfin:state',cb);return()=>ipcRenderer.removeListener('jellyfin:state',cb)},
  installedFonts:()=>ipcRenderer.invoke('appearance:fonts'),
  mixPreview:i=>ipcRenderer.invoke('mix:preview',i),mixSources:()=>ipcRenderer.invoke('mix:sources'),
  exportDefaultCover:()=>ipcRenderer.invoke('personal:default-cover-export'),
@@ -116,6 +126,8 @@ const api: DesktopAPI = {
   savePreferences: input => ipcRenderer.invoke('preferences:save', input),
   settings: () => ipcRenderer.invoke('settings:get'),
   saveConnection: input => ipcRenderer.invoke('connections:save', input),
+  updateConnection:input=>ipcRenderer.invoke('connections:update',input),
+  testConnection:id=>ipcRenderer.invoke('connections:test',id),
   removeConnection: id => ipcRenderer.invoke('connections:remove', id),
   chooseMpv: () => ipcRenderer.invoke('settings:mpv'),
   setAudio: input => ipcRenderer.invoke('settings:audio', input),

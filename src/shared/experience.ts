@@ -1,7 +1,7 @@
 import {viewPinsSchema} from './view-pins'
 import {z} from 'zod'
 import type {QueueItem} from './types'
-export const homeSections=['hero','pins','mixes','continue','albums','episodes','later'] as const
+export const homeSections=['hero','services','watching','recentMedia','pins','mixes','continue','albums','episodes','later'] as const
 export const shortcutActions=['search','queue','favorite','mini','lyrics','toggle','next','previous'] as const
 export const defaultShortcuts={search:'Ctrl+K',queue:'Ctrl+J',favorite:'Ctrl+D',mini:'Ctrl+M',lyrics:'Ctrl+L',toggle:'Space',next:'Ctrl+Right',previous:'Ctrl+Left'}
 export const pinSchema=z.object({kind:z.enum(['music','local']),source:z.string().min(1).max(2048),id:z.string().min(1).max(2048),title:z.string().max(200)}).strict()
@@ -20,7 +20,7 @@ export const navigationSchema=z.object({librarySelections:librarySelectionsSchem
 export const navigationChangeSchema=z.discriminatedUnion('action',[z.object({action:z.literal('library-selection'),scope:z.enum(librarySelectionScopes),value:z.string().max(4096)}).strict(),z.object({action:z.literal('view-pins'),viewPins:viewPinsSchema.refine(v=>Object.keys(v).length===1&&Object.values(v)[0]!==undefined,'Save one tab bar at a time.')}).strict(),z.object({action:z.literal('collections'),collections:collectionsSchema,collectionOrder:collectionOrderSchema.optional(),queueBelowHome:z.boolean().optional(),playlistsBelowHome:z.boolean().optional()}).strict(),z.object({action:z.literal('listening'),collapsed:z.boolean()}).strict(),z.object({action:z.literal('sidebar'),collapsed:z.boolean()}).strict()])
 export const experienceSchema=z.object({
  navigation:navigationSchema.default({}),
- homeOrder:z.array(z.enum(homeSections)).length(homeSections.length).refine(v=>new Set(v).size===homeSections.length).default([...homeSections]),
+ homeOrder:z.array(z.enum(homeSections)).max(homeSections.length).refine(v=>new Set(v).size===v.length).transform(v=>[...v,...homeSections.filter(id=>!v.includes(id))]).default([...homeSections]),
  hiddenSections:z.array(z.enum(homeSections)).max(homeSections.length).default([]),hiddenMixes:z.array(z.string().max(2048)).max(100).default([]),
  pins:z.array(pinSchema).max(30).default([]),autoplay:z.boolean().default(false),watchLocal:z.boolean().default(true),
  shortcuts:z.record(z.enum(shortcutActions),shortcutSchema).default(defaultShortcuts),
@@ -28,7 +28,7 @@ export const experienceSchema=z.object({
 }).strict()
 export type Experience=z.infer<typeof experienceSchema>
 export const defaultExperience=experienceSchema.parse({})
-export interface SearchGroup {name:string;items:QueueItem[];unavailable?:string[]}
+export interface SearchGroup {id:string;name:string;items:QueueItem[];unavailable?:string[]}
 export interface ExperienceAPI {
  experience():Promise<Experience>
  saveNavigation(input:z.infer<typeof navigationChangeSchema>):Promise<void>

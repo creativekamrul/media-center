@@ -1,3 +1,6 @@
+import {VideoHost} from './video-host'
+import {registerJellyfin} from './jellyfin'
+import type {JellyfinPlayer} from './jellyfin-player'
 import {appearanceRecovery} from './appearance-recovery'
 import {installedFonts} from './installed-fonts'
 import {registerMixes} from './mixes'
@@ -43,6 +46,7 @@ let miniWindow: BrowserWindow | undefined
 let downloads: Downloads
 let discord: DiscordPresence
 let store: Store
+let jellyfin: JellyfinPlayer | undefined
 let player: Player
 let windowsMedia:WindowsMedia|undefined,podcastAutomation:PodcastAutomation|undefined
 let localWatcher:LocalWatcher|undefined
@@ -70,6 +74,8 @@ const commandSchema = z.union([
   z.object({ action: z.literal('sleep'), value: z.number().finite().min(0).max(240) }).strict(),
   z.object({ action: z.literal('repeat'), value: z.enum(['off', 'all', 'one']) }).strict()
 ])
+function jellyfinActive(){return jellyfin&&jellyfin.state.foreground&&jellyfin.state.status!=='idle'?jellyfin:undefined}
+async function mediaCommand(input:import('../shared/types').PlayerCommand){const jf=jellyfinActive();if(jf&&['toggle','next','previous','stop','volume','seek'].includes(input.action)){await jf.command(input as import('../shared/jellyfin').JfCommand);return}await player.command(input)}
 function provider(id: string) { const { config, secret } = store.connection(id); return config.provider === 'navidrome' ? new Navidrome(config, secret) : new Audiobookshelf(config, secret) }
 function handle<T extends z.ZodTypeAny>(channel: string, schema: T, action: (input: z.infer<T>) => unknown) {
   ipcMain.handle(channel, async (event, raw) => {
@@ -78,7 +84,7 @@ function handle<T extends z.ZodTypeAny>(channel: string, schema: T, action: (inp
     if(resetting)throw Error('The application is resetting.')
     const parsed = schema.safeParse(raw)
     if (!parsed.success) throw new Error('Invalid desktop request. Please check the entered values.')
-    try { const result=await action(parsed.data);if(channel==='data:reset'&&result){for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('personal:changed');player.refreshPersonal()}if(channel==='backup:restore'){for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('personal:changed');localWatcher?.refresh();for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('experience:state',experienceSchema.parse(store.get('experience')??{}))}if(channel==='preferences:save'||channel==='backup:restore')for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('theme:state',store.preferences());return ['music:browse','music:browse-all','music:detail','spoken:browse','spoken:continue','item:detail','local:browse','local:library','daily:home','home:get','history:list','library:browse','home:pins','personal:resolve'].includes(channel)?decoratePersonal(result,store,parsed.data):result }
+    try { if(channel==='data:reset'&&parsed.data==='all')await jellyfin?.command({action:'stop'}); const result=await action(parsed.data);if(channel==='data:reset'&&result){for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('personal:changed');player.refreshPersonal()}if(channel==='backup:restore'){for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('personal:changed');localWatcher?.refresh();for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('experience:state',experienceSchema.parse(store.get('experience')??{}))}if(channel==='preferences:save'||channel==='backup:restore')for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('theme:state',store.preferences());return ['music:browse','music:browse-all','music:detail','spoken:browse','spoken:continue','item:detail','local:browse','local:library','daily:home','home:get','history:list','library:browse','home:pins','personal:resolve'].includes(channel)?decoratePersonal(result,store,parsed.data):result }
     catch (error) {
       if (error instanceof z.ZodError) throw new Error('The server response does not match the supported API format. Check the server version and selected library.')
       throw error instanceof Error ? error : new Error('The operation failed.')
@@ -87,6 +93,7 @@ function handle<T extends z.ZodTypeAny>(channel: string, schema: T, action: (inp
 }
 function createWindow() {
   window = new BrowserWindow({ width: 1440, height: 940, minWidth: 1024, minHeight: 720, frame: false, backgroundColor: '#121416', title: 'Media Center', show: process.env.MEDIA_CENTER_SMOKE !== '1', autoHideMenuBar: true, webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true } })
+  window.on('leave-full-screen',()=>jellyfin?.setFullscreen(false));window.on('enter-full-screen',()=>{if(jellyfin?.state.status!=='idle')jellyfin?.setFullscreen(true)})
   window.removeMenu()
   // On Windows, fullscreen events fire before Electron updates isFullScreen().
   const publishWindowState=()=>setImmediate(()=>{if(window&&!window.isDestroyed())window.webContents.send('window:state',windowState())})
@@ -127,10 +134,12 @@ else {
     store = new Store(join(app.getPath('userData'), 'media-center.sqlite'))
     if(process.argv.includes('--safe-appearance'))recoverAppearance('start')
     handle('theme:recovery',z.enum(['get','start','restore']),recoverAppearance)
-    powerMonitor.on('suspend',()=>{void player.suspend().catch(()=>{})})
+    powerMonitor.on('suspend',()=>{void player.suspend().catch(()=>{});void jellyfin?.pause().catch(()=>{})})
     powerMonitor.on('resume',()=>{store.cacheClear('music:');for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('system:resume')})
     const mpv = new Mpv(), local = new LocalFiles(store); downloads = new Downloads(join(app.getPath('userData'),'downloads'),store,provider); player = new Player(mpv, store, provider, local, downloads)
-    player.on('state', state => { for(const w of [window,miniWindow]) if(w && !w.isDestroyed()) w.webContents.send('player:state',state) })
+    jellyfin=registerJellyfin(handle,store,async()=>{if(player.state.status==='playing')await player.suspend()},new VideoHost(()=>window),()=>!!player.state.privateListening)
+    jellyfin.on('state',state=>{if(window&&!window.isDestroyed())window.webContents.send('jellyfin:state',state)})
+    player.on('state', state => { if(state.status==='playing'){jellyfin?.background();void jellyfin?.pause().catch(()=>{})} for(const w of [window,miniWindow]) if(w && !w.isDestroyed()) w.webContents.send('player:state',state) })
     downloads.on('state',state=>{if(window && !window.isDestroyed()) window.webContents.send('downloads:state',state)})
     const lyrics=new LyricsClient(store)
     const lyricTarget=(key:string)=>{
@@ -191,7 +200,7 @@ else {
     registerPodcastDiscovery(handle,store,provider,()=>window!)
     registerMixes(handle,store,local,localIndex,provider)
     registerPersonal(handle,store,player,local,downloads,provider,()=>window!,()=>{for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('personal:changed')})
-    registerStudio(handle,store,player,local,localIndex,lyrics,provider,()=>window!,()=>{for(const w of [window,miniWindow])if(w&&!w.isDestroyed()){w.webContents.send('theme:state',store.preferences());w.webContents.send('studio:changed')}},()=>downloads.snapshot().entries.length)
+    registerStudio(handle,store,player,local,localIndex,lyrics,provider,()=>window!,()=>{for(const w of [window,miniWindow])if(w&&!w.isDestroyed()){w.webContents.send('theme:state',store.preferences());w.webContents.send('studio:changed')}},()=>downloads.snapshot().entries.length,()=>jellyfin?.state)
     localWatcher=new LocalWatcher(local,localIndex,store,experienceChanged)
     podcastAutomation=new PodcastAutomation(store,downloads,player,()=>daily.inbox(true))
     discord=new DiscordPresence(store,player,provider,local);registerDiscord(handle,discord)
@@ -244,6 +253,18 @@ else {
       await p.test()
       return store.saveConnection(input, config.id)
     })
+    handle('connections:test', id, async id => { await provider(id).test(); return 'Connection successful.' })
+    handle('connections:update', connectionSchema.extend({id,secret:z.string().max(8192)}), async input => {
+      const previous=store.connection(input.id)
+      if(input.provider!==previous.config.provider)throw Error('A saved server cannot change provider.')
+      const url=serverUrl(input.url,'').href,oldUrl=serverUrl(previous.config.url,'').href
+      if(!input.secret&&(url!==oldUrl||input.username!==previous.config.username))throw Error('Enter credentials again when changing the address or username.')
+      const {id:serverId,...fields}=input;const next={...fields,secret:input.secret||previous.secret}
+      const p=input.provider==='navidrome'?new Navidrome({...fields,id:serverId},next.secret):new Audiobookshelf({...fields,id:serverId},next.secret)
+      await p.test()
+      if(player.state.queue.some(q=>q.target.serverId===serverId))await player.command({action:'stop'})
+      const saved=store.saveConnection(next,serverId);store.cacheClear('libraries:'+serverId);store.cacheClear('music:');store.cacheClear('podcast-inbox');return saved
+    })
     handle('connections:remove', id, async id => { if (player.state.queue.some(q => q.target.serverId === id)) await player.command({ action: 'stop' }); store.removeConnection(id) })
     handle('settings:mpv', z.undefined(), async () => {
       const result = await dialog.showOpenDialog(window!, { title: 'Choose your MPV executable', properties: ['openFile'], filters: process.platform === 'win32' ? [{ name: 'MPV executable', extensions: ['exe'] }] : [] })
@@ -268,13 +289,17 @@ else {
     })
     handle('item:cover', z.object({ serverId: id, itemId: id }).strict(), input => downloads.cover(input.serverId,input.itemId) ?? provider(input.serverId).cover(input.itemId))
     handle('player:play', z.object({ queue: z.array(queueItemSchema).min(1).max(5000), index: z.number().int().min(0), position: z.number().finite().min(0).optional() }).strict(), async input => { if (input.index >= input.queue.length) throw new Error('Queue position is out of bounds.'); await player.play(input.queue, input.index, input.position) })
-    handle('player:command', commandSchema, input => player.command(input))
+    handle('player:command', commandSchema, input => mediaCommand(input))
     handle('player:seek',z.object({key:z.string().max(10000),queueIndex:z.number().int().min(0).max(4999),time:z.number().finite().nonnegative()}).strict(), i=>player.seekTo(i))
     handle('player:get', z.undefined(), () => player.snapshot())
     const mediaKeys=[['MediaPlayPause','toggle'],['MediaNextTrack','next'],['MediaPreviousTrack','previous'],['MediaStop','stop']] as const
-    const mediaAvailable=(ready:boolean)=>{for(const [key,action]of mediaKeys){globalShortcut.unregister(key);if(!ready)globalShortcut.register(key,()=>{void player.command({action}).catch(()=>{})})}}
+    const mediaAvailable=(ready:boolean)=>{for(const [key,action]of mediaKeys){globalShortcut.unregister(key);if(!ready)globalShortcut.register(key,()=>{void mediaCommand({action}).catch(()=>{})})}}
     mediaAvailable(false)
-    windowsMedia=new WindowsMedia(player,async item=>{const t=item.target;if(t.kind==='local-file')return local.cover(t.rootId,t.fileId);const id=item.cover??(t.kind==='music-track'?t.trackId:t.kind==='audiobook'?t.bookId:t.kind==='podcast-episode'?t.showId:'');return id?downloads.cover(t.serverId,id)??await provider(t.serverId).cover(id):null},mediaAvailable)
+    windowsMedia=new WindowsMedia(player,async item=>{const t=item.target;if(t.kind==='local-file')return local.cover(t.rootId,t.fileId);const id=item.cover??(t.kind==='music-track'?t.trackId:t.kind==='audiobook'?t.bookId:t.kind==='podcast-episode'?t.showId:'');return id?downloads.cover(t.serverId,id)??await provider(t.serverId).cover(id):null},mediaAvailable,{
+      snapshot:()=>{const jf=jellyfinActive();if(!jf)return;const s=jf.state,i=s.queue[s.index];return {title:i?.title??'Jellyfin',subtitle:i?.subtitle??'',status:s.status,position:s.position,duration:s.duration}},
+      command:async(action,value)=>{const jf=jellyfinActive();if(!jf)return;if(action==='play'&&jf.state.status==='paused'||action==='pause'&&jf.state.status==='playing')await jf.command({action:'toggle'});else if(action==='seek'&&Number.isFinite(value)&&value!>=0)await jf.command({action:'seek',value:value!});else if(['next','previous','stop'].includes(action))await jf.command({action:action as 'next'|'previous'|'stop'})},
+      subscribe:fn=>{jellyfin!.on('state',fn);return()=>jellyfin!.off('state',fn)}
+    })
     createWindow()
     // One check per launch; development and fixture runs never contact the release service.
     if(process.env.MEDIA_CENTER_SMOKE!=='1')void updates.start()
@@ -283,7 +308,7 @@ else {
       tray = new Tray(icon); tray.setToolTip('Media Center')
       const show = () => { if (!window) createWindow(); window?.show(); window?.focus() }
       tray.on('double-click', show)
-      tray.setContextMenu(Menu.buildFromTemplate([{ label: 'Open Media Center', click: show }, { label: 'Play / pause', click: () => { void player.command({ action: 'toggle' }).catch(() => {}) } }, { label: 'Next', click: () => { void player.command({ action: 'next' }).catch(() => {}) } }, { type: 'separator' }, {label:'Appearance recovery...',click:()=>{void appearanceRecoveryDialog()}}, { label: 'Quit', click: () => app.quit() }]))
+      tray.setContextMenu(Menu.buildFromTemplate([{ label: 'Open Media Center', click: show }, { label: 'Play / pause', click: () => { void mediaCommand({ action: 'toggle' }).catch(() => {}) } }, { label: 'Next', click: () => { void mediaCommand({ action: 'next' }).catch(() => {}) } }, { type: 'separator' }, {label:'Appearance recovery...',click:()=>{void appearanceRecoveryDialog()}}, { label: 'Quit', click: () => app.quit() }]))
     }
     app.on('activate', () => { if (!window) createWindow() })
   })
@@ -291,6 +316,6 @@ else {
   app.on('before-quit', event => {
     if (quitting || !player) return
     event.preventDefault(); quitting = true; windowsMedia?.stop();podcastAutomation?.stop();localWatcher?.stop(); discord?.stop(); globalShortcut.unregisterAll(); tray?.destroy(); tray = undefined
-    void Promise.allSettled([player.shutdown(),downloads.stop()]).finally(() => { store.close(); app.quit() })
+    void Promise.allSettled([player.shutdown(),downloads.stop(),jellyfin?.shutdown()]).finally(() => { store.close(); app.quit() })
   })
 }
