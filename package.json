@@ -1,6 +1,6 @@
 {
   "name": "media-center",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0",
   "private": true,
   "description": "A desktop home for music, audiobooks, podcasts, movies and TV",
   "author": "Media Center",

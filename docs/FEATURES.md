@@ -377,7 +377,7 @@ Jellyfin music, movies and TV contribute separate local statistics categories. P
 Movie, series and episode detail pages now have cinematic backdrops, optional title logos, metadata and cast shelves. Series use Jellyfin NextUp and season discovery; More like this uses server recommendations. Absent metadata is omitted. Cast biographies, external-provider links, trailers and media-source selection are not part of this preview.
 
 
-## 2.0.0-beta.1 — local preview
+## 2.0.0
 
 - Liquid Glass palette with restrained translucent surfaces, readable menus, shared focus treatment and reduced-motion support. All existing palettes keep distinct colors and application styles keep their control shapes; tabs, cards and action buttons have separate roles.
 - Home gains configurable source shortcuts, Jellyfin Continue watching and recently added shelves. Existing Home ordering and hidden sections migrate without being discarded.
@@ -388,6 +388,6 @@ Movie, series and episode detail pages now have cinematic backdrops, optional ti
 - Connection health overview with Test all servers and first-run source guidance, alongside existing connection editing, backups and recovery.
 - Diagnostics include credential-free Jellyfin playback/track-count status. Personal backups include video preferences.
 
-This is a local test build, not a published stable release. Jellyfin still uses its own queue and requires a network connection. Spotify, Plex, manga, Jellyfin offline downloads/playlist editing, and unsupported Jellyfin library types are not implemented. Hardware HDR/codec behavior and the user's real servers require acceptance testing.
+Jellyfin still uses its own queue and requires a network connection. Spotify, Plex, manga, Jellyfin offline downloads/playlist editing, and unsupported Jellyfin library types are not implemented. Hardware HDR/codec behavior and the user's real servers require acceptance testing.
 
 Video controls overlay a stable full-window playback surface. Showing bars or opening options does not resize the picture; five-second skips use serialized native playback positions.

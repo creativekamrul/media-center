@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.0
+
+- Stable release of the 2.0 media center experience: Jellyfin libraries and embedded video, Liquid Glass, unified search, customizable Home, server health and download improvements.
+- Includes the full-size video overlays, compact playback controls and five-second button/keyboard skips verified in 2.0.0-beta.1.
+- Jellyfin requires a network connection and retains its own queue. See the feature inventory for remaining integration capabilities.
+
 ## 2.0.0-beta.1
 
 - Liquid Glass palette with restrained translucent surfaces, readable menus, shared focus treatment and reduced-motion support. All existing palettes keep distinct colors and application styles keep their control shapes; tabs, cards and action buttons have separate roles.
