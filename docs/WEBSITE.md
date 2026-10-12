@@ -10,7 +10,7 @@ From the repository root, run:
 python -m http.server 8080 --bind 127.0.0.1 --directory site
 ```
 
-Open `http://127.0.0.1:8080/`. Check desktop and mobile widths, keyboard gallery navigation, screenshot enlargement/Escape, FAQ disclosure, and download/documentation links. With JavaScript disabled, all screenshot figures and the rest of the content remain available. Reduced-motion preferences disable the intro animation and smooth scrolling.
+Open `http://127.0.0.1:8080/`. Check desktop and mobile widths, keyboard gallery navigation, screenshot enlargement/Escape, and download/documentation links. With JavaScript disabled, all screenshot figures and the rest of the content remain available. The layout uses no decorative animation. Run `node scripts/site-smoke.cjs` after building the app for viewport, asset, gallery and no-JavaScript checks.
 
 ## Publish
 

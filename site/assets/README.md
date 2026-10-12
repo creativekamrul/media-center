@@ -11,3 +11,5 @@ These are real Media Center screenshots from isolated sample collections and con
 - `icon.svg`: the app mark from `build/icon.svg`.
 
 All assets are part of this GPL-3.0-only project. To refresh, run desktop checks with MPV_TEST_PATH, review images in ignored artifacts/, and copy only selected screenshots here. Never publish profiles, logs, private addresses or personal collections.
+
+- `jellyfin.png`: v2.0.0 Jellyfin desktop integration test overview, copied from reviewed `artifacts/jellyfin-hub.png`. The named server and all library contents are fixtures. Used as the current website social preview.

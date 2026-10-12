@@ -38,7 +38,7 @@ The target is a full desktop replacement for Feishin and Audiobookshelf's web cl
 
 | Audio | ReplayGain off/track/album; clipping prevention; ten-band EQ; per-book/episode speed; timed and chapter-end sleep |
 
-| Appearance | Ten independent application styles (Original default, Frosted, Soft, Precision, Outline, Bold, Retro, Editorial, Neon, Ribbon), live previews and saved cross-window choices; 13 palettes including translucent Glass and Black Glass; visual theme picker with saved Solid / Gradient surfaces and optional translucent panels; consistent palette-aware cards, fields and dialogs; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; adaptive layouts with 100/125/150/200% interface-scaling checks |
+| Appearance | Ten independent application styles (Original default, Frosted, Soft, Precision, Outline, Bold, Retro, Editorial, Neon, Ribbon), live previews and saved cross-window choices; 14 palettes including Liquid Glass, Glass and Black Glass; visual theme picker with saved Solid / Gradient surfaces and optional translucent panels; consistent palette-aware cards, fields and dialogs; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; adaptive layouts with 100/125/150/200% interface-scaling checks |
 
 | Open source | GPL-3.0-only; user/developer/security/API documentation; model, provider, local-file, playback and desktop tests |
 
