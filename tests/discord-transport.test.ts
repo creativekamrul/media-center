@@ -1,3 +1,4 @@
+import {emptyJfState,type JfItem} from '../src/shared/jellyfin'
 import {DEFAULT_DISCORD_APPLICATION_ID} from '../src/shared/discord'
 import {EventEmitter} from 'node:events'
 import {afterEach,describe,expect,it,vi} from 'vitest'
@@ -18,6 +19,23 @@ class Pipe extends EventEmitter {
 }
 afterEach(()=>{vi.useRealTimers();vi.restoreAllMocks();vi.unstubAllGlobals()})
 describe('Discord local transport',()=>{
+  it('prioritizes foreground Jellyfin and clears it immediately for private listening',async()=>{
+    vi.useFakeTimers();const pipe=new Pipe()
+    vi.mocked(createConnection).mockImplementation((()=>{queueMicrotask(()=>pipe.emit('connect'));return pipe}) as unknown as typeof createConnection)
+    const player=Object.assign(new EventEmitter(),{state:{...emptyPlayback,status:'paused' as const,kind:'music-track' as const,title:'Old audio'}}) as Player
+    const jf={state:{...emptyJfState,foreground:true,status:'playing' as const,duration:600,position:10,queue:[{id:'film',serverId:'server',kind:'Movie',title:'Film fixture',subtitle:'2026'} as JfItem]}}
+    const store={get:()=>({...discordDefaults,enabled:true,jellyfin:true}),secret:()=>undefined} as unknown as Store
+    const provider=vi.fn(()=>{throw Error('No remote artwork lookup expected')})
+    const rpc=new DiscordPresence(store,player,provider,{} as LocalFiles,jf)
+    try{
+      await vi.advanceTimersByTimeAsync(1);pipe.emit('data',rpcFrame(1,{evt:'READY'}));await vi.advanceTimersByTimeAsync(1)
+      const activity=JSON.parse(pipe.frames.at(-1)!.subarray(8).toString());expect(activity.args.activity).toMatchObject({type:3,details:'Film fixture'})
+      expect(provider).not.toHaveBeenCalled()
+      player.state.privateListening=true;player.emit('state',player.state)
+      expect(JSON.parse(pipe.frames.at(-1)!.subarray(8).toString()).args.activity).toBeNull()
+    }finally{rpc.stop()}
+  })
+
   it.each(['', '1546622716554121297'])('handshakes with the shared ID or custom override: %s',async applicationId=>{
     vi.useFakeTimers();const pipe=new Pipe()
     vi.mocked(createConnection).mockImplementation((()=>{queueMicrotask(()=>pipe.emit('connect'));return pipe}) as unknown as typeof createConnection)

@@ -1,4 +1,5 @@
 import {useCollectionContext} from './media-context'
+import {loadArtwork} from './artwork-loader'
 import { useSyncExternalStore, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 const api = window.mediaCenter
 let coverRevision=0;const coverListeners=new Set<()=>void>();api.onPersonal(()=>{coverCache.clear();coverRevision++;coverListeners.forEach(l=>l())});const subscribeCover=(l:()=>void)=>{coverListeners.add(l);return()=>{coverListeners.delete(l)}}
@@ -22,14 +23,25 @@ export function Art({ item, small = false, personalKey }: { item: { id: string; 
     setCover(null)
     if (item.serverId === 'sample' || !ref.current) return
     let live = true
-    const observer = new IntersectionObserver(entries => { if (!entries.some(e => e.isIntersecting)) return; observer.disconnect(); void api.personalCover({key:personalKey??JSON.stringify([item.serverId,item.kind==='audiobook'?'audiobook':item.kind,item.id])}).then(custom=>custom??serverArtwork(item.serverId,item.cover ?? item.id)).then(data => { if (live) setCover(data) }).catch(() => {}) }, { rootMargin: '160px' })
+    const observer = new IntersectionObserver(entries => { if (!entries.some(e => e.isIntersecting)) return; observer.disconnect(); void loadArtwork(()=>api.personalCover({key:personalKey??JSON.stringify([item.serverId,item.kind==='audiobook'?'audiobook':item.kind,item.id])}).then(custom=>custom??serverArtwork(item.serverId,item.cover ?? item.id)),()=>live).then(data => { if (live) setCover(data??null) }).catch(() => {}) }, { rootMargin: '160px' })
     observer.observe(ref.current); return () => { live = false; observer.disconnect() }
   }, [item.id, item.serverId, item.cover,personalKey,revision])
   return <div ref={ref} className={`art tone-${hash} ${item.kind === 'audiobook' ? 'book-art' : ''} ${small ? 'small-art' : ''}`}>
-    {cover ? <img src={cover} alt=""/> : item.serverId!=='sample'&&!['audiobook','podcast-show','podcast-episode'].includes(item.kind)?<img src="./assets/default-cover.png" alt=""/> : <><div className="art-shape"/><div className="art-grain"/><span className="art-label">{item.kind === 'podcast-show' ? 'ON THE AIR' : item.kind === 'audiobook' ? item.subtitle : 'THE COLLECTION'}</span><strong>{item.title}</strong><span className="art-footer">{item.kind === 'podcast-show' ? 'Stories worth your time' : item.subtitle}</span></>}
+    {cover ? <img src={cover} alt="" decoding="async"/> : item.serverId!=='sample'&&!['audiobook','podcast-show','podcast-episode'].includes(item.kind)?<img src="./assets/default-cover.png" alt=""/> : <><div className="art-shape"/><div className="art-grain"/><span className="art-label">{item.kind === 'podcast-show' ? 'ON THE AIR' : item.kind === 'audiobook' ? item.subtitle : 'THE COLLECTION'}</span><strong>{item.title}</strong><span className="art-footer">{item.kind === 'podcast-show' ? 'Stories worth your time' : item.subtitle}</span></>}
   </div>
 }
 
-export function usePageScroll(key: string) {
-  useLayoutEffect(() => { const workspace = document.querySelector('.workspace'); if (workspace) workspace.scrollTop = 0 }, [key])
+const pagePositions=new Map<string,number>()
+export function usePageScroll(key: string|null) {
+  useLayoutEffect(() => {
+    const workspace=document.querySelector('.workspace');if(!workspace||key===null)return
+    const target=pagePositions.get(key)??0;let restoring=true
+    const restore=()=>{if(!restoring)return;workspace.scrollTop=target;if(workspace.scrollHeight-workspace.clientHeight>=target){restoring=false;observer.disconnect()}}
+    const record=()=>{if(!restoring)pagePositions.set(key,workspace.scrollTop)}
+    const cancel=()=>{restoring=false;observer.disconnect();record()}
+    const observer=new ResizeObserver(restore)
+    observer.observe(workspace.querySelector('main')??workspace);restore()
+    workspace.addEventListener('scroll',record);workspace.addEventListener('wheel',cancel,{passive:true});workspace.addEventListener('pointerdown',cancel);workspace.addEventListener('keydown',cancel)
+    return()=>{record();observer.disconnect();workspace.removeEventListener('scroll',record);workspace.removeEventListener('wheel',cancel);workspace.removeEventListener('pointerdown',cancel);workspace.removeEventListener('keydown',cancel);if(pagePositions.size>200)pagePositions.delete(pagePositions.keys().next().value!)}
+  }, [key])
 }

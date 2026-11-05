@@ -1,0 +1,429 @@
+/* Shared composition. Themes supply colors; styles supply material, not a second layout. */
+/* Native Windows option popups do not inherit the select's painted surface. */
+html:root[data-theme][data-app-style] select :is(option,optgroup) {background:var(--panel);color:var(--text)}
+html:root[data-theme][data-app-style] {
+  --ui-radius:10px; --ui-surface-radius:16px; --ui-gutter:clamp(22px,2.6vw,48px);
+  --ui-surface:color-mix(in srgb,var(--panel) 64%,var(--bg));
+  --ui-hover:color-mix(in srgb,var(--text) 7%,transparent);
+  --ui-secondary:color-mix(in srgb,var(--text) 72%,var(--bg));
+  --style-control-radius:10px; --style-panel-radius:16px; --style-art-radius:10px;
+  --style-control-shadow:none; --style-shadow:none;
+}
+html:root[data-theme][data-app-style] .workspace>main {padding:30px var(--ui-gutter) 64px;max-width:1920px}
+html:root[data-theme][data-app-style] .workspace>main.library-workspace {width:100%;max-width:none;margin-inline:0}
+html:root[data-theme][data-app-style] .library-workspace :is(.spoken-browser,.detail-page,.jf-hub) {width:100%;max-width:none;margin-inline:0}
+html:root[data-theme][data-app-style] .text-button.back {border-radius:var(--ui-radius);padding:10px 12px;min-height:40px;gap:8px;background:transparent;color:var(--ui-secondary)}
+html:root[data-theme][data-app-style] .text-button.back:hover:not(:disabled) {background:var(--ui-hover);color:var(--text)}
+html:root[data-theme][data-app-style] :is(.library-heading,.section-title) {border:0;padding-inline:0;box-shadow:none}
+html:root[data-theme][data-app-style] :is(h1,h2,h3) {letter-spacing:-.025em}
+html:root[data-theme][data-app-style] :is(.library-heading h1,.settings-heading h1,.studio-page>h1,.home-greeting h1,.queue-page>h1) {font-size:clamp(28px,2.4vw,38px);font-weight:650;line-height:1.2}
+html:root[data-theme][data-app-style] :is(.section-title h2,.home-shelf h2) {font-size:21px;font-weight:650}
+html:root[data-theme][data-app-style] .sidebar {padding:24px 14px 0;background:color-mix(in srgb,var(--panel) 42%,var(--bg));border-right:1px solid var(--line)}
+html:root[data-theme][data-app-style] .brand {margin-bottom:30px}
+html:root[data-theme][data-app-style] .sidebar .nav-item {border-radius:8px!important;min-height:42px;gap:12px;font-size:13px}
+html:root[data-theme][data-app-style] .sidebar .nav-item.selected {box-shadow:none!important;background:var(--ui-hover)!important}
+html:root[data-theme][data-app-style] .sidebar .engine-card {border:0;background:var(--ui-hover);padding:14px;border-radius:12px;box-shadow:none}
+html:root[data-theme][data-app-style] .topbar {height:66px;padding-inline:var(--ui-gutter);background:color-mix(in srgb,var(--bg) 92%,transparent);border-bottom:1px solid var(--line);box-shadow:none}
+html:root[data-theme][data-app-style] :is(button.primary,button.secondary,.more-options-trigger,.sort-button,.filter) {min-height:40px;border-radius:var(--ui-radius);font-size:13px;font-weight:600;letter-spacing:0;box-shadow:none;gap:8px;padding:9px 15px;transition:background-color .15s,border-color .15s;}
+html:root[data-theme][data-app-style] :is(button.secondary,.more-options-trigger,.sort-button,.filter) {background:var(--ui-hover);border:1px solid var(--line);color:var(--text)}
+html:root[data-theme][data-app-style] :is(button.primary,button.main-play,.card-play) {background:var(--accent);color:var(--accent-text,#111);border-color:transparent;box-shadow:none}
+html:root[data-theme][data-app-style] :is(button.secondary,.more-options-trigger,.sort-button,.filter):hover:not(:disabled) {background:color-mix(in srgb,var(--text) 12%,var(--bg));color:var(--text);filter:none}
+html:root[data-theme][data-app-style] button.secondary:is(.active,[aria-pressed=true]) {background:var(--accent);color:var(--accent-text,#111)}
+html:root[data-theme][data-app-style] .icon-button {border:0;border-radius:8px;box-shadow:none;background:transparent;color:var(--ui-secondary);width:36px;height:36px}
+html:root[data-theme][data-app-style] .icon-button:hover:not(:disabled) {background:var(--ui-hover);color:var(--text)}
+html:root[data-theme][data-app-style] .icon-button.active {background:var(--ui-hover);color:var(--accent)}
+html:root[data-theme][data-app-style] :is(button.main-play,button.card-play,button.episode-play) {border-radius:50%!important;flex-shrink:0}
+html:root[data-theme][data-app-style] :is(.browse-tabs,.daily-tabs,[role=tablist]) {background:transparent;box-shadow:none;border-radius:0;gap:8px}
+html:root[data-theme][data-app-style] :is(.browse-tabs,[role=tablist]):not(.now-tabs) :is(button,[role=tab]) {border-radius:0;background:transparent;border:0;border-bottom:2px solid transparent;box-shadow:none;color:var(--ui-secondary);padding:12px 16px;min-height:44px;font-size:13px}
+html:root[data-theme][data-app-style] :is(.browse-tabs,[role=tablist]):not(.now-tabs) :is(.active,[aria-selected=true]) {background:transparent;color:var(--text);border-bottom-color:var(--accent)}
+html:root[data-theme][data-app-style] :is(.search,.field>input,.field>select,.field>textarea,select,textarea) {border-radius:8px;box-shadow:none;font-size:13px;min-height:40px;border-color:var(--line);color:var(--text)}
+html:root[data-theme][data-app-style] .search {background:var(--ui-hover)}
+html:root[data-theme][data-app-style] .search input {background:transparent;border:0;min-height:0}
+html:root[data-theme][data-app-style] :is(.library-toolbar,.library-view-actions,.jf-toolbar) {gap:10px;align-items:center}
+html:root[data-theme][data-app-style] :is(.library-action-panel,.episode-filter-panel) {background:transparent;border:0;box-shadow:none;border-radius:0;padding:12px 0}
+
+/* Artwork is the card. Action cards remain surfaces. */
+html:root[data-theme][data-app-style] :is(.media-grid .media-card,.media-grid .music-card,.home-album-card,.local-collection-card,.jf-card,.personal-shelf-card) {background:transparent;border:0;border-radius:10px;padding:0;box-shadow:none;backdrop-filter:none}
+html:root[data-theme][data-app-style] :is(.media-grid .media-card,.media-grid .music-card,.home-album-card,.local-collection-card,.jf-card):hover {background:transparent;border-color:transparent;transform:none;box-shadow:none}
+html:root[data-theme][data-app-style] :is(.media-grid,.local-collection-grid) {gap:28px 22px}
+html:root[data-theme][data-app-style] :is(.card-image>.art,.home-album-card .art,.local-group-open .art) {border:0;border-radius:10px;box-shadow:none}
+html:root[data-theme][data-app-style] :is(.home-album-card h3,.card-copy strong,.local-group-open strong) {font-size:14px;font-weight:600;line-height:1.45;color:var(--text)}
+html:root[data-theme][data-app-style] :is(.card-copy span,.card-copy small,.home-album-card p,.local-group-open small) {color:var(--ui-secondary);font-size:12px;line-height:1.5}
+html:root[data-theme][data-app-style] .card-copy {padding:12px 0 0}
+html:root[data-theme][data-app-style] :is(.home-album-card,.music-card) .card-play {background:#f4f5f6;color:#111;border:0;border-radius:50%;box-shadow:0 3px 14px #0004}
+/* Artwork overlays need their own contrast pair, including with custom light palettes. */
+html:root[data-theme][data-app-style] :is(button.card-favorite,button.card-more,.card-open) {background:#171b20!important;color:#f5f5f7!important;border:1px solid #ffffff30!important;border-radius:50%!important}
+html:root[data-theme][data-app-style] button.card-favorite.active {background:#f5f5f7!important;color:#171b20!important;border-color:#f5f5f7!important}
+html:root[data-theme][data-app-style] :is(.media-card,.music-card,.home-album-card):focus-within .card-play {opacity:1;transform:none}
+html:root[data-theme][data-app-style] :is(.home-feature,.home-stats,.custom-mix-card,.daily-card,.plan-card,.episode-card,.folder-card,.source-card,.saved-queues) {border:1px solid var(--line);border-radius:16px;box-shadow:none;background:var(--ui-surface)}
+html:root[data-theme][data-app-style] .home-feature {background:var(--ui-surface);padding:28px;gap:24px}
+html:root[data-theme][data-app-style][data-surface-style=gradient] .home-feature {background:linear-gradient(125deg,color-mix(in srgb,var(--accent) 10%,var(--ui-surface)),var(--ui-surface))}
+html:root[data-theme][data-app-style] .home-feature-glow {display:none}
+html:root[data-theme][data-app-style] .home-mix {border:0;border-radius:12px;background:var(--ui-surface)}
+html:root[data-theme][data-app-style] .home-mix::after {display:none}
+/* Home: a focused resume area, quiet activity summary, and consistent media rails. */
+html:root[data-theme][data-app-style] .home-redesign {gap:32px}
+html:root[data-theme][data-app-style] .home-section {margin:0}
+html:root[data-theme][data-app-style] .home-greeting {align-items:center;padding-bottom:8px}
+html:root[data-theme][data-app-style] .home-greeting h1 {margin:0 0 8px}
+html:root[data-theme][data-app-style] .home-greeting .muted {font-size:13px;color:var(--ui-secondary)}
+html:root[data-theme][data-app-style] .home-hero-grid {grid-template-columns:minmax(0,1fr) 320px;gap:24px}
+html:root[data-theme][data-app-style] .home-feature {display:flex;flex-direction:row-reverse;justify-content:flex-end;min-height:280px;padding:28px;gap:28px;border:0;border-radius:16px}
+html:root[data-theme][data-app-style] .home-feature>.art {width:clamp(150px,16vw,240px);height:auto;aspect-ratio:1;align-self:center;contain:none;border-radius:10px;box-shadow:none}
+html:root[data-theme][data-app-style] .home-feature h2 {font-family:var(--heading-font);font-size:clamp(24px,2.4vw,40px);line-height:1.15;margin:16px 0 12px}
+html:root[data-theme][data-app-style] .home-feature p {font-size:14px;color:var(--ui-secondary);margin-bottom:22px}
+html:root[data-theme][data-app-style] .home-stats {display:block;padding:22px;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none}
+html:root[data-theme][data-app-style] .home-stats-main {gap:18px;margin:20px 0}
+html:root[data-theme][data-app-style] .home-goal-ring {width:76px;height:76px}
+html:root[data-theme][data-app-style] .home-goal-ring strong {font-size:22px}
+html:root[data-theme][data-app-style] .home-stats-main>div+div strong {font-size:22px}
+html:root[data-theme][data-app-style] .home-week-bars {height:48px}
+html:root[data-theme][data-app-style] .home-shelf>header {margin-bottom:18px;gap:12px;flex-wrap:wrap}
+html:root[data-theme][data-app-style] .shelf-buttons {align-items:center;flex-wrap:wrap}
+html:root[data-theme][data-app-style] .home-shelf-track {gap:20px;padding-bottom:4px}
+html:root[data-theme][data-app-style] .home-shelf-track>.home-album-card {flex-basis:clamp(160px,11vw,220px)}
+html:root[data-theme][data-app-style] .home-shelf-track .home-pin {height:auto;min-height:174px;padding:20px 64px 20px 20px}
+html:root[data-theme][data-app-style] .home-pin>.art {width:64px;height:64px;border-radius:8px;margin-bottom:12px}
+html:root[data-theme][data-app-style] .home-pin h3 {margin:0;padding:0}
+html:root[data-theme][data-app-style] .home-mix {height:auto;min-height:220px;padding:24px}
+html:root[data-theme][data-app-style] .home-mix h3 {font-size:20px;max-width:100%;overflow-wrap:anywhere}
+html:root[data-theme][data-app-style] .home-mix>.eyebrow {margin:22px 0 12px}
+html:root[data-theme][data-app-style] .home-redesign .source-grid {gap:14px}
+@media(max-width:1150px) {
+ html:root[data-theme][data-app-style] .home-hero-grid {grid-template-columns:minmax(0,1fr)}
+ html:root[data-theme][data-app-style] .home-stats {display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;border-left:0;border-top:1px solid var(--line);padding:20px 0}
+ html:root[data-theme][data-app-style] .home-stats-main {grid-column:2;grid-row:1/3;margin:0}
+ html:root[data-theme][data-app-style] .home-stats footer {grid-column:1/-1}
+ html:root[data-theme][data-app-style] .home-greeting {flex-wrap:wrap}
+ html:root[data-theme][data-app-style] .home-header-actions {flex-shrink:1}
+}
+html:root[data-theme][data-app-style] .detail-hero {position:relative;isolation:isolate;grid-template-columns:clamp(180px,19vw,260px) minmax(0,1fr);align-items:end;border:0;border-radius:0;background:transparent;box-shadow:none;padding:40px 0 32px;gap:32px;backdrop-filter:none}
+html:root[data-theme][data-app-style] .detail-hero::before {content:'';position:absolute;z-index:-1;inset:0;pointer-events:none;background-image:linear-gradient(var(--bg),var(--bg)),var(--collection-artwork,none);background-size:cover;background-position:center;background-blend-mode:screen;opacity:.18;mask-image:linear-gradient(#000,transparent);filter:blur(24px)}
+html:root[data-theme][data-app-style] .detail-hero>.art {width:100%;align-self:end;border-radius:12px;box-shadow:0 12px 32px #0002}
+html:root[data-theme][data-app-style] .detail-hero>.detail-heading {align-self:end}
+html:root[data-theme][data-app-style] .detail-hero :is(h1,h2) {font-family:inherit;font-size:clamp(30px,4vw,64px);font-weight:750;letter-spacing:-.035em;line-height:1.08;margin:12px 0 16px;text-wrap:balance}
+html:root[data-theme][data-app-style] .detail-hero .eyebrow {font-size:11px;letter-spacing:.12em;color:var(--ui-secondary)}
+html:root[data-theme][data-app-style] .detail-heading>.listen-actions {display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:24px}
+html:root[data-theme][data-app-style] .detail-heading>.listen-actions>button {flex:none;min-width:0;width:auto}
+html:root[data-theme][data-app-style] .detail-heading>.listen-actions>.primary {width:56px;height:56px;min-width:56px;padding:0;border-radius:50%;font-size:0;gap:0}
+html:root[data-theme][data-app-style] .detail-heading>.listen-actions>.primary svg {display:block;width:23px;height:23px}
+html:root[data-theme][data-app-style] .music-browser:has(.detail-hero)>.library-heading {margin:0;min-height:40px;padding-block:0}
+html:root[data-theme][data-app-style] .music-browser:has(.detail-hero)>.library-heading .library-heading-identity {display:none}
+html:root[data-theme][data-app-style] .music-browser:has(.detail-hero)>.library-heading .library-heading-actions {margin-left:auto}
+html:root[data-theme][data-app-style] .song-section>.library-action-panel {display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:0 0 12px;padding:8px 0}
+html:root[data-theme][data-app-style] .song-section .selection-bar {flex:1 1 440px;border:0;padding:0;margin:0;gap:12px}
+html:root[data-theme][data-app-style] .song-section .library-view-actions {flex:1 1 440px;margin:0;padding:0;border:0;justify-content:flex-end;flex-wrap:wrap}
+html:root[data-theme][data-app-style] .detail-hero[data-stacked=true] {grid-template-columns:minmax(0,1fr);gap:24px;padding-top:24px}
+html:root[data-theme][data-app-style] .detail-hero[data-stacked=true]>.art {width:min(60%,240px)}
+
+/* Collection details form a single full-width canvas, from navigation to tracks. */
+html:root[data-theme][data-app-style] .workspace>main:has(>.collection-page) {max-width:none;padding:0}
+html:root[data-theme][data-app-style] .collection-page {position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:0;min-height:100%;padding:20px var(--ui-gutter) 64px;background:var(--bg)}
+html:root[data-theme][data-app-style] .collection-page::before {content:'';position:absolute;inset:0 0 auto;height:560px;z-index:-1;pointer-events:none;background:var(--collection-artwork,none) center 35%/cover no-repeat;filter:blur(48px);opacity:.16;clip-path:inset(0);mask-image:linear-gradient(#0008, #000 20%,transparent 95%)}
+html:root[data-theme][data-app-style] .collection-page>* {grid-column:1/-1;min-width:0}
+html:root[data-theme][data-app-style] .collection-page>.library-heading {grid-column:2;grid-row:1;margin:0;min-height:40px}
+html:root[data-theme][data-app-style] .collection-page>.back {grid-column:1;grid-row:1;align-self:center;justify-self:start;margin:0;min-height:40px}
+html:root[data-theme][data-app-style] .collection-page>.detail-hero {grid-template-columns:clamp(180px,18vw,240px) minmax(0,1fr);margin:0;padding:28px 0 24px;gap:32px}
+html:root[data-theme][data-app-style] .collection-page>.detail-hero::before {display:none}
+html:root[data-theme][data-app-style] .collection-page .detail-heading>.listen-actions {margin-top:20px}
+html:root[data-theme][data-app-style] .collection-summary {color:var(--ui-secondary);font-size:13px}
+/* Podcast detail shares the continuous collection canvas and tighter header rhythm. */
+html:root[data-theme][data-app-style] .podcast-detail>.detail-hero {grid-template-columns:clamp(172px,16vw,220px) minmax(0,1fr);align-items:center;padding:24px 0 26px;gap:30px}
+html:root[data-theme][data-app-style] .podcast-detail .detail-heading {align-self:center;max-width:940px}
+html:root[data-theme][data-app-style] .podcast-detail .detail-hero>.art {align-self:center;aspect-ratio:1;box-shadow:0 14px 36px #0003}
+html:root[data-theme][data-app-style] .podcast-detail .detail-hero h1 {font-size:clamp(32px,3.6vw,54px);line-height:1.08;margin:8px 0 12px;max-width:none;text-wrap:pretty}
+html:root[data-theme][data-app-style] .podcast-detail .eyebrow {margin:0;font-size:10px;letter-spacing:.13em}
+.podcast-meta {display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;color:var(--muted);font-size:13px}
+.podcast-meta .podcast-publisher {color:var(--text);font-weight:550}
+.podcast-meta>span+span::before {content:'·';margin-right:16px;color:var(--muted)}
+.podcast-summary {color:var(--ui-secondary);font-size:13px;line-height:1.7;margin:14px 0 0;max-width:76ch;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html:root[data-theme][data-app-style] .podcast-detail .detail-heading>.listen-actions {margin-top:18px;gap:10px}
+html:root[data-theme][data-app-style] .podcast-detail .detail-heading>.listen-actions>.primary {margin-top:0;width:48px;height:48px;min-width:48px}
+.podcast-playback-hint {display:block;margin-top:10px;font-size:11px;color:var(--muted)}
+html:root[data-theme][data-app-style] .podcast-detail>.podcast-preferences-row {margin:0;border-bottom:1px solid var(--line);padding:0 0 16px}
+html:root[data-theme][data-app-style] .podcast-preferences-row>.show-preferences {margin:0;padding:0;border:0;background:transparent;box-shadow:none;border-radius:0}
+html:root[data-theme][data-app-style] .podcast-preferences-row .show-preferences>summary {display:list-item;width:fit-content;color:var(--muted);font-size:12px;font-weight:500;padding:4px 0;cursor:pointer}
+html:root[data-theme][data-app-style] .podcast-preferences-row .show-preferences[open] {padding-bottom:8px;max-width:920px}
+html:root[data-theme][data-app-style] .podcast-detail>.description {margin:14px 0 0;max-width:920px;font-size:13px}
+html:root[data-theme][data-app-style] .podcast-detail .episode-filter-panel {background:transparent;border:0;border-radius:0;padding:0 0 12px;box-shadow:none}
+html:root[data-theme][data-app-style] .podcast-detail .episode-filter-panel .library-toolbar {margin:0;gap:10px;flex-wrap:wrap}
+html:root[data-theme][data-app-style] .podcast-detail .episode-filter-panel .selection-bar {padding:10px 0 0;margin:0;color:var(--muted);font-size:12px}
+html:root[data-theme][data-app-style] .podcast-detail>.detail-hero[data-stacked=true] {grid-template-columns:minmax(0,1fr);gap:20px}
+html:root[data-theme][data-app-style] .podcast-detail>.detail-hero[data-stacked=true]>.art {width:172px}
+html:root[data-theme][data-app-style] .collection-page>.song-section {margin:0;padding:0}
+html:root[data-theme][data-app-style] .collection-page>.song-section>.section-title {display:none}
+html:root[data-theme][data-app-style] .collection-page .song-section>.library-action-panel {gap:10px;margin:0 0 4px;padding:4px 0 10px}
+html:root[data-theme][data-app-style] .collection-page .song-section .selection-bar {flex:1 1 180px;font-size:12px}
+html:root[data-theme][data-app-style] .collection-page .song-section .library-view-actions {flex:0 1 auto;gap:10px}
+html:root[data-theme][data-app-style] .collection-page .column-controls label {font-size:0;gap:0}
+html:root[data-theme][data-app-style] .collection-page .column-controls select {font-size:12px}
+html:root[data-theme][data-app-style] .collection-page .table-heading {margin:0;min-height:32px;padding-block:6px}
+html:root[data-theme][data-app-style] .song-table .row-tools {width:40px;min-width:40px;justify-content:flex-end;gap:5px}
+html:root[data-theme][data-app-style] .song-row.is-current {background:var(--ui-hover);border-radius:8px}
+html:root[data-theme][data-app-style] .song-row.is-current .song-title strong,
+html:root[data-theme][data-app-style] .song-row.is-current .row-number {color:var(--accent);font-weight:650}
+html:root[data-theme][data-app-style] .row-tools .more-options-trigger {min-width:0;width:36px;height:36px;min-height:36px;padding:0;border:0;background:transparent}
+html:root[data-theme][data-app-style] .more-options-panel :is(button.icon-button,summary) {width:100%;height:auto;min-height:36px;justify-content:flex-start;text-align:left;padding:9px 12px;font-size:12px;border-radius:6px;cursor:pointer}
+html:root[data-theme][data-app-style] .more-options-panel details[open] {border-block:1px solid var(--line);padding-block:4px}
+html:root[data-theme][data-app-style] .more-options-panel button[aria-pressed=true] {background:var(--ui-hover);font-weight:650}
+html:root[data-theme][data-app-style] :is(.library-toolbar,.jf-toolbar) {display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-block:18px 24px}
+html:root[data-theme][data-app-style] :is(.library-toolbar,.jf-toolbar)>.search {flex:1 1 280px;min-width:min(240px,100%)}
+html:root[data-theme][data-app-style] :is(.library-toolbar,.jf-toolbar)>:is(select,button) {min-height:40px;flex-shrink:0}
+html:root[data-theme][data-app-style] .media-grid .card-copy {gap:6px}
+html:root[data-theme][data-app-style] .media-grid .card-copy strong {display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;min-height:40px}
+html:root[data-theme][data-app-style] .media-grid .card-copy .progress-badge {padding:0;border:0;background:transparent;color:var(--ui-secondary)!important;font-size:11px!important}
+html:root[data-theme][data-app-style] .media-grid .card-copy .progress-badge.in-progress {color:var(--text)!important}
+html:root[data-theme][data-app-style] :is(.media-card,.music-card,.home-album-card):focus-within {outline:2px solid var(--accent);outline-offset:5px}
+html:root[data-theme][data-app-style] :is(button,summary,select,input):focus-visible {outline:2px solid var(--accent);outline-offset:3px}
+html:root[data-theme][data-app-style] .page-state-library {display:block;min-height:360px;padding-inline:0}
+html:root[data-theme][data-app-style] .page-state-library>.page-state-icon {display:none}
+html:root[data-theme][data-app-style] .page-state-library>div {max-width:none}
+html:root[data-theme][data-app-style] .page-state-library .loading-lines {display:none}
+.loading-cards {display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px;margin-top:24px}
+.loading-cards>span {display:grid;gap:10px}
+.loading-cards i {aspect-ratio:1;border-radius:10px;background:var(--ui-hover)}
+.loading-cards b,.loading-cards small {height:10px;border-radius:3px;background:var(--ui-hover);width:75%}
+.loading-cards small {width:50%}
+@media(max-width:900px) {
+ html:root[data-theme][data-app-style] .collection-page>.library-heading {max-width:100%}
+ html:root[data-theme][data-app-style] .collection-page>.detail-hero {gap:22px;grid-template-columns:180px minmax(0,1fr)}
+ html:root[data-theme][data-app-style] .collection-page>.detail-hero[data-stacked=true] {grid-template-columns:minmax(0,1fr)}
+}
+
+/* Tables keep their media-specific columns; only surfaces and rhythm are shared. */
+html:root[data-theme][data-app-style] :is(.song-row,.track-row,.queue-row,.artist-track,.local-library-track,.chapter-row,.history-row) {border:0;border-radius:8px;box-shadow:none;background:transparent;min-height:56px}
+html:root[data-theme][data-app-style] :is(.song-row,.track-row,.queue-row,.artist-track,.local-library-track,.chapter-row,.history-row):hover {background:var(--ui-hover)}
+html:root[data-theme][data-app-style] :is(.song-row,.queue-row).current {background:var(--ui-hover);color:var(--accent)}
+html:root[data-theme][data-app-style] :is(.song-row,.track-row,.queue-row,.chapter-row) strong {font-size:13px;font-weight:600;color:var(--text)}
+html:root[data-theme][data-app-style] :is(.song-row,.track-row,.queue-row,.chapter-row) small {color:var(--ui-secondary);font-size:12px}
+html:root[data-theme][data-app-style] .table-heading {min-height:36px;border-bottom:1px solid var(--line);font-size:10px;color:var(--ui-secondary)}
+html:root[data-theme][data-app-style] :is(.song-row,.local-library-track) {padding:8px 12px;gap:12px}
+html:root[data-theme][data-app-style] :is(.song-title,.artist-track) strong {font-size:14px;font-weight:600;line-height:1.4}
+html:root[data-theme][data-app-style] :is(.song-title,.artist-track) small {font-size:12px;color:var(--ui-secondary);line-height:1.5;margin-top:3px}
+html:root[data-theme][data-app-style] .song-title {border:0;background:transparent;box-shadow:none;padding:0;gap:12px;text-align:left}
+html:root[data-theme][data-app-style] .song-row .row-number {font-size:11px;color:var(--ui-secondary);font-variant-numeric:tabular-nums}
+html:root[data-theme][data-app-style] .track-columns {background:transparent;border:0;box-shadow:none;padding-block:0}
+html:root[data-theme][data-app-style] .track-column {font-size:12px;font-variant-numeric:tabular-nums}
+html:root[data-theme][data-app-style] .song-table .column-caption {display:none}
+html:root[data-theme][data-app-style] .track-list-heading {text-transform:uppercase;letter-spacing:.08em;color:var(--ui-secondary);border-radius:0;pointer-events:none}
+html:root[data-theme][data-app-style] .track-list-heading .track-column {font-size:10px}
+@media(max-width:1100px) {html:root[data-theme][data-app-style] .track-list-heading {display:none} html:root[data-theme][data-app-style] .song-table .column-caption {display:block}}
+html:root[data-theme][data-app-style] .song-row .track-artwork {width:36px;height:36px;border-radius:5px}
+html:root[data-theme][data-app-style] .detail-page .episode-card {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 24px;align-items:center;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:20px 12px;box-shadow:none}
+html:root[data-theme][data-app-style] .detail-page .episode-card:hover {background:var(--ui-hover)}
+html:root[data-theme][data-app-style] .episode-copy h3 {font-size:16px;line-height:1.4;margin:6px 0}
+html:root[data-theme][data-app-style] .episode-copy>p:not(.eyebrow) {display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13px;line-height:1.6;color:var(--ui-secondary);margin:6px 0}
+html:root[data-theme][data-app-style] .episode-bottom {border:0;margin:0;padding:0}
+html:root[data-theme][data-app-style] .episode-card>progress {grid-column:1/-1;width:100%;height:3px}
+@media(max-width:1100px) {html:root[data-theme][data-app-style] .detail-page .episode-card {grid-template-columns:minmax(0,1fr)} html:root[data-theme][data-app-style] .detail-hero {gap:24px}}
+html:root[data-theme][data-app-style] :is(.modal,dialog,[role=dialog]) {border-radius:16px;box-shadow:0 24px 80px #0005}
+html:root[data-theme][data-app-style] :is(.more-options-panel[popover],.card-action-popover[popover],.context-menu,.jf-options-menu) {border-radius:12px!important;border:1px solid var(--control-border);box-shadow:0 16px 40px #0005}
+html:root[data-theme][data-app-style] :is(.empty-state,.studio-empty,.home-empty) {background:transparent;box-shadow:none;border:1px dashed var(--line);border-radius:12px;padding:36px 24px}
+
+/* Settings keeps every section mounted, preserving unsaved drafts and searchable controls. */
+html:root[data-theme][data-app-style] .settings-page {max-width:1280px}
+html:root[data-theme][data-app-style] .settings-heading {border:0;padding-bottom:8px;margin-bottom:16px}
+html:root[data-theme][data-app-style] .settings-layout {grid-template-columns:190px minmax(0,1fr);gap:32px}
+html:root[data-theme][data-app-style] .settings-rail {border:0;padding:0;gap:4px}
+html:root[data-theme][data-app-style] .settings-rail button[aria-current] {box-shadow:none!important;border-radius:8px!important}
+html:root[data-theme][data-app-style] .settings-rail button[aria-current]>svg {color:var(--accent)}
+html:root[data-theme][data-app-style] .settings-columns {grid-template-columns:1fr;gap:20px}
+html:root[data-theme][data-app-style] .settings-group .settings-panel {padding:24px;border-radius:16px;background:var(--ui-surface);border:1px solid var(--line);box-shadow:none}
+html:root[data-theme][data-app-style] .settings-group-title {font-size:19px;margin-bottom:16px}
+html:root[data-theme][data-app-style] .settings-panel .setting-toggle {border-top:0;border-bottom:1px solid var(--line);min-height:68px;padding:16px 0}
+html:root[data-theme][data-app-style] .settings-panel .setting-toggle:last-child {border-bottom:0}
+html:root[data-theme][data-app-style] .settings-panel .field {max-width:760px}
+html:root[data-theme][data-app-style] .settings-panel .field :is(input,select) {background:var(--bg)}
+html:root[data-theme][data-app-style] .settings-panel .panel-icon {width:32px;height:32px;background:transparent;padding:0}
+html:root[data-theme][data-app-style] .settings-panel .settings-actions {border:0;margin-top:16px;padding-top:12px}
+html:root[data-theme][data-app-style] .settings-panel .quality-note {background:transparent;border:0;padding-inline:0}
+/* Floating dock with reserved content space and a continuous surrounding surface. */
+html:root[data-theme][data-app-style] .app-shell:has(>.player-bar) {--player:100px}
+html:root[data-theme][data-app-style] .player-bar {
+ position:relative;isolation:isolate;align-self:center;min-height:76px;height:76px;
+ grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:24px;
+ margin:0 12px 10px;padding:10px 18px 10px 12px;border:1px solid var(--line);border-radius:12px;
+ background:color-mix(in srgb,var(--panel) 80%,var(--bg));color:var(--text);
+ box-shadow:none;backdrop-filter:blur(24px) saturate(115%);
+}
+html:root[data-theme][data-app-style] .player-bar .now-art {width:52px;height:52px;min-width:52px;border:0;padding:0;border-radius:10px}
+html:root[data-theme][data-app-style] .player-bar .now-art>.art {width:100%;height:100%;border-radius:inherit}
+html:root[data-theme][data-app-style] .player-bar .now-playing {gap:12px}
+html:root[data-theme][data-app-style] .player-bar .now-playing strong {font-size:13px;font-weight:600;line-height:1.4}
+html:root[data-theme][data-app-style] .player-bar .now-playing small {font-size:12px;color:var(--muted);margin-top:3px}
+html:root[data-theme][data-app-style] .player-bar .now-quality {display:none}
+html:root[data-theme][data-app-style] .player-bar .transport-buttons {gap:14px}
+html:root[data-theme][data-app-style] .player-bar .player-extras {gap:10px;min-width:0;flex-wrap:nowrap}
+html:root[data-theme][data-app-style] .player-bar .icon-button {width:30px;height:32px;min-width:30px;padding:0;color:var(--muted);background:transparent;border:0;box-shadow:none}
+html:root[data-theme][data-app-style] .player-bar .icon-button:is(:hover,.active) {color:var(--accent);background:var(--ui-hover)}
+html:root[data-theme][data-app-style] .player-bar .volume {width:76px;height:22px;border:0;box-shadow:none;background:linear-gradient(to right,var(--text) var(--volume-level),var(--line) var(--volume-level)) center/100% 3px no-repeat}
+html:root[data-theme][data-app-style] .player-bar .volume::-webkit-slider-thumb {width:9px;height:9px;border:0;box-shadow:none;opacity:0}
+html:root[data-theme][data-app-style] .player-bar .volume:is(:hover,:focus-visible)::-webkit-slider-thumb {opacity:1}
+html:root[data-theme][data-app-style] .player-bar .volume-value {display:none}
+.player-time {white-space:nowrap;font-size:11px;font-variant-numeric:tabular-nums;color:var(--muted);margin-right:6px}
+.player-time>span {opacity:.6;padding-inline:2px}
+html:root[data-theme][data-app-style] .player-bar .player-timeline {position:absolute;inset:-1px 0 auto;height:12px;z-index:2}
+html:root[data-theme][data-app-style] .player-bar .seek-row {margin:0;padding:0;gap:0;height:12px}
+html:root[data-theme][data-app-style] .player-bar .seek-track {height:12px;width:100%}
+html:root[data-theme][data-app-style] .player-bar .seek-track input {display:block;position:absolute;top:-5px;width:100%;height:24px;margin:0;border:0;border-radius:0;clip-path:inset(5px 0 0 round 12px 12px 0 0);box-shadow:none;background:linear-gradient(to right,var(--accent) var(--progress),transparent var(--progress)) center 5px/100% 4px no-repeat;transition:background-size .15s}
+html:root[data-theme][data-app-style] .player-bar .seek-track input:is(:hover,:focus-visible) {background-size:100% 5px}
+html:root[data-theme][data-app-style] .player-bar .seek-track input::-webkit-slider-thumb {width:10px;height:10px;opacity:0}
+html:root[data-theme][data-app-style] .player-bar .seek-track input:is(:hover,:focus-visible)::-webkit-slider-thumb {opacity:1}
+html:root[data-theme][data-app-style] .player-bar .chapter-ticks i {top:0;height:2px}
+html:root[data-theme][data-app-style] .workspace {scroll-padding-bottom:32px}
+.player-sleep-menu {position:relative;flex:none}
+.player-sleep-menu>summary {display:grid;place-items:center;width:30px;height:32px;border-radius:8px;cursor:pointer;list-style:none;color:var(--muted)}
+.player-sleep-menu>summary::-webkit-details-marker {display:none}
+.player-sleep-menu>summary:is(:hover,.active) {background:var(--ui-hover);color:var(--accent)}
+.player-sleep-popup {position:absolute;right:0;bottom:calc(100% + 16px);min-width:170px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);box-shadow:0 12px 32px #0004}
+.player-sleep-popup>strong {display:block;font-size:12px;margin-bottom:12px}
+html:root[data-theme][data-app-style] .player-sleep-popup .sleep-control select {max-width:none;width:100%;font-size:12px}
+html:root[data-theme][data-app-style] .player-bar .sync-warning {bottom:60px}
+@media(max-width:1150px) {
+ html:root[data-theme][data-app-style] .player-bar {gap:12px;padding-inline:12px}
+ html:root[data-theme][data-app-style] .player-bar .transport-buttons {gap:5px}
+ html:root[data-theme][data-app-style] .player-bar .player-extras {gap:4px}
+ html:root[data-theme][data-app-style] .player-bar .volume {width:56px}
+ .player-time {font-size:10px;margin-right:2px}
+}
+@media(max-width:850px) {
+ html:root[data-theme][data-app-style] .app-shell:has(>.player-bar) {--player:138px}
+ html:root[data-theme][data-app-style] .player-bar {height:114px;grid-template-columns:minmax(0,1fr) auto;row-gap:5px}
+ html:root[data-theme][data-app-style] .player-bar .transport {grid-column:2;grid-row:1}
+ html:root[data-theme][data-app-style] .player-bar .player-extras {grid-column:1/-1;justify-content:flex-end}
+}
+html:root[data-theme][data-app-style] .now-art {border-radius:8px;overflow:hidden}
+html:root[data-theme][data-app-style] .sidebar-scroll {scrollbar-color:transparent transparent}
+html:root[data-theme][data-app-style] .sidebar-scroll:is(:hover,:focus-within) {scrollbar-color:var(--line) transparent}
+html:root[data-theme][data-app-style] :is(.empty-state,.studio-empty,.home-empty) p {color:var(--ui-secondary)}
+html:root[data-theme][data-app-style] .settings-panel .source-card {background:transparent;box-shadow:none;border:0;border-radius:0}
+html:root[data-theme][data-app-style] .player-bar .main-play {width:44px;height:44px}
+html:root[data-theme][data-density=compact] :is(.song-row,.track-row,.queue-row,.chapter-row) {min-height:44px}
+html:root[data-theme][data-app-style=frosted] :is(.settings-group .settings-panel,.home-feature,.home-stats,.custom-mix-card,.daily-card),
+html[data-theme=liquid-glass][data-app-style] :is(.settings-group .settings-panel,.home-feature,.home-stats,.custom-mix-card,.daily-card) {background:color-mix(in srgb,var(--ui-surface) 80%,transparent);backdrop-filter:blur(24px) saturate(115%)}
+@media(max-width:1000px) {
+ html:root[data-theme][data-app-style] .settings-layout {grid-template-columns:1fr;gap:24px}
+ html:root[data-theme][data-app-style] .settings-rail {flex-direction:row;flex-wrap:wrap;position:static}
+ html:root[data-theme][data-app-style] .settings-rail button {width:auto}
+}
+@media(prefers-reduced-motion:reduce) {html:root[data-theme][data-app-style] * {scroll-behavior:auto;transition-duration:0s!important}}
+
+/* Material previews share the same control geometry as the live app. */
+.style-preview[data-style-variant] {--style-control-radius:10px;--style-panel-radius:16px;--style-art-radius:10px;--style-control-shadow:none}
+
+/* Shared control contract: actions, segmented modes, and navigation stay distinct. */
+html:root[data-theme][data-app-style] :is(.now-header-actions button.now-view-button,.immersive-lyric-menu>summary,.lyric-playback-options>summary,.settings-rail button,.pagination button) {border-radius:10px;font:600 13px/20px var(--body-font,'Segoe UI',sans-serif);min-height:40px;padding:9px 14px;box-shadow:none}
+html:root[data-theme][data-app-style] .now-header-actions .now-tabs {gap:3px;padding:4px;background:#ffffff10;border-radius:12px;border:0;backdrop-filter:blur(12px)}
+html:root[data-theme][data-app-style] .now-header-actions button.now-view-button {background:#ffffff0d;color:#f5f5f7;border:1px solid #ffffff20}
+html:root[data-theme][data-app-style] .now-header-actions .now-tabs button.now-view-button {background:transparent;border:0;min-height:34px;padding:7px 14px}
+html:root[data-theme][data-app-style] .now-header-actions .now-tabs button.now-view-button[aria-pressed=true] {background:#ffffff22;color:#fff}
+html:root[data-theme][data-app-style] .now-header-actions button.now-view-button:hover {background:#ffffff24}
+html:root[data-theme][data-app-style] :is(button,a,input,select,textarea,summary):focus-visible {outline:2px solid var(--accent);outline-offset:3px}
+html:root[data-theme][data-app-style] :is(button,summary) {touch-action:manipulation}
+html:root[data-theme][data-app-style] :is(.more-options-panel[popover],.card-action-popover[popover],.context-menu) :is(button,a) {min-height:38px;font-size:13px;border-radius:7px;text-align:left}
+html:root[data-theme][data-app-style] :is(.library-toolbar,.episode-toolbar,.library-view-actions) {display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+html:root[data-theme][data-app-style] :is(.library-toolbar,.episode-toolbar)>.search {flex:1 1 240px;min-width:180px}
+html:root[data-theme][data-app-style] :is(.library-toolbar,.episode-toolbar,.library-view-actions) :is(select,button) {max-width:100%}
+html:root[data-theme][data-app-style] .selection-bar[data-selected=false]>:is(.listen-actions,button) {display:none}
+html:root[data-theme][data-app-style] .selection-bar[data-selected=true] {background:var(--ui-hover);border-radius:10px;padding:8px 12px}
+html:root[data-theme][data-app-style] .settings-unsaved {position:sticky;top:76px;z-index:20;display:flex;align-items:center;gap:10px;padding:12px 16px;margin:0 0 20px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px #0002}
+.settings-unsaved>span {margin-right:auto;font-size:13px}
+html:root[data-theme][data-app-style] .advanced-appearance {border-top:1px solid var(--line);margin-top:24px;padding-top:16px}
+.advanced-appearance>summary {cursor:pointer;font-weight:600;min-height:40px;padding:10px 0}
+.advanced-settings {margin-top:24px;border-top:1px solid var(--line);padding-top:12px}
+.advanced-settings>summary {font-weight:600;cursor:pointer;padding:12px 0;min-height:40px}
+.appearance-contrast-note {padding:12px 16px;background:var(--ui-hover);color:var(--text);border-radius:10px;font-size:13px;line-height:1.6}
+html:root[data-theme][data-app-style] .breadcrumb strong {color:var(--text)}
+html:root[data-theme][data-app-style] .sidebar .profile-icon {background:var(--ui-hover);color:var(--muted)}
+html:root[data-theme][data-app-style] .page-state {display:flex;align-items:flex-start;justify-content:center;gap:18px;min-height:230px;padding:48px 24px;border:0;border-radius:12px;background:var(--ui-surface);box-shadow:none}
+.page-state>div {max-width:560px;min-width:0}
+.page-state h2 {font-size:20px;line-height:1.4;margin:0 0 8px}
+.page-state p {font-size:13px;line-height:1.65;color:var(--muted);overflow-wrap:anywhere}
+.page-state-icon {color:var(--muted);padding-top:3px}
+.page-state .secondary {margin-top:16px}
+.loading-lines {display:grid;gap:12px;margin-top:24px;width:clamp(160px,30vw,420px)}
+.loading-lines i {height:10px;border-radius:5px;background:var(--line);animation:loading-breathe 1.4s ease-in-out infinite alternate}
+.loading-lines i:nth-child(2) {width:75%;animation-delay:.2s}
+.loading-lines i:nth-child(3) {width:50%;animation-delay:.4s}
+@keyframes loading-breathe {to{opacity:.35}}
+@media(prefers-reduced-motion:reduce) {.loading-lines i {animation:none}}
+html:root[data-style-palette=true] :is(.app-shell,.workspace,.sidebar) {background:var(--bg);color:var(--text)}
+html:root[data-style-palette=true] .topbar {background:color-mix(in srgb,var(--bg) 95%,transparent);color:var(--text)}
+html:root[data-style-palette=true] :is(.settings-panel,.source-card,.folder-card,.daily-card,.custom-mix-card) {background:var(--panel);color:var(--text)}
+html:root[data-app-style=liquid] :is(.settings-group .settings-panel,.home-feature,.home-stats,.custom-mix-card,.daily-card) {background:color-mix(in srgb,var(--panel) 82%,transparent);backdrop-filter:blur(28px) saturate(115%);box-shadow:inset 0 1px color-mix(in srgb,var(--text) 10%,transparent),0 8px 28px #0002;border:1px solid var(--line)}
+@media(max-width:1100px) {
+ html:root[data-theme][data-app-style] .settings-layout {grid-template-columns:1fr}
+ html:root[data-theme][data-app-style] .settings-rail {position:static;flex-direction:row;flex-wrap:wrap}
+ html:root[data-theme][data-app-style] .settings-rail button {width:auto}
+ html:root[data-theme][data-app-style] .settings-unsaved {flex-wrap:wrap;top:68px}
+ html:root[data-theme][data-app-style] .settings-unsaved>span {flex-basis:100%}
+ html:root[data-theme][data-app-style] :is(.now-header,.now-header-actions) {flex-wrap:wrap;gap:10px}
+ html:root[data-theme][data-app-style] .now-header-actions {justify-content:flex-start}
+}
+
+html:root[data-theme][data-app-style] .media-grid .progress-badge {align-self:stretch;width:100%}
+html:root[data-theme][data-app-style] .media-grid .progress-badge progress {margin:8px 0 0;height:3px;width:100%}
+
+/* Stats and recap use the same restrained cards as library and Home. */
+html:root[data-theme][data-app-style] .stats-page>h1 {font:650 34px/1.2 var(--body-font);letter-spacing:-.025em;margin-bottom:12px}
+html:root[data-theme][data-app-style] .listening-summary {display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+html:root[data-theme][data-app-style] .listening-summary .daily-card {padding:24px;min-height:160px}
+html:root[data-theme][data-app-style] .listening-summary .stat-number {font:650 36px/1.2 var(--body-font);color:var(--text)}
+html:root[data-theme][data-app-style] .recap-heading {color:var(--text);gap:14px}
+html:root[data-theme][data-app-style] .recap-heading h2 {font:650 26px/1.2 var(--body-font)}
+html:root[data-theme][data-app-style] .recap-layout {max-width:none;grid-template-columns:minmax(320px,1fr) minmax(260px,460px);gap:32px;margin-top:20px}
+html:root[data-theme][data-app-style] .recap-controls {border:0;background:var(--ui-surface);padding:24px;gap:18px;border-radius:16px}
+.recap-controls h3 {display:flex;gap:8px;align-items:center;font-size:15px}
+html:root[data-theme][data-app-style] .recap-placeholder {background:var(--ui-surface);border:1px solid var(--line);color:var(--text)}
+html:root[data-theme][data-app-style] .recap-placeholder strong {font:600 24px/1.25 var(--body-font)}
+html:root[data-theme][data-app-style] .recap-preview {position:sticky;top:24px}
+html:root[data-theme][data-app-style] .recap-preview img {box-shadow:none;border:1px solid var(--line);border-radius:14px}
+.recap-style-choices {border:0;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;min-width:0}
+.recap-style-choices legend {font-size:12px;margin-bottom:12px}
+html:root[data-theme][data-app-style] .recap-style-choice {padding:10px;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:10px;display:flex;flex-direction:column;gap:8px;min-width:0;color:var(--text)}
+html:root[data-theme][data-app-style] .recap-style-choice.selected {border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.recap-style-choice strong {font-size:12px}
+.recap-style-choice>small {font-size:11px;line-height:1.5;color:var(--ui-secondary)}
+.recap-mini {display:grid;gap:5px;width:100%;height:80px;padding:10px;border-radius:5px;background:var(--ui-surface);grid-template-columns:1fr 1fr}
+.recap-mini i {grid-column:1/-1;background:var(--accent);width:65%;height:14px;border-radius:2px}
+.recap-mini b {background:var(--ui-hover);border:1px solid var(--line);border-radius:3px}
+.recap-mini small {grid-column:1/-1;background:var(--ui-secondary);height:3px;width:80%}
+.recap-mini-cinema i {height:30px;width:100%}
+.recap-mini-journal b {background:repeating-linear-gradient(90deg,var(--ui-secondary) 0 3px,transparent 3px 7px);border:0}
+.recap-media-totals {display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+.recap-media-totals article {display:grid;gap:10px;padding:24px;border-radius:12px;background:var(--ui-surface)}
+.recap-media-totals strong {font-size:30px}
+.recap-media-totals span {font-size:13px;color:var(--ui-secondary)}
+.recap-kind-list {display:grid;grid-template-columns:1fr 1fr;gap:0 24px;margin-bottom:28px}
+.recap-kind-list>div {display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}
+@media(max-width:1100px) {
+ html:root[data-theme][data-app-style] .recap-layout {grid-template-columns:minmax(0,1fr)}
+ html:root[data-theme][data-app-style] .recap-preview {position:static;width:100%;max-width:460px;justify-self:center}
+}
+
+.recap-date-grid {display:grid;grid-template-columns:1fr 1fr;gap:14px;min-width:0}
+.recap-date-grid .field {min-width:0}
+
+.recent-searches {display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0 20px}
+.recent-searches>span {font-size:12px;color:var(--muted);margin-right:8px}
+.jf-card-open {position:relative}
+.jf-card-open .jf-watched-badge {display:flex;align-items:center;gap:4px;position:absolute;top:10px;right:10px;padding:5px 8px;border-radius:8px;background:#111d;color:#fff;font-size:11px}
+.jf-next-countdown>.jf-art {width:72px;height:42px;aspect-ratio:auto;border-radius:6px;flex:none}
+.jf-options>.volume-control {display:flex;align-items:center;gap:8px}
+
+.jf-seek {position:relative}
+
+/* Product identity lives with app updates, leaving the sidebar for navigation. */
+.settings-brand {display:flex;align-items:center;gap:12px;margin:8px 0 24px;color:var(--text);font-size:21px;font-weight:600;letter-spacing:-.8px}
+.settings-brand-mark {display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:12px;background:var(--text);color:var(--bg)}
+.settings-brand small {display:block;margin-top:5px;font-size:7.5px;font-weight:500;letter-spacing:2px;color:var(--muted)}
+
+/* Continue the page surface below the dock without extending its scroll viewport. */
+html:root[data-theme][data-app-style] .workspace-surface {grid-column:2;grid-row:1/-1;min-width:0;min-height:0;display:flex;flex-direction:column;padding-bottom:var(--player);background:inherit}
+html:root[data-theme][data-app-style] .workspace-surface>.workspace {flex:1;min-height:0;width:100%;background:transparent}
+html:root[data-theme][data-app-style] .app-shell:has(>.player-bar)>.sidebar {grid-row:1/-1;padding-bottom:var(--player)}
+html:root[data-theme][data-app-style] .player-bar {box-shadow:none}
+
+/* Keep the reserved dock area on the same quiet canvas, without a glow. */
+html:root[data-theme][data-app-style] .app-shell:has(>.player-bar) {background:var(--bg)}
+html:root[data-theme][data-app-style] .app-shell:has(>.player-bar)>.workspace-surface {background:var(--bg)}

@@ -12,7 +12,7 @@ module.exports=async({desktop,page,artifacts})=>{
   const footer=page.locator('.player-bar'),barVolume=footer.locator('.volume-control')
   await volume(50);await barVolume.locator('svg').hover();await page.mouse.wheel(0,-100);await wait(p=>p.volume===55)
   await page.mouse.wheel(0,100);await wait(p=>p.volume===50)
-  await volume(98);await barVolume.locator('output').hover();await page.mouse.wheel(0,-100);await wait(p=>p.volume===100)
+  await volume(98);await barVolume.getByRole('slider').hover();await page.mouse.wheel(0,-100);await wait(p=>p.volume===100)
   await volume(2);await page.mouse.wheel(0,100);await wait(p=>p.volume===0)
   await volume(50);for(let i=0;i<4;i++)await page.mouse.wheel(0,25);await wait(p=>p.volume===45)
   await volume(20);for(let i=0;i<5;i++)await page.mouse.wheel(0,-100);await wait(p=>p.volume===45)
@@ -36,9 +36,9 @@ module.exports=async({desktop,page,artifacts})=>{
   const seek=view.getByRole('slider',{name:'Playback position',exact:true});const b=await seek.boundingBox();await page.mouse.click(b.x+7+(b.width-14)*.25,b.y+b.height/2);await wait(p=>p.status==='paused'&&Math.abs(p.position-150)<2)
   await view.getByRole('button',{name:'Shuffle',exact:true}).click();await wait(p=>p.shuffle===true);await view.getByRole('button',{name:'Shuffle',exact:true}).click();await wait(p=>!p.shuffle)
   for(const [from,to] of [['off','all'],['all','one'],['one','off']]){await view.getByRole('button',{name:'Repeat: '+from,exact:true}).click();await page.waitForFunction(async repeat=>(await window.mediaCenter.playback()).repeat===repeat,to)}
-  await view.getByRole('combobox',{name:'Sleep timer',exact:true}).selectOption('15');await wait(p=>!!p.sleepAt);await view.getByRole('combobox',{name:'Sleep timer',exact:true}).selectOption('0');await wait(p=>!p.sleepAt)
+  await view.locator('.player-sleep-menu>summary').click();await view.getByRole('combobox',{name:'Sleep timer',exact:true}).selectOption('15');await wait(p=>!!p.sleepAt);await view.getByRole('combobox',{name:'Sleep timer',exact:true}).selectOption('0');await wait(p=>!p.sleepAt);await view.locator('.player-sleep-menu>summary').click()
   await view.getByRole('button',{name:'Open mini player',exact:true}).click();const mini=desktop.windows().find(w=>w!==page)||await desktop.waitForEvent('window');await mini.getByRole('button',{name:'Close mini player',exact:true}).click().catch(e=>{if(!mini.isClosed())throw e});assert.equal(page.isClosed(),false,'Closing mini player must keep the main window open');assert.equal(await footer.isVisible(),false)
-  for(const layout of ['studio','minimal','gallery']){
+  for(const layout of ['studio','lounge']){
    await view.getByRole('button',{name:'Appearance',exact:true}).click();const dialog=page.getByRole('dialog',{name:'Lyrics appearance',exact:true});await dialog.getByLabel('Immersive layout',{exact:true}).selectOption(layout);await dialog.getByRole('button',{name:'Save appearance',exact:true}).click()
    for(const [width,height] of [[1440,940],[1024,720]]){
     await page.setViewportSize({width,height});await view.getByRole('slider',{name:'Volume',exact:true}).scrollIntoViewIfNeeded();const r=await wheel.boundingBox();assert.ok(r.x>=0&&r.x+r.width<=width&&r.y+r.height<=height);assert.equal(await view.evaluate(el=>el.scrollWidth>el.clientWidth),false)

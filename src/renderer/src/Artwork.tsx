@@ -1,3 +1,4 @@
+import {loadArtwork} from './artwork-loader'
 import {progressKey} from '../../shared/timeline'
 import {useEffect,useState,useRef,useSyncExternalStore} from 'react'
 import type {QueueItem} from '../../shared/types'
@@ -15,9 +16,9 @@ export function QueueArt({ item }: { item?: QueueItem }) {
   const revision=useSyncExternalStore(subscribeArt,artSnapshot)
   const [cover, setCover] = useState<string | null>(null), target = item?.target
   const art=useRef<HTMLDivElement>(null)
-  useEffect(()=>{setCover(null);let live=true;if(target?.kind!=='local-file'||!art.current)return;const observer=new IntersectionObserver(entries=>{if(!entries.some(e=>e.isIntersecting))return;observer.disconnect();void api.personalCover({key:progressKey(target)}).then(custom=>custom??localArtwork(target.rootId,target.fileId)).then(c=>{if(live)setCover(c)}).catch(()=>{})},{rootMargin:'200px'});observer.observe(art.current);return()=>{live=false;observer.disconnect()}},[JSON.stringify(target),revision])
+  useEffect(()=>{setCover(null);let live=true;if(target?.kind!=='local-file'||!art.current)return;const observer=new IntersectionObserver(entries=>{if(!entries.some(e=>e.isIntersecting))return;observer.disconnect();void loadArtwork(()=>api.personalCover({key:progressKey(target)}).then(custom=>custom??localArtwork(target.rootId,target.fileId)),()=>live).then(c=>{if(live)setCover(c??null)}).catch(()=>{})},{rootMargin:'200px'});observer.observe(art.current);return()=>{live=false;observer.disconnect()}},[JSON.stringify(target),revision])
   if (!item) return <div className="art idle-art">♫</div>
-  if (target?.kind === 'local-file') return cover ? <div ref={art} className="art"><img src={cover} alt=""/></div> : <div ref={art} className="art idle-art"><img src="./assets/default-cover.png" alt=""/></div>
+  if (target?.kind === 'local-file') return cover ? <div ref={art} className="art"><img src={cover} alt="" decoding="async"/></div> : <div ref={art} className="art idle-art"><img src="./assets/default-cover.png" alt=""/></div>
   return <Art personalKey={progressKey(item.target)} item={{ id: item.cover ?? (target?.kind === 'audiobook' ? target.bookId : target?.kind === 'podcast-episode' ? target.showId : target?.kind === 'music-track' ? target.trackId : ''), title: item.title, subtitle: item.subtitle, serverId: item.target.serverId, kind: item.target.kind, cover: item.cover }}/>
 }
 

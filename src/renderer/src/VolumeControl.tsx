@@ -3,7 +3,7 @@ import {Volume2} from 'lucide-react'
 import {api} from './actions'
 import {message} from './ui'
 
-export function VolumeControl({volume,error}:{volume:number;error:(s:string)=>void}){
+export function VolumeControl({volume,error,onChange,label='Volume'}:{volume:number;error:(s:string)=>void;onChange?:(value:number)=>Promise<unknown>;label?:string}){
  const root=useRef<HTMLDivElement>(null),desired=useRef(volume),sending=useRef(false),actual=useRef(volume),alive=useRef(true)
  const [value,setValue]=useState(volume)
  actual.current=volume
@@ -13,7 +13,7 @@ export function VolumeControl({volume,error}:{volume:number;error:(s:string)=>vo
   desired.current=Math.max(0,Math.min(100,Math.round(next)));setValue(desired.current)
   if(sending.current)return
   sending.current=true
-  try{let sent:number;do{sent=desired.current;await api.command({action:'volume',value:sent})}while(alive.current&&sent!==desired.current)}
+  try{let sent:number;do{sent=desired.current;await (onChange?onChange(sent):api.command({action:'volume',value:sent}))}while(alive.current&&sent!==desired.current)}
   catch(e){desired.current=actual.current;if(alive.current){setValue(actual.current);error(message(e))}}
   finally{sending.current=false}
  }
@@ -33,5 +33,5 @@ export function VolumeControl({volume,error}:{volume:number;error:(s:string)=>vo
   el.addEventListener('wheel',wheel,{passive:false});el.addEventListener('pointerleave',leave)
   return()=>{el.removeEventListener('wheel',wheel);el.removeEventListener('pointerleave',leave)}
  },[])
- return <div ref={root} className="volume-control" title="Scroll to adjust volume"><Volume2 size={18}/><input className="volume" aria-label="Volume" aria-valuetext={`${value}%`} style={{'--volume-level':`${value}%`} as CSSProperties} type="range" min={0} max={100} value={value} onChange={e=>void change(Number(e.target.value))}/><output className="volume-value" aria-hidden="true">{value}%</output></div>
+ return <div ref={root} className="volume-control" title="Scroll to adjust volume"><Volume2 size={18}/><input className="volume" aria-label={label} aria-valuetext={`${value}%`} style={{'--volume-level':`${value}%`} as CSSProperties} type="range" min={0} max={100} value={value} onChange={e=>void change(Number(e.target.value))}/><output className="volume-value" aria-hidden="true">{value}%</output></div>
 }

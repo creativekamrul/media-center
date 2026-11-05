@@ -8,13 +8,14 @@ export function MoreOptions({children,label='More options',iconOnly=false}:{chil
   if(!open||!panel.current)return
   const menu=panel.current;menu.showPopover()
   const position=()=>{const anchor=trigger.current!.getBoundingClientRect();const height=menu.getBoundingClientRect().height;menu.style.left=`${Math.max(12,Math.min(anchor.right-menu.offsetWidth,innerWidth-menu.offsetWidth-12))}px`;menu.style.top=`${anchor.bottom+height+8<innerHeight-12?anchor.bottom+8:Math.max(12,anchor.top-height-8)}px`}
+  const resize=new ResizeObserver(position);resize.observe(menu)
   position();menu.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus()
   const outside=(e:PointerEvent)=>{if(!root.current?.contains(e.target as Node))close(false)}
   const scroll=(e:Event)=>{if(!menu.contains(e.target as Node))position()}
   document.addEventListener('pointerdown',outside);document.addEventListener('scroll',scroll,true);window.addEventListener('resize',position)
-  return()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('scroll',scroll,true);window.removeEventListener('resize',position)}
+  return()=>{resize.disconnect();document.removeEventListener('pointerdown',outside);document.removeEventListener('scroll',scroll,true);window.removeEventListener('resize',position)}
  },[open])
- return <div className="more-options" ref={root} onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}if(open&&['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();const buttons=[...panel.current!.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')],i=buttons.indexOf(document.activeElement as HTMLButtonElement);buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length ]?.focus()}}} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node))close(false)}}>
+ return <div className="more-options" ref={root} onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close()}if(open&&['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();const buttons=[...panel.current!.querySelectorAll<HTMLElement>('button:not(:disabled),summary')].filter(el=>el.checkVisibility()),i=buttons.indexOf(document.activeElement as HTMLElement);buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length ]?.focus()}}} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node))close(false)}}>
   <button ref={trigger} className={`secondary more-options-trigger ${iconOnly?'icon-only':''}`} aria-label={iconOnly?label:undefined} title={iconOnly?label:undefined} aria-expanded={open} onClick={()=>open?close():setOpen(true)}>{iconOnly?<MoreHorizontal size={18}/>:<>{label}<ChevronDown size={14}/></>}</button>
   {open&&<div ref={panel} popover="manual" className="more-options-panel" aria-label={label} onClick={e=>{if((e.target as HTMLElement).closest('button'))close(false)}}>{children}</div>}
  </div>

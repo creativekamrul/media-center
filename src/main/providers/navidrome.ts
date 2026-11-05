@@ -40,7 +40,12 @@ export class Navidrome {
   async detail(id: string) { const result = await this.get('getAlbum', { id }); const a = z.object({ song: z.array(z.unknown()).default([]) }).passthrough().parse(result.album); return { kind: 'album' as const, item: this.album(a), tracks: a.song.map(s => this.song(s)) } }
   async track(id: string) { return this.song((await this.get('getSong', { id })).song) }
   stream(id: string) { return this.url('stream', { id, format: 'raw', maxBitRate: '0' }).href }
-  async cover(id: string) { return coverData(this.url('getCoverArt', { id, size: '400' })) }
+  async cover(id: string) {
+    // Omitting size preserves the server's original artwork for large listening views.
+    // Keep the bounded image reader; oversized originals can use a high-resolution derivative.
+    return await coverData(this.url('getCoverArt', { id }))
+      ?? await coverData(this.url('getCoverArt', { id, size: '1600' }))
+  }
   async scrobble(id: string, submission: boolean) { await this.get('scrobble', { id, submission: String(submission) }) }
   async catalog(input: MusicBrowseInput): Promise<MusicPage> {
     const size = 60, offset = input.page * size

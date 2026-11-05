@@ -14,13 +14,14 @@ export function fontCss(value:string){
 
 export const colorKeys=['background','panel','accent','text','muted'] as const
 export const colorLabels={background:'Background',panel:'Panels',accent:'Accent',text:'Main text',muted:'Secondary text'}
-export const appStyleIds=['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted'] as const
+export const appStyleIds=['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted','liquid'] as const
 export type AppStyle=typeof appStyleIds[number]
 const color=z.string().regex(/^#[0-9a-f]{6}$/i)
 export const appearanceSchema=z.object({
  showHelp:z.boolean().default(true),
  appStyle:z.enum(appStyleIds).default('default'),
- density:z.enum(['comfortable','compact']).default('comfortable'),translucency:z.boolean().default(false),surfaceStyle:z.enum(['solid','gradient']).default('solid'),colors:z.object({background:color.optional(),panel:color.optional(),accent:color.optional(),text:color.optional(),muted:color.optional()}).strict().default({}),bodyFont:fontChoiceSchema.default('segoe'),headingFont:fontChoiceSchema.default('georgia'),lyricsFont:fontChoiceSchema.default('segoe')}).strict()
+ stylePalette:z.boolean().default(false),
+ density:z.enum(['comfortable','compact']).default('comfortable'),translucency:z.boolean().default(false),surfaceStyle:z.enum(['solid','gradient']).default('solid'),colors:z.object({background:color.optional(),panel:color.optional(),accent:color.optional(),text:color.optional(),muted:color.optional()}).strict().default({}),bodyFont:fontChoiceSchema.default('segoe'),headingFont:fontChoiceSchema.default('segoe'),lyricsFont:fontChoiceSchema.default('segoe')}).strict()
 export type Appearance=z.infer<typeof appearanceSchema>
-export const defaultAppearance:Appearance={showHelp:true,appStyle:'default',density:'comfortable',translucency:false,surfaceStyle:'solid',colors:{},bodyFont:'segoe',headingFont:'georgia',lyricsFont:'segoe'}
+export const defaultAppearance:Appearance={showHelp:true,appStyle:'default',stylePalette:false,density:'comfortable',translucency:false,surfaceStyle:'solid',colors:{},bodyFont:'segoe',headingFont:'segoe',lyricsFont:'segoe'}
 export function accentText(hex:string){const rgb=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(c=>c<=.04045?c/12.92:((c+.055)/1.055)**2.4);return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2]>.179?'#101010':'#ffffff'}

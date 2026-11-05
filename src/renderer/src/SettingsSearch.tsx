@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState} from 'react'
 import {ArrowRight,Search,X} from 'lucide-react'
 
-const aliases:Record<string,string>={updates:'version update release changelog new',servers:'server connection navidrome audiobookshelf password login',playback:'audio sound mpv output headphones device equalizer eq replaygain volume speed crossfade profiles',appearance:'theme colors colours fonts typography lyrics glass transparency translucent density css collection navigation sidebar icons names',listening:'downloads storage quota goal rewind gapless shortcuts keys podcast backup restore reset data',sharing:'discord presence lastfm artwork privacy'}
+const aliases:Record<string,string>={updates:'version update release changelog new',servers:'server connection navidrome audiobookshelf password login jellyfin test edit',playback:'audio sound mpv output headphones device equalizer eq replaygain volume speed crossfade profiles',appearance:'style paper slate frosted liquid theme colors colours fonts typography lyrics glass transparency translucent density css collection navigation sidebar icons names',listening:'downloads storage quota goal rewind gapless shortcuts keys podcast backup restore reset data',sharing:'discord presence lastfm artwork privacy'}
 export function jumpToSetting(element:HTMLElement){
   for(let parent=element.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true
   element.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})
@@ -19,7 +19,7 @@ export function SettingsSearch(){
       const next:typeof entries=[]
       for(const group of root.querySelectorAll<HTMLElement>('.settings-group')){
         const section=group.getAttribute('aria-label')??'',alias=aliases[section.toLowerCase()]??''
-        for(const element of group.querySelectorAll<HTMLElement>('.settings-panel h2,label.field,label.check-field,.setting-toggle')){
+        for(const element of group.querySelectorAll<HTMLElement>('.settings-panel h2,.settings-panel h3,fieldset>legend,.advanced-appearance>summary,.advanced-settings>summary,label.field,label.check-field,.setting-toggle')){
           // Index labels, never typed values, server addresses, keys or paths.
           const clone=element.cloneNode(true) as HTMLElement
           clone.querySelectorAll('input,select,textarea,small,.path-box').forEach(el=>el.remove())
@@ -35,7 +35,7 @@ export function SettingsSearch(){
   const terms=query.toLowerCase().trim().split(/\s+/).filter(Boolean)
   const results=terms.length?entries.filter(e=>terms.every(t=>e.terms.includes(t))).sort((a,b)=>Number(terms.every(t=>b.label.toLowerCase().includes(t)))-Number(terms.every(t=>a.label.toLowerCase().includes(t)))).slice(0,10):[]
   const choose=(entry:typeof entries[number])=>{setQuery('');jumpToSetting(entry.element)}
-  return <div className="settings-search" ref={ref} onKeyDown={e=>{if(e.key==='Escape'){setQuery('');ref.current?.querySelector('input')?.focus()}if(e.key==='ArrowDown'&&(e.target as HTMLElement).tagName==='INPUT'){e.preventDefault();ref.current?.querySelector<HTMLButtonElement>('.settings-search-results button')?.focus()}if(e.key==='Enter'&&(e.target as HTMLElement).tagName==='INPUT'&&results[0]){e.preventDefault();choose(results[0])}}}>
+  return <div className="settings-search" ref={ref} onKeyDown={e=>{if(e.key==='Escape'){setQuery('');ref.current?.querySelector('input')?.focus()}if(e.key==='ArrowDown'&&(e.target as HTMLElement).tagName==='INPUT'){e.preventDefault();ref.current?.querySelector<HTMLButtonElement>('.settings-search-results button')?.focus()}if((e.target as HTMLElement).closest('.settings-search-results')&&['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();const buttons=[...ref.current!.querySelectorAll<HTMLButtonElement>('.settings-search-results button')],index=buttons.indexOf(document.activeElement as HTMLButtonElement);buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(index+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length]?.focus()}if(e.key==='Enter'&&(e.target as HTMLElement).tagName==='INPUT'&&results[0]){e.preventDefault();choose(results[0])}}}>
     <label className="search"><Search size={18}/><input aria-label="Search settings" placeholder="Search settings — audio, lyrics, downloads…" value={query} onChange={e=>setQuery(e.target.value)}/>{query&&<button type="button" className="icon-button" aria-label="Clear settings search" onClick={()=>setQuery('')}><X size={16}/></button>}</label>
     {!!terms.length&&<div className="settings-search-results"><p role="status">{results.length?`${results.length} matching settings`:'No matching settings. Try audio, theme, downloads or Discord.'}</p>{results.map((r,i)=><button type="button" key={i} onClick={()=>choose(r)}><span><strong>{r.label}</strong><small>{r.section}</small></span><ArrowRight size={17}/></button>)}</div>}
   </div>

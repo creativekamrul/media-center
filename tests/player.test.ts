@@ -29,6 +29,25 @@ describe('playback coordination', () => {
   })
   afterEach(async () => { await player.shutdown(); vi.useRealTimers() })
 
+  it('removes selected mixed-media queue entries atomically and rejects stale selection',async()=>{
+    const episode={target:{kind:'podcast-episode' as const,serverId:'s',showId:'show',episodeId:'ep'},title:'Episode',subtitle:''}
+    const items=[queue[0],episode,queue[0],{...episode,target:{...episode.target,episodeId:'ep2'}}]
+    await player.restoreQueue(items,0)
+    const before=structuredClone(player.state.queue)
+    await player.edit({action:'remove-many',indices:[1,2,1],expected:before})
+    expect(player.state.queue).toEqual([items[0],items[3]])
+    await expect(player.edit({action:'remove-many',indices:[0],expected:before})).rejects.toThrow()
+    expect(player.state.queue).toEqual([items[0],items[3]])
+    await player.restoreQueueEdit(before,0,structuredClone(player.state.queue))
+    expect(player.state.queue).toEqual(items)
+  })
+  it('never partially removes a selection containing the playing book',async()=>{
+    await player.play([...queue,...queue],0)
+    const expected=structuredClone(player.state.queue)
+    await expect(player.edit({action:'remove-many',indices:[1,0],expected})).rejects.toThrow('current item')
+    expect(player.state.queue).toEqual(expected)
+    expect(player.state.status).toBe('playing')
+  })
   it.each(['audiobook','podcast-episode'] as const)('retries %s at the whole-item position without changing queue identity',async kind=>{
     const items=kind==='audiobook'?queue:[{target:{kind:'podcast-episode' as const,serverId:'s',showId:'show',episodeId:'ep'},title:'Episode',subtitle:''}]
     if(kind==='podcast-episode')vi.mocked(abs.detail).mockResolvedValue({kind:'podcast-show',id:'show',serverId:'s',libraryId:'p',title:'Show',subtitle:'Host',description:'',author:'Host',episodeCount:1,episodes:[{id:'ep',title:'Episode',duration:1000}]} as Awaited<ReturnType<typeof abs.detail>>)

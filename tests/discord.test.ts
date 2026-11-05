@@ -1,8 +1,29 @@
 import {describe,it,expect,vi} from 'vitest'
 vi.mock('../src/main/store',()=>({Store:class{}}))
-import {presence,defaultDiscordArtwork,discordDefaults,discordSchema,publicArtwork,rpcFrame} from '../src/main/discord'
+import {presence,jellyfinPresence,defaultDiscordArtwork,discordDefaults,discordSchema,publicArtwork,rpcFrame} from '../src/main/discord'
+import {emptyJfState,type JfItem} from '../src/shared/jellyfin'
 import {emptyPlayback} from '../src/shared/types'
 describe('Discord presence privacy and artwork',()=>{
+  it('shares Jellyfin music as listening and movies/episodes as watching, only when opted in',()=>{
+    for(const kind of ['Audio','Movie','Episode'] as const){
+      const state={...emptyJfState,foreground:true,status:'playing' as const,queue:[{id:'item',serverId:'private-server',title:'Title',subtitle:'Creator',kind,coverId:'https://private/cover?token=secret'} as JfItem],position:30,duration:300}
+      const settings={...discordDefaults,enabled:true,jellyfin:true}
+      const activity=jellyfinPresence(state,settings,false,1000000)
+      expect(activity?.type).toBe(kind==='Audio'?2:3)
+      expect(activity?.timestamps).toEqual({start:970,end:1270})
+      expect(activity?.assets.large_image).toBe(defaultDiscordArtwork)
+      expect(JSON.stringify(activity)).not.toMatch(/private-server|token=secret/)
+      expect(jellyfinPresence(state,{...settings,jellyfin:false})).toBeNull()
+      expect(jellyfinPresence(state,settings,true)).toBeNull()
+      expect(jellyfinPresence({...state,foreground:false},settings)).toBeNull()
+      expect(jellyfinPresence({...state,status:'idle'},settings)).toBeNull()
+      expect(jellyfinPresence({...state,status:'paused'},{...settings,showPaused:false})).toBeNull()
+      expect(jellyfinPresence({...state,status:'paused'},settings)?.timestamps).toBeUndefined()
+      expect(jellyfinPresence({...state,buffering:true},settings)?.timestamps).toBeUndefined()
+    }
+    const {hasLastfmKey:_,jellyfin:__,...legacy}=discordDefaults
+    expect(discordSchema.parse(legacy).jellyfin).toBe(false)
+  })
   const playing={...emptyPlayback,status:'playing' as const,kind:'music-track' as const,title:'Track',subtitle:'Artist',position:30,duration:300,speed:1.5}
   const settings={...discordDefaults,enabled:true,applicationId:'123456789012345678'}
   it('requires opt-in for each media kind and hides idle and disabled activity',()=>{

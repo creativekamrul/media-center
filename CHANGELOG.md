@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.0
+
+- Redesign the desktop interface with consistent controls, full-width library and Now Playing pages, cleaner collection headers, and refined Home shelves.
+- Consolidate appearance into professional styles with editable colors, preserving existing preferences and custom CSS.
+- Refine Studio and introduce Lounge listening layouts, frosted queues, high-resolution backgrounds, colored decorative wave seekers, and compact playback utilities.
+- Add a floating player with an edge-aligned progress bar; move app branding into Settings.
+- Request original Navidrome artwork and bound artwork loading concurrency for sharper covers and smoother browsing.
+- Preserve browsing filters, sorting and scroll positions; improve keyboard menus, search history, queue selection/removal and undo.
+- Refresh listening recap designs with Jellyfin viewing statistics and add opt-in Jellyfin Discord presence.
+- Improve Jellyfin browsing recovery, watched/resume indicators, playback volume and seek previews.
+
 ## 2.0.0
 
 - Stable release of the 2.0 media center experience: Jellyfin libraries and embedded video, Liquid Glass, unified search, customizable Home, server health and download improvements.

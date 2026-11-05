@@ -3,7 +3,7 @@ import { fontChoiceSchema } from './appearance'
 const color=z.string().regex(/^#[0-9a-f]{6}$/i)
 // Field defaults migrate older saves while preserving their background, size and motion.
 export const playingScreenSchema=z.object({
- layout:z.enum(['studio','minimal','gallery']).default('studio'),
+ layout:z.preprocess(value=>value==='minimal'||value==='gallery'?'lounge':value,z.enum(['studio','lounge']).default('studio')),
  showMusicLyrics:z.boolean().default(true),
  background:z.enum(['aurora','artwork','midnight','sunset','stars','snow','rain','ocean','ember']),
  fontSize:z.number().int().min(24).max(64),motion:z.boolean(),

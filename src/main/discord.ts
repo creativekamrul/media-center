@@ -1,3 +1,4 @@
+import type {JfState} from '../shared/jellyfin'
 import {discordApplicationId} from '../shared/discord'
 import { createConnection, type Socket } from 'node:net'
 import { randomUUID } from 'node:crypto'
@@ -14,15 +15,22 @@ import type { Handle } from './features'
 import { LastfmArtwork, publicArtwork, type ArtworkMetadata, type ArtworkResult } from './lastfm'
 export { publicArtwork } from './lastfm'
 
-export const discordDefaults: DiscordSettings = {enabled:false,applicationId:'',music:true,books:false,podcasts:false,local:false,showPaused:true,hasLastfmKey:false}
+export const discordDefaults: DiscordSettings = {enabled:false,applicationId:'',music:true,books:false,podcasts:false,local:false,jellyfin:false,showPaused:true,hasLastfmKey:false}
 export const defaultDiscordArtwork='https://raw.githubusercontent.com/creativekamrul/media-center/v1.1.0/src/renderer/public/assets/default-cover.png'
-export const discordSchema=z.object({defaultCoverAsset:z.boolean().optional(),enabled:z.boolean(),applicationId:z.string().regex(/^(?:\d{15,22})?$/),music:z.boolean(),books:z.boolean(),podcasts:z.boolean(),local:z.boolean(),showPaused:z.boolean(),lastfmKey:z.string().regex(/^(?:[a-fA-F0-9]{32})?$/).optional()}).strict()
+export const discordSchema=z.object({defaultCoverAsset:z.boolean().optional(),enabled:z.boolean(),applicationId:z.string().regex(/^(?:\d{15,22})?$/),music:z.boolean(),books:z.boolean(),podcasts:z.boolean(),local:z.boolean(),jellyfin:z.boolean().default(false),showPaused:z.boolean(),lastfmKey:z.string().regex(/^(?:[a-fA-F0-9]{32})?$/).optional()}).strict()
 export function rpcFrame(opcode:number,data:unknown) {const body=Buffer.from(JSON.stringify(data)),header=Buffer.alloc(8);header.writeUInt32LE(opcode,0);header.writeUInt32LE(body.length,4);return Buffer.concat([header,body])}
 export function presence(state:PlaybackState,settings:DiscordSettings,art?:string,now=Date.now()) {
   const allowed=state.kind==='music-track'?settings.music:state.kind==='audiobook'?settings.books:state.kind==='podcast-episode'?settings.podcasts:state.kind==='local-file'?settings.local:false
   if(state.privateListening||!settings.enabled||!allowed||!['playing','paused'].includes(state.status)||(state.status==='paused'&&!settings.showPaused))return null
   const clean=(value:string)=>value.replace(/[\u0000-\u001f]/g,' ').slice(0,128).padEnd(2,' ')
   return {type:2,details:clean(state.title),state:clean(`${state.status==='paused'?'Paused · ':''}${state.subtitle}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position/state.speed),end:Math.floor(now/1000+(state.duration-state.position)/state.speed)}}:{}),assets:{large_image:(art&&publicArtwork(art))||defaultDiscordArtwork,large_text:clean(state.title)}}
+}
+
+export function jellyfinPresence(state:JfState,settings:DiscordSettings,privateListening=false,now=Date.now()) {
+ const item=state.queue[state.index]
+ if(!settings.enabled||!settings.jellyfin||privateListening||!state.foreground||!item||!['Audio','Movie','Episode'].includes(item.kind)||!['playing','paused'].includes(state.status)||(state.status==='paused'&&!settings.showPaused))return null
+ const clean=(text:string)=>text.replace(/[\u0000-\u001f]/g,' ').slice(0,128).padEnd(2,' ')
+ return {type:item.kind==='Audio'?2:3,details:clean(item.title),state:clean(`${state.status==='paused'?'Paused · ':''}${item.subtitle||'Jellyfin'}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position),end:Math.floor(now/1000+state.duration-state.position)}}:{}),assets:{large_image:defaultDiscordArtwork,large_text:clean(item.title)}}
 }
 
 export class DiscordPresence {
@@ -44,7 +52,7 @@ export class DiscordPresence {
   status:DiscordStatus={connected:false,message:'Discord presence is disabled.',artwork:false}
   private wasPrivate=false
   private privacyChanged=()=>{const enabled=!!this.player.state.privateListening;if(enabled&&!this.wasPrivate){this.generation++;this.clear();this.status.artwork=false;this.status.artworkMessage='Private listening is on.'}this.wasPrivate=enabled}
-  constructor(private store:Store,private player:Player,private provider:(id:string)=>Navidrome|Audiobookshelf,private local:LocalFiles) {this.artworkClient=new LastfmArtwork(store);player.on('state',this.privacyChanged);this.timer=setInterval(()=>void this.tick(),3000);void this.tick()}
+  constructor(private store:Store,private player:Player,private provider:(id:string)=>Navidrome|Audiobookshelf,private local:LocalFiles,private jellyfin?:{state:JfState}) {this.artworkClient=new LastfmArtwork(store);player.on('state',this.privacyChanged);this.timer=setInterval(()=>void this.tick(),3000);void this.tick()}
   settings():DiscordSettings {return {...discordDefaults,...this.store.get<DiscordSettings>('discordSettings'),hasLastfmKey:!!this.store.secret('lastfm')}}
   save(input:z.infer<typeof discordSchema>) {const {lastfmKey,...settings}=input;if(lastfmKey!==undefined)this.store.setSecret('lastfm',lastfmKey);this.store.set('discordSettings',settings);this.generation++;this.clear();this.socket?.destroy();this.socket=undefined;this.status.connected=false;this.nextConnect=0;this.metadataKey='';this.refreshArtwork=true;this.artworkClient.reset();void this.tick()}
   correct(artist:string,album:string){const item=this.player.state.queue[this.player.state.queueIndex];if(!item||!['music-track','local-file'].includes(item.target.kind))throw new Error('Play a music track before correcting its artwork.');const key=progressKey(item.target),all=this.store.get<Record<string,{artist:string;album:string}>>('artworkOverrides')??{};if(!artist&&!album)delete all[key];else all[key]={artist,album};if(Object.keys(all).length>1000)throw new Error('Artwork corrections are limited to 1,000 tracks.');this.store.set('artworkOverrides',all);this.retryArtwork()}
@@ -102,10 +110,18 @@ export class DiscordPresence {
       const settings=this.settings();if(!settings.enabled){this.status={connected:false,message:'Discord presence is disabled.',artwork:false};return}
       if(!this.socket){if(Date.now()>=this.nextConnect)await this.connect(discordApplicationId(settings.applicationId));return}if(!this.status.connected)return
       if(this.pending){if(Date.now()-this.pending.sent>15000){this.socket.destroy();this.pending=undefined}return}
+      const jf=this.jellyfin?.state
+      if(jf?.foreground&&jf.status!=='idle'){
+        const activity=jellyfinPresence(jf,settings,!!this.player.state.privateListening)
+        this.status.artworkMessage=activity?'Using the public Media Center cover for Jellyfin. Private server artwork stays on this device.':'Jellyfin sharing is off or playback is private.'
+        const signature=JSON.stringify(['jellyfin',jf.queue[jf.index]?.serverId,jf.queue[jf.index]?.id,activity?.type,activity?.details,activity?.state,activity===null,jf.buffering,Math.round(jf.position/10)])
+        if(signature===this.signature||(activity!==null&&Date.now()-this.sentAt<5000))return
+        const nonce=randomUUID();this.pending={nonce,sent:Date.now()};this.write(1,{cmd:'SET_ACTIVITY',args:{pid:process.pid,activity},nonce});this.signature=signature;this.sentAt=Date.now();this.status.artwork=!!activity?.assets;return
+      }
       const state=structuredClone(this.player.state),generation=this.generation
       let art:string|undefined,artworkMessage='Start shared media to display its artwork.'
       if(presence(state,settings))try{const result=await this.artwork(state);art=result.url;artworkMessage=result.message}catch(e){artworkMessage=e instanceof Error?e.message:'Music metadata could not be loaded for artwork matching.'}
-      if(generation!==this.generation||this.stopped)return
+      if(generation!==this.generation||this.stopped||(this.jellyfin?.state.foreground&&this.jellyfin.state.status!=='idle'))return
       // Never publish an old lookup after the user changed or hid the current media.
       const current=this.player.state;if(JSON.stringify(current.queue[current.queueIndex]?.target)!==JSON.stringify(state.queue[state.queueIndex]?.target)||current.status!==state.status)return
       this.status.artworkMessage=artworkMessage+(!art&&presence(current,settings)?.assets?' Sending the public Media Center default cover.':'')

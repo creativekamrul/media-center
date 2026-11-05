@@ -393,3 +393,62 @@ This installer supersedes the earlier 1.2.0 local build recorded above.
 - Built the local Windows installer using `npm run package:win` (`--publish never`): `K:/media-center/release/Media-Center-1.3.0-win-x64.exe`, 154,444,044 bytes. SHA-256: `2ea3d5a3f78779d40740073004098432e8d72fb0adb9363bcd4fa03024db3d5b`.
 - The packaged style comparison now samples Original with and without its attribute within one frame, preventing hover/selection transitions between measurements from causing false failures.
 - Full packaged Electron suite passed for 1.3.0 with both fixture servers, all three server media types, muted native MPV, all six application styles, immersive layouts and installer exit; zero renderer errors. Installer and packaged executable version resources match 1.3.0.
+
+### Local interface redesign preview — 2026-10-25
+
+- Typecheck, 264 unit tests and production build passed. Unit tests ran outside the sandbox because local HTTP fixtures and Windows junction tests need capabilities restricted inside it.
+- Desktop regression checks passed in full and focused runs: settings/search/draft retention, customization, music/books/podcasts, local libraries, native MPV playback, queue behavior, offline progress, mixes, context menus, view pins and library persistence. The final release-UI fixture run reports zero renderer errors.
+- All 140 palette/style combinations passed selected-navigation contrast, semantic controls, result-card contrast and viewport checks. Translucent contrast is measured over ancestor backgrounds rather than treating translucent white as an opaque surface.
+- Studio and Lounge passed layout, queue playback, preview/save/cancel and fullscreen/control checks. Both fit 1024×720, 1440×940 and 3840×2160; switching Lounge to Up next preserves artwork bounds. All nine backgrounds were captured at 4K. Packaged listening-layout checks and graceful exit passed.
+- Jellyfin fixtures passed authentication, discovered library types, native audio/video, seeking, subtitles, fullscreen, resume synchronization and next episode.
+- Visually reviewed home, browsing, settings, spoken detail, Jellyfin, both listening layouts and custom light colors. The final packaged page sweep passed every sidebar destination and the regression check for unhovered favorite-button and dropdown contrast on a custom light palette. Liquid Glass now derives its background and input colors from the palette instead of fixed dark colors.
+- Built with `npm run package:win -- --config.artifactName=Media-Center-2.0.0-redesign-preview-win-x64.exe`, with publication disabled. Installer: `release/Media-Center-2.0.0-redesign-preview-win-x64.exe`, 154,511,594 bytes. SHA-256: `eb71ffcbb904625f6147165b71687f605cf17a8139a68d19cfc3add3b414d3db`.
+- Version remains 2.0.0 for this local preview. No GitHub publication. Fixtures verify behavior and geometry; the user's real libraries and physical high-resolution display still need acceptance testing.
+
+## 2026-10-25 — consistency and style consolidation (unreleased)
+
+- `npm run build` (including TypeScript checking) passed.
+- `npm test`: 43 files, 269 tests passed outside the sandbox, including legacy appearance compatibility and primary/secondary palette contrast checks.
+- `MEDIA_CENTER_REDESIGN_ONLY=consistency npm run test:desktop` passed with isolated fixtures: all five styles, 1008px detail layouts, Now Playing control shape and text contrast, menu keyboard navigation, contextual selection, unsaved preference recovery/discard, advanced settings search, music sort/search/scroll restoration, and independent spoken/local searches.
+- `MEDIA_CENTER_REDESIGN_ONLY=1 npm run test:desktop` passed: all sidebar destinations, dark/frosted materials, narrow layouts, artwork action and custom-light-palette control contrast.
+- Visually reviewed Paper home, collection details and Now Playing. Corrected the light-style foreground leaking into the dark listening canvas. No claim of testing every user-authored CSS combination.
+- No installer, GitHub publication or release tag was created for this pass.
+
+## 2026-10-26 — browsing refinement (unreleased)
+
+- Build and TypeScript checking passed; 44 test files / 271 tests passed, including bounded artwork concurrency, stale queued work, and recovery after failed requests.
+- Collection desktop checks passed at wide and laptop widths, including full-width Music/Audiobooks/Podcasts/Local/Jellyfin/Home, playlist column alignment, row-menu keyboard traversal, focus restoration, and no workspace overflow.
+- Consistency desktop checks passed across all five styles, settings draft/discard and shortcut discard, advanced search, and music/spoken/local navigation restoration.
+- A 3,000-track fixture rendered 100 rows: final local opening measurement 247ms; 30 scroll frames, median 9.2ms and maximum 12.5ms. These timings are machine-specific, not remote-server benchmarks.
+- Removed an experimental off-screen card rendering optimization after it broke scroll restoration. The final navigation regression passed.
+- Visually reviewed playlist layouts at 1440px and 1008px. No installer or GitHub release was created for this pass.
+
+## 2026-10-26 — recap and Jellyfin presence (unreleased)
+
+- Build/typecheck and 44 test files / 273 tests passed. Tests cover Jellyfin kind mapping, opt-in migration, timestamps, paused/buffering/idle states, foreground precedence, private listening and simulated Discord named-pipe activity/clearing.
+- Existing Jellyfin recording tests verify advancing playback only, separate server/media identities, recap totals, and backup restoration. No extra recording route was introduced.
+- Recap Electron checks passed at 1440px and 1008px: three design choices, PNG export dimensions, invalidation after changing dates, mixed-media canvas fixtures, and the Jellyfin sharing checkbox.
+- Reviewed rendered recap UI and exported mixed-media cards. Discord desktop/account behavior has not been live-verified. No installer or publication in this pass.
+- Contract reference: https://github.com/discord/discord-api-docs/blob/main/developers/topics/rpc.mdx (SET_ACTIVITY Listening 2 / Watching 3). Integration stays on the existing local named-pipe transport; no new HTTP endpoint or Postman workspace changes were needed.
+
+
+## Workspace refinement — October 26, 2026
+- Typecheck and production build passed; Vitest: 275 tests / 44 files passed.
+- New queue tests cover mixed book/podcast bulk removal, duplicate selected indices, stale queue rejection, undo, and atomic rejection of the active item.
+- Electron workspace fixture passed at 2560/1440/1008 pixels: no inset/radius/overflow, bulk remove + undo, seek hover, keyboard search and recent-query clearing.
+- Native Jellyfin fixture passed after the final controls changes: authentication/edit/test, libraries, native media, seeking, CC/audio, fullscreen, resume sync, next episode, shared wheel-volume and time/chapter hover preview.
+- Screenshots: artifacts/now-playing-canvas-{2560,1440,1008}.png. Fixture data only; no user servers or media included.
+- No installer or GitHub release was created in this pass. Upgrade-in-place on the user's installation remains unverified.
+
+- Five-style Electron consistency pass also passed: menus, responsive details, contrast, saved filters, scroll restoration and unsaved preference drafts.
+
+
+## 2026-11-05 — 2.1.0 release validation
+
+- TypeScript and production build passed. All 275 tests across 44 files passed with local fixture networking enabled; sandbox-only networking and junction failures were rerun outside the sandbox.
+- Real NSIS updater integration passed: manual download and SHA-512 integrity rejection, without installing over the user's app.
+- Native Studio/Lounge controls passed: seek, shuffle/repeat, timer popover, volume wheel, mini player, fullscreen exit and separate book/podcast skip and speed controls.
+- Five-style consistency checks passed. Packaged workspace checks passed for full-width canvas, bulk queue removal/undo, keyboard search and recent-query clearing.
+- Packaged Jellyfin checks passed: connection management, native media playback, seeking, subtitles, fullscreen, resume sync and next episode.
+- Floating player retains rounded corners and reserved content space; the surrounding canvas has no added gradient or shadow. App identity moved into Settings.
+- Fixtures use isolated profiles. Live user-server playback, physical audio fidelity and upgrade-in-place on the user's installation remain user acceptance checks.

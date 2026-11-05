@@ -203,7 +203,7 @@ else {
     registerStudio(handle,store,player,local,localIndex,lyrics,provider,()=>window!,()=>{for(const w of [window,miniWindow])if(w&&!w.isDestroyed()){w.webContents.send('theme:state',store.preferences());w.webContents.send('studio:changed')}},()=>downloads.snapshot().entries.length,()=>jellyfin?.state)
     localWatcher=new LocalWatcher(local,localIndex,store,experienceChanged)
     podcastAutomation=new PodcastAutomation(store,downloads,player,()=>daily.inbox(true))
-    discord=new DiscordPresence(store,player,provider,local);registerDiscord(handle,discord)
+    discord=new DiscordPresence(store,player,provider,local,jellyfin);registerDiscord(handle,discord)
     handle('mini:get',z.undefined(),()=>({pinned:miniWindow?.isAlwaysOnTop()??false}))
     handle('mini:command',z.object({action:z.enum(['open','close','main','pin']),pinned:z.boolean().optional()}).strict(),i=>{
       if(i.action==='open')createMini()

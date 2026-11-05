@@ -19,12 +19,14 @@ module.exports=async({desktop,page,artifacts})=>{
   for(const tab of ['Queue','Lyrics']){
    await page.locator('.now-tabs').getByRole('button',{name:tab,exact:true}).click()
    const metrics=await page.locator('.expanded-player').evaluate(el=>{const root=el.getBoundingClientRect(),back=el.querySelector('.immersive-atmosphere').getBoundingClientRect();return {width:root.width,back:back.width,nested:el.querySelectorAll('.standard-lyrics-backdrop').length}})
-   assert.ok(Math.abs(metrics.width-metrics.back)<2);assert.equal(metrics.nested,0,'No separate dark rectangle behind the lyrics');if(tab==='Lyrics'){await require('./lyric-tool.cjs')(page,'Refresh lyrics');await page.locator('.lyrics-scroll').waitFor();assert.deepEqual(await page.locator('.lyrics-scroll').evaluate(el=>{const s=getComputedStyle(el);return [s.boxShadow,s.backgroundColor,s.backgroundImage]}),['none','rgba(0, 0, 0, 0)','none'])}
+   assert.ok(Math.abs(metrics.width-metrics.back)<2);assert.equal(metrics.nested,0,'No separate dark rectangle behind the lyrics');if(tab==='Lyrics'){await require('./lyric-tool.cjs')(page,'Refresh lyrics');await page.waitForFunction(()=>{const el=document.querySelector('.lyrics-scroll');return el&&getComputedStyle(el).boxShadow==='none'});assert.deepEqual(await page.locator('.lyrics-scroll').evaluate(el=>{const s=getComputedStyle(el);return [s.boxShadow,s.backgroundColor,s.backgroundImage]}),['none','rgba(0, 0, 0, 0)','none'])}
    await page.screenshot({path:resolve(artifacts,`artwork-background-${tab.toLowerCase()}.png`)})
   }
   // Blur previews on the artwork only, cancels cleanly, and follows both player views.
   await page.getByRole('button',{name:'Lyrics appearance',exact:true}).click()
   const blurOptions=page.getByRole('dialog',{name:'Lyrics appearance',exact:true})
+  const optionColors=await blurOptions.getByLabel('Immersive layout',{exact:true}).locator('option').evaluateAll(options=>options.map(option=>{const style=getComputedStyle(option);return {background:style.backgroundColor,text:style.color}}))
+  for(const colors of optionColors){assert.notEqual(colors.background,'rgba(0, 0, 0, 0)','Native dropdown options need an opaque surface');assert.notEqual(colors.text,colors.background,'Native dropdown option text must remain visible')}
   await blurOptions.getByLabel('Artwork blur',{exact:true}).press('Home')
   assert.match(await page.locator('.expanded-player>.immersive-atmosphere>.art').evaluate(el=>getComputedStyle(el).filter),/blur\(0px\)/)
   assert.equal(await page.locator('.expanded-art>.art').evaluate(el=>getComputedStyle(el).filter),'none','Foreground artwork stays sharp')
@@ -38,21 +40,28 @@ module.exports=async({desktop,page,artifacts})=>{
   await page.getByRole('button',{name:'Immersive view',exact:true}).click()
   const view=page.getByRole('region',{name:'Immersive playing screen',exact:true})
   assert.match(await view.locator('.immersive-atmosphere>.art').evaluate(el=>getComputedStyle(el).filter),/blur\(0px\)/)
-  for(const layout of ['minimal','gallery','studio']){
+  for(const layout of ['lounge','studio']){
    await view.getByRole('button',{name:'Appearance',exact:true}).click();const options=page.getByRole('dialog',{name:'Lyrics appearance',exact:true});await options.getByLabel('Immersive layout',{exact:true}).selectOption(layout);await options.getByRole('button',{name:'Save appearance',exact:true}).click()
    assert.equal((await page.evaluate(()=>window.mediaCenter.playingScreenPreferences())).layout,layout)
-   for(const [width,height] of [[1440,940],[1024,720]]){
+   for(const [width,height] of [[1440,940],[1024,720],[3840,2160]]){
     await page.setViewportSize({width,height});assert.equal(await view.evaluate(el=>el.scrollWidth>el.clientWidth),false)
     const art=await view.locator('.screen-cover').boundingBox(),stage=await view.locator('.immersive-stage').boundingBox();assert.ok(Math.abs(art.width-art.height)<2);assert.ok(stage.width>300)
     if(layout!=='studio'){assert.ok(art.x+art.width<=stage.x+2);assert.equal(await view.getByRole('region',{name:'Current queue',exact:true}).count(),0)}
     await page.screenshot({path:resolve(artifacts,`immersive-${layout}-${width}.png`)})
    }
    if(layout!=='studio'){
-    await view.getByRole('button',{name:'Show queue',exact:true}).click();const queue=view.getByRole('region',{name:'Current queue',exact:true});await queue.waitFor();await queue.getByRole('button',{name:'Play queue item 2: Next fixture',exact:true}).click();assert.equal((await page.evaluate(()=>window.mediaCenter.playback())).queueIndex,1);await view.getByRole('button',{name:'Hide queue',exact:true}).click()
+    const coverBefore=await view.locator('.screen-cover').boundingBox();await view.getByRole('button',{name:'Up next',exact:true}).click();assert.deepEqual(await view.locator('.screen-cover').boundingBox(),coverBefore,'Switching to Up next leaves artwork in place');const queue=view.getByRole('region',{name:'Current queue',exact:true});await queue.waitFor();await queue.getByRole('button',{name:'Play queue item 2: Next fixture',exact:true}).click();assert.equal((await page.evaluate(()=>window.mediaCenter.playback())).queueIndex,1);await view.getByRole('button',{name:'Lyrics',exact:true}).click()
    }
   }
-  await view.getByRole('button',{name:'Appearance',exact:true}).click();const options=page.getByRole('dialog',{name:'Lyrics appearance',exact:true});await options.getByLabel('Immersive layout',{exact:true}).selectOption('minimal');await options.getByRole('button',{name:'Cancel',exact:true}).click();assert.ok((await view.getAttribute('class')).includes('layout-studio'))
+  await view.getByRole('button',{name:'Appearance',exact:true}).click();const options=page.getByRole('dialog',{name:'Lyrics appearance',exact:true});await options.getByLabel('Immersive layout',{exact:true}).selectOption('lounge');await options.getByRole('button',{name:'Cancel',exact:true}).click();assert.ok((await view.getAttribute('class')).includes('layout-studio'))
+  await page.emulateMedia({reducedMotion:'reduce'})
+  for(const background of ['aurora','artwork','midnight','sunset','stars','snow','rain','ocean','ember']){
+   await view.getByRole('button',{name:'Appearance',exact:true}).click();const appearance=page.getByRole('dialog',{name:'Lyrics appearance',exact:true});await appearance.getByLabel('Playing screen background',{exact:true}).selectOption(background);await appearance.getByRole('button',{name:'Save appearance',exact:true}).click()
+   const bounds=await view.locator('.immersive-atmosphere').boundingBox();assert.ok(bounds.width>=3800&&bounds.height>=2000,'Background fills the 4K canvas')
+   if(['snow','rain'].includes(background))assert.equal(await view.locator('.weather-field>i').count(),64,'Weather uses independent particles instead of repeating bitmap tiles')
+   await page.screenshot({animations:'disabled',path:resolve(artifacts,`listening-background-${background}-4k.png`)})
+  }
   await view.getByRole('button',{name:'Classic view',exact:true}).click()
-  console.log('Immersive styles passed: full-canvas artwork on Queue/Lyrics, three responsive layouts, queue playback, saved choice, artwork blur preview/save/cancel and preview cancellation.')
- }finally{await desktop.evaluate(()=>{global.fetch=global.__styleFetch;delete global.__styleFetch});await page.evaluate(previous=>window.mediaCenter.savePlayingScreenPreferences(previous),previous);await page.setViewportSize({width:1440,height:940})}
+  console.log('Immersive styles passed: full-canvas artwork on Queue/Lyrics, two responsive layouts, queue playback, saved choice, artwork blur preview/save/cancel and preview cancellation.')
+ }finally{await page.emulateMedia({reducedMotion:'no-preference'});await desktop.evaluate(()=>{global.fetch=global.__styleFetch;delete global.__styleFetch});await page.evaluate(previous=>window.mediaCenter.savePlayingScreenPreferences(previous),previous);await page.setViewportSize({width:1440,height:940})}
 }

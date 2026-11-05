@@ -38,7 +38,7 @@ The target is a full desktop replacement for Feishin and Audiobookshelf's web cl
 
 | Audio | ReplayGain off/track/album; clipping prevention; ten-band EQ; per-book/episode speed; timed and chapter-end sleep |
 
-| Appearance | Ten independent application styles (Original default, Frosted, Soft, Precision, Outline, Bold, Retro, Editorial, Neon, Ribbon), live previews and saved cross-window choices; 14 palettes including Liquid Glass, Glass and Black Glass; visual theme picker with saved Solid / Gradient surfaces and optional translucent panels; consistent palette-aware cards, fields and dialogs; readable action buttons and keyboard focus; grouped episode controls; detail navigation resets scroll; reduced motion; adaptive layouts with 100/125/150/200% interface-scaling checks |
+| Appearance | Five curated styles (Original, Slate, Paper, Frosted, Liquid Glass) with default palettes and editable colors; legacy palettes remain compatible; consistent action buttons, distinct navigation tabs and listening segments; color-contrast feedback; keyboard focus; reduced-motion support; responsive layouts; settings draft save/discard and session recovery |
 
 | Open source | GPL-3.0-only; user/developer/security/API documentation; model, provider, local-file, playback and desktop tests |
 
@@ -290,7 +290,7 @@ Collection and episode controls share compact playback rows with personal/progre
 ### 1.3.0 styles, listening view and installer
 
 - Blurred artwork fills the complete classic and immersive listening surface, with one shade layer. Artwork colors are preserved; the queue and lyrics no longer receive separate dark artwork panels.
-- Immersive layouts: Studio retains the queue beside the lyrics; Minimal uses a small cover and a queue toggle; Gallery gives the album cover more space beside the lyrics or spoken-media stage. Layout selection supports live preview, cancellation and persistence; older saves default to Studio.
+- Immersive layouts: Studio retains lyrics on the left and artwork, transport and queue on the right. Lounge pairs large artwork on the left with lyrics or Up next on the right and a full-width transport below. Layout selection supports live preview, cancellation and persistence; saved Minimal/Gallery selections migrate to Lounge, preserving all other appearance preferences.
 - Discord Rich Presence uses public Media Center application ID `1546622716554121296` when the optional custom ID is blank. A valid custom ID overrides it. Presence stays opt-in; per-media and private-listening restrictions still apply. No bot token is required.
 - Installer preparation checks exact executable paths, handles clean installs separately, probes folder write access and asks the app to quit gracefully before a bounded fallback for older versions. It no longer treats sibling folders or unrelated executables under the chosen directory as Media Center. The first-install screenshot can also indicate copying/permission errors; the user's original machine is needed to confirm its exact cause.
 - Application styles: Original preserves the existing design; Soft, Precision, Outline, Bold and Retro change controls, panels, navigation, menus and both players. Themes, font overrides and density remain independent. Styles preview live, revert on leaving Settings without saving, and persist with Save theme.
@@ -334,7 +334,7 @@ Collection and episode controls share compact playback rows with personal/progre
 
 ### 1.3.5 immersive transport and wheel volume
 
-- Immersive view occupies the space previously reserved for the bottom player and hosts a complete transport under the cover. Studio, Minimal and Gallery retain queue access; exiting restores the footer and keyboard access. Shared utilities preserve sleep/volume behavior, and the existing identity-safe SeekBar handles seeking. Audiobooks and podcast episodes have speed and separate 15/30-second skip controls.
+- Immersive view occupies the space previously reserved for the bottom player and hosts a complete transport under the cover. Studio and Lounge retain queue access; exiting restores the footer and keyboard access. Shared utilities preserve sleep/volume behavior, and the existing identity-safe SeekBar handles seeking. Audiobooks and podcast episodes have speed and separate 15/30-second skip controls.
 - Main and immersive volume controls accept mouse-wheel input over the icon, slider and percentage. Wheel input accumulates in 100-pixel (or three-line) increments for five-point changes, clamps at 0/100, and does not scroll the page. Ctrl+wheel remains available for zoom; slider/keyboard changes use the same bounded, serialized main-process command path.
 - Verified with typecheck, 209 unit tests, production build and the full Electron/MPV suite with zero renderer errors. New native checks cover footer hide/restore, all three immersive layouts at 1440×940 and 1024×720, seek/shuffle/repeat/sleep/mini controls, bounded and rapid wheel input, and skip/speed for both audiobooks and podcast episodes.
 
@@ -391,3 +391,46 @@ Movie, series and episode detail pages now have cinematic backdrops, optional ti
 Jellyfin still uses its own queue and requires a network connection. Spotify, Plex, manga, Jellyfin offline downloads/playlist editing, and unsupported Jellyfin library types are not implemented. Hardware HDR/codec behavior and the user's real servers require acceptance testing.
 
 Video controls overlay a stable full-window playback surface. Showing bars or opening options does not resize the picture; five-second skips use serialized native playback positions.
+
+## Unreleased interface redesign
+
+- Shared browsing design: quieter sidebar, restrained action buttons, underline tabs, unboxed artwork cards, less visual separation between track rows, and consistent settings groups and menus. Existing collections, media types, tools and library selections remain available.
+- Theme palettes, custom colors/fonts/CSS, density, solid/gradient finishes and translucent materials remain configurable. New profiles use Segoe UI headings; saved font choices are preserved.
+- Studio retains lyrics on the left and artwork, transport and queue on the right. Lounge replaces Minimal and Gallery with large artwork on the left, lyrics/Up next on the right and shared playback controls across the bottom. Legacy layout values migrate without resetting other appearance preferences.
+- Lyric backgrounds use canvas-scaled artwork blur, vector gradients, and independent snow/rain particles instead of repeating weather tiles. Motion respects the existing setting and system reduced-motion preference.
+- Reusable design guidance lives in `docs/skills/media-center-design/SKILL.md`. This is a local redesign, not a published release.
+
+## Unreleased consistency pass
+
+- Audio collection headers and track/episode lists share a stable artwork-led layout. Studio has a frosted queue panel.
+- Music, spoken-library and local browsing retain session search, sorting, view and page choices. Scroll positions restore when returning to loaded pages. Library selection remains independently persisted.
+- Track selection actions appear when tracks are selected. Shared menus, loading/empty/error surfaces and keyboard focus use the common design system.
+- Appearance combines style and palette selection. Advanced playback and CSS settings are expandable and searchable. Settings preference drafts survive page navigation within the current session; changes still require Save.
+- Original-resolution Navidrome artwork replaces the 400px request, with bounded high-resolution fallback.
+
+## Unreleased browsing refinement
+
+- Home and library pages (including Jellyfin) use the workspace width with shared gutters.
+- Music rows have visible action menus, optional ratings in saved columns, and server-aware current-track highlighting. Playlist management and rating actions remain available in row menus.
+- Cards use consistent two-line titles, keyboard focus and compact book progress indicators; toolbars wrap at narrow widths.
+- Library loading uses artwork-shaped placeholders. Existing inline retry/empty states remain available.
+- Scroll identities distinguish music sort/genre and spoken sort/status/view. Existing search, library, view and page restoration is retained.
+- Daily-use settings add Discard and collapse keyboard customization under an expandable section.
+- Artwork work is limited to six concurrent requests, skips unmounted queued work, and uses asynchronous image decoding. Sorted playback queues are memoized; track selection uses set membership.
+- Performance verification uses a 3,000-track isolated fixture, not the user's remote libraries. Remote latency and much larger libraries still need real-world profiling.
+
+## Unreleased recap and Jellyfin presence
+
+- Stats and recap now share the app typography and card system. Recap offers Overview, Cinema and Journal designs, visual style choices, compact date controls, and 1080 x 1440 PNG export.
+- Recap makes existing Jellyfin music, movies and TV activity explicit, separating listening from watching. Stats add movie and TV hour cards. Totals use playback recorded on this device; no server history import or duplicate event recording was added.
+- Discord has a separate opt-in Jellyfin setting. Foreground Jellyfin music uses Listening; movies and episodes use Watching. Paused preferences and private listening apply. Private Jellyfin artwork URLs are never shared; presence uses the public app cover.
+
+
+### Workspace and playback refinement (unreleased)
+- Regular Now Playing fills its workspace edge to edge; artwork and queue keep internal gutters.
+- Queue has Now playing / Up next / Previously played headings, existing drag reorder, and atomic multi-remove with one-step undo. A changed queue invalidates a pending bulk selection; active media cannot be removed.
+- Global search retains the last eight submitted/used queries for this app session only, with Clear, and arrow-key navigation between results. Existing media/source grouping remains.
+- Jellyfin detail rails display watched and resume indicators; the next-episode countdown includes artwork. Existing seasons and automatic next-episode playback remain.
+- Recovery shows Jellyfin alongside music/book servers and supports individual connection retries. A failed Jellyfin refresh keeps previously discovered libraries; switching queries clears old items to avoid misleading results.
+- Music/book seek previews display time and chapter names. Jellyfin has time/chapter previews and uses the shared keyboard/wheel volume control; CC shows On/Off.
+- Video thumbnail seek previews are not implemented. Server-provided trickplay integration would be separate work. No installer upgrade or live homelab/Discord verification is claimed by fixture tests.

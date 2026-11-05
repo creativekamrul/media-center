@@ -1252,6 +1252,13 @@ export class Player extends EventEmitter {
           throw new Error('Queue position is out of bounds.')
         queue.splice(input.to, 0, queue.splice(input.from, 1)[0])
         this.state.queueIndex = current ? queue.indexOf(current) : 0
+      } else if (input.action === 'remove-many') {
+        assertUnchanged(input.expected, queue)
+        const indices = [...new Set(input.indices)].sort((a,b)=>b-a)
+        if (indices.some(i=>!Number.isInteger(i)||i<0||!queue[i])) throw Error('Queue position is out of bounds.')
+        if (this.target && indices.includes(this.state.queueIndex)) throw Error('Skip to another item before removing the current item.')
+        for (const i of indices) queue.splice(i,1)
+        this.state.queueIndex = current && queue.includes(current) ? queue.indexOf(current) : 0
       } else if (input.action === 'remove') {
         if (!queue[input.index])
           throw new Error('Queue position is out of bounds.')

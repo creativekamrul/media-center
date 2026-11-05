@@ -38,8 +38,8 @@ html[data-theme] .media-grid>.music-card:hover {background:var(--control-hover);
 html[data-theme] .card-copy {padding-block:12px 6px}
 html[data-theme] .card-copy strong {font-size:14px;font-weight:600}
 html[data-theme] .card-copy :is(span,small) {line-height:1.5}
-html[data-theme][data-app-style]:not([data-app-style=default]) :is(.browse-tabs,.now-tabs,.daily-tabs) {background:transparent;padding:0;gap:6px;border-radius:0;box-shadow:none}
-html[data-theme][data-app-style=ribbon]:not([data-app-style=default]) :is(.browse-tabs button,.now-tabs button) {border-radius:var(--style-control-radius)}
+html[data-theme][data-app-style]:not([data-app-style=default]) :is(.browse-tabs,.daily-tabs) {background:transparent;padding:0;gap:6px;border-radius:0;box-shadow:none}
+html[data-theme][data-app-style=ribbon]:not([data-app-style=default]) :is(.browse-tabs button) {border-radius:var(--style-control-radius)}
 html[data-theme][data-app-style=retro]:not([data-app-style=default]) :is(.topbar,.mini-drag,.modal>header) {border-bottom:1px solid var(--line)}
 html[data-theme][data-app-style=retro]:not([data-app-style=default]) :is(.field>input,.field>select,.field>textarea,.search,.settings-search) {box-shadow:none}
 html[data-theme][data-app-style=bold]:not([data-app-style=default]) :is(.library-heading,.section-title,.song-row,.queue-row) {border-bottom-width:1px}
@@ -189,38 +189,21 @@ html[data-theme][data-app-style] :is(.more-options-panel,.card-action-popover,.c
 .backdrop-ocean .ambient-glow {background:radial-gradient(ellipse at 15% 80%,#098b8555,transparent 60%),radial-gradient(ellipse at 85% 15%,#125b8855,transparent 50%)}
 .backdrop-ember .immersive-atmosphere {background:linear-gradient(145deg,#301c22,#1b111b 70%)}
 .backdrop-ember .ambient-glow {background:radial-gradient(ellipse at 20% 70%,#bc633b66,transparent 60%),radial-gradient(ellipse at 85% 15%,#80314b44,transparent 50%)}
-.weather-field {position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:.45}
-.weather-field>i {position:absolute;inset:-320px 0;background-repeat:repeat;will-change:transform}
-.weather-snow>i {background-image:radial-gradient(2px 2px at 24px 35px,#f1f6ff 85%,transparent 100%),radial-gradient(1px 1px at 110px 130px,#fff 85%,transparent 100%);background-size:180px 240px;--fall-distance:240px;opacity:.6}
-.weather-snow>i:nth-child(2) {background-size:280px 320px;--fall-distance:320px;opacity:.4}
-.weather-snow>i:nth-child(3) {background-size:130px 160px;--fall-distance:160px;opacity:.25}
-.weather-rain>i {background-image:linear-gradient(102deg,transparent 49%,#c5dff155 50%,transparent 52%);background-size:90px 170px;--fall-distance:170px;opacity:.55}
-.weather-rain>i:nth-child(2) {background-size:145px 220px;--fall-distance:220px;opacity:.35}
-.weather-rain>i:nth-child(3) {background-size:210px 280px;--fall-distance:280px;opacity:.2}
-.with-motion .weather-snow>i {animation:snow-fall 18s linear infinite}
-.with-motion .weather-snow>i:nth-child(2) {animation-duration:27s;animation-delay:-12s}
-.with-motion .weather-snow>i:nth-child(3) {animation-duration:12s;animation-delay:-5s}
-.with-motion .weather-rain>i {animation:rain-fall 1.4s linear infinite}
-.with-motion .weather-rain>i:nth-child(2) {animation-duration:1.8s;animation-delay:-.7s}
-.with-motion .weather-rain>i:nth-child(3) {animation-duration:2.2s;animation-delay:-1s}
-@keyframes snow-fall {to{transform:translateY(var(--fall-distance))}}
-@keyframes rain-fall {to{transform:translateY(var(--fall-distance))}}
-.still .weather-field>i {animation:none;will-change:auto}
-@media(prefers-reduced-motion:reduce) {.with-motion .weather-field>i {animation:none;will-change:auto}}
+
 
 /* Semantic hierarchy: navigation, choices and results do not inherit action-button shapes. */
-html[data-theme][data-app-style] :is(.browse-tabs:not(.concise-tabs),.now-tabs,.daily-tabs) {
+html[data-theme][data-app-style] :is(.browse-tabs:not(.concise-tabs),.daily-tabs) {
  border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;padding:0;gap:4px;
 }
-html[data-theme][data-app-style] :is(.browse-tabs>button,.now-tabs>button,.daily-tabs>button,button[role=tab]) {
+html[data-theme][data-app-style] :is(.browse-tabs>button,.daily-tabs>button,button[role=tab]) {
  border:0!important;border-radius:4px 4px 0 0!important;box-shadow:none!important;background:transparent!important;
  color:var(--muted)!important;min-height:40px;padding:10px 14px;font-size:13px;font-weight:500;
 }
-html[data-theme][data-app-style] :is(.browse-tabs>button,.now-tabs>button,.daily-tabs>button,button[role=tab]):is(.active,[aria-selected=true],[aria-pressed=true]) {
+html[data-theme][data-app-style] :is(.browse-tabs>button,.daily-tabs>button,button[role=tab]):is(.active,[aria-selected=true],[aria-pressed=true]) {
  color:var(--text)!important;background:transparent!important;box-shadow:inset 0 -2px var(--accent)!important;font-weight:600;
 }
-html[data-theme][data-app-style] :is(.browse-tabs>button,.now-tabs>button,.daily-tabs>button,button[role=tab]):hover:not(:disabled) {color:var(--text)!important;background:var(--control-hover)!important}
-html[data-theme][data-app-style=frosted] :is(.browse-tabs:not(.concise-tabs),.now-tabs,.daily-tabs) {background:color-mix(in srgb,var(--text) 3%,transparent);backdrop-filter:blur(12px)}
+html[data-theme][data-app-style] :is(.browse-tabs>button,.daily-tabs>button,button[role=tab]):hover:not(:disabled) {color:var(--text)!important;background:var(--control-hover)!important}
+html[data-theme][data-app-style=frosted] :is(.browse-tabs:not(.concise-tabs),.daily-tabs) {background:color-mix(in srgb,var(--text) 3%,transparent);backdrop-filter:blur(12px)}
 html[data-theme][data-app-style] :is(.provider-toggle,.surface-style-toggle) {display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:8px;background:var(--control-hover);box-shadow:none}
 html[data-theme][data-app-style] :is(.provider-toggle,.surface-style-toggle)>button {border:0;border-radius:5px;box-shadow:none;background:transparent;color:var(--muted);min-height:34px;padding:8px 14px}
 html[data-theme][data-app-style] :is(.provider-toggle,.surface-style-toggle)>button:is(.selected,[aria-pressed=true]) {background:var(--panel);color:var(--text);box-shadow:0 1px 3px #0002}
@@ -247,17 +230,6 @@ html[data-theme][data-app-style] .queue-row.current {background:color-mix(in srg
 html[data-theme][data-app-style] .result-card:disabled {opacity:.65}
 html[data-theme][data-app-style] :is(input,textarea)::placeholder {color:var(--muted);opacity:1}
 
-/* Now Playing's familiar neutral pills deliberately stay independent of theme/style. */
-html[data-theme][data-app-style] .now-header-actions .now-tabs {gap:8px;border:0;background:none;backdrop-filter:none;box-shadow:none;padding:0}
-html[data-theme][data-app-style] .now-header-actions button.now-view-button {
- border:1px solid #ffffff26!important;border-radius:999px!important;background:#232323!important;color:#f4f4f5!important;
- box-shadow:none!important;backdrop-filter:none!important;filter:none!important;font:600 13px/20px 'Segoe UI',sans-serif!important;
- height:42px;min-height:42px;padding:10px 18px!important;transition:none!important;
-}
-html[data-theme][data-app-style] .now-header-actions button.now-view-button[aria-pressed=true] {background:#eeeeee!important;color:#111111!important;border-color:#eeeeee!important}
-html[data-theme][data-app-style] .now-header-actions button.now-view-button:hover:not(:disabled):not([aria-pressed=true]) {background:#333333!important}
-html[data-theme][data-app-style] .now-header-actions button.now-view-button:focus-visible {outline:2px solid #ffffff;outline-offset:3px}
-html[data-theme][data-app-style] .now-header-actions button.now-view-button:disabled {opacity:.55;cursor:default}
 .immersive-header-actions {margin-left:auto}
 /* Frosted keeps glass on cards while navigation uses the clean Original structure. */
 html[data-theme][data-app-style=frosted] .sidebar .nav-item.selected {box-shadow:none!important}

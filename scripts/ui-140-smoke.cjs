@@ -14,10 +14,10 @@ module.exports=async({desktop,page,artifacts})=>{
  const visibleCurrent=async selector=>{await page.waitForFunction(selector=>{const el=document.querySelector(selector);if(!el)return false;for(let p=el.parentElement;p;p=p.parentElement){if(!/(auto|scroll)/.test(getComputedStyle(p).overflowY)||p.scrollHeight<=p.clientHeight)continue;const a=el.getBoundingClientRect(),b=p.getBoundingClientRect();return a.top>=b.top-1&&a.bottom<=b.bottom+1}return false},selector)}
  try{
   await page.evaluate(async saved=>{await window.mediaCenter.savePreferences({...saved,customCss:undefined,theme:'midnight',appearance:{...saved.appearance,appStyle:'default',showHelp:true,colors:{}}})},saved)
-  await settings();await page.getByRole('checkbox',{name:'Show page guidance',exact:true}).uncheck();await page.getByRole('button',{name:'Save theme',exact:true}).click()
+  await settings();await page.getByRole('checkbox',{name:'Show page guidance',exact:true}).uncheck();await page.getByRole('button',{name:'Save appearance',exact:true}).click()
   await page.reload();await settings();assert.equal(await page.getByRole('checkbox',{name:'Show page guidance',exact:true}).isChecked(),false)
   assert.equal(await page.locator('.theme-picker .guidance').isVisible(),false)
-  await page.getByRole('checkbox',{name:'Show page guidance',exact:true}).check();await page.getByRole('button',{name:'Save theme',exact:true}).click()
+  await page.getByRole('checkbox',{name:'Show page guidance',exact:true}).check();await page.getByRole('button',{name:'Save appearance',exact:true}).click()
   await desktop.evaluate(({dialog},file)=>{globalThis.__save140=dialog.showSaveDialog;globalThis.__open140=dialog.showOpenDialog;dialog.showSaveDialog=async()=>({canceled:false,filePath:file});dialog.showOpenDialog=async()=>({canceled:false,filePaths:[file]})},file)
   await page.getByRole('button',{name:'Export current CSS',exact:true}).click()
   for(let i=0;i<100&&!existsSync(file);i++)await new Promise(r=>setTimeout(r,50))
@@ -25,7 +25,7 @@ module.exports=async({desktop,page,artifacts})=>{
   await page.getByRole('button',{name:'Import theme CSS',exact:true}).click();await page.waitForFunction(()=>document.getElementById('custom-theme-css')?.textContent.includes('Media Center CSS snapshot'))
   assert.equal(await page.locator('.workspace').evaluate(el=>el.scrollWidth>el.clientWidth),false)
   await page.getByRole('button',{name:'Export current CSS',exact:true}).click()
-  await page.getByRole('button',{name:'Remove custom CSS',exact:true}).click();await page.getByRole('button',{name:'Save theme',exact:true}).click()
+  await page.getByRole('button',{name:'Remove custom CSS',exact:true}).click();await page.getByRole('button',{name:'Save appearance',exact:true}).click()
   const library=(await page.evaluate(()=>window.mediaCenter.libraries())).libraries.find(l=>l.kind==='music')
   await page.evaluate(async id=>{const a=window.mediaCenter;await a.command({action:'volume',value:0});await a.play({queue:Array.from({length:215},(_,i)=>({target:{kind:'music-track',serverId:id,trackId:'transport-fixture'},title:`Queue follow fixture ${i+1}`,subtitle:'Test fixture',duration:600})),index:85})},library.serverId)
   await page.getByRole('button',{name:'Open now playing',exact:true}).click();await visibleCurrent('.queue-row.current')

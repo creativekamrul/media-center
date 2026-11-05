@@ -129,10 +129,11 @@ async function main() {
     await page.getByRole('button',{name:'Keep listening',exact:true}).click()
     await require('./window-chrome-smoke.cjs')({desktop,page,artifacts})
     assert.equal((await page.evaluate(()=>window.mediaCenter.releaseNews('get'))).unread,false)
-    if(process.env.MEDIA_CENTER_UI150_ONLY||process.env.MEDIA_CENTER_PLAYER_POLISH_ONLY||process.env.MEDIA_CENTER_RELEASE_UI_ONLY||process.env.MEDIA_CENTER_UI140_ONLY||process.env.MEDIA_CENTER_VIEW_PINS_ONLY||process.env.MEDIA_CENTER_LIBRARIES_ONLY||process.env.MEDIA_CENTER_CONTROLS_ONLY||process.env.MEDIA_CENTER_REFINEMENTS_ONLY||process.env.MEDIA_CENTER_APP_STYLES_ONLY||process.env.MEDIA_CENTER_STYLES_ONLY||process.env.MEDIA_CENTER_UI_CLEANUP_ONLY||process.env.MEDIA_CENTER_CONSISTENCY_ONLY||process.env.MEDIA_CENTER_STUDIO_ONLY||process.env.MEDIA_CENTER_PERSONAL_ONLY||process.env.MEDIA_CENTER_MIXES_ONLY||process.env.MEDIA_CENTER_BUGS_ONLY||process.env.MEDIA_CENTER_POLISH_ONLY){
+    if(process.env.MEDIA_CENTER_REDESIGN_ONLY||process.env.MEDIA_CENTER_UI150_ONLY||process.env.MEDIA_CENTER_PLAYER_POLISH_ONLY||process.env.MEDIA_CENTER_RELEASE_UI_ONLY||process.env.MEDIA_CENTER_UI140_ONLY||process.env.MEDIA_CENTER_VIEW_PINS_ONLY||process.env.MEDIA_CENTER_LIBRARIES_ONLY||process.env.MEDIA_CENTER_CONTROLS_ONLY||process.env.MEDIA_CENTER_REFINEMENTS_ONLY||process.env.MEDIA_CENTER_APP_STYLES_ONLY||process.env.MEDIA_CENTER_STYLES_ONLY||process.env.MEDIA_CENTER_UI_CLEANUP_ONLY||process.env.MEDIA_CENTER_CONSISTENCY_ONLY||process.env.MEDIA_CENTER_STUDIO_ONLY||process.env.MEDIA_CENTER_PERSONAL_ONLY||process.env.MEDIA_CENTER_MIXES_ONLY||process.env.MEDIA_CENTER_BUGS_ONLY||process.env.MEDIA_CENTER_POLISH_ONLY){
       const root=resolve(artifacts,'studio-audio');mkdirSync(root,{recursive:true});const wav=Buffer.alloc(44+8000*2*90);wav.write('RIFF');wav.writeUInt32LE(wav.length-8,4);wav.write('WAVEfmt ',8);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);wav.writeUInt32LE(8000,24);wav.writeUInt32LE(16000,28);wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);writeFileSync(resolve(root,'studio.wav'),wav)
       await page.getByRole('button',{name:'Explore sample library'}).click();await desktop.evaluate(({dialog},data)=>{dialog.showOpenDialog=async(_w,o)=>({canceled:false,filePaths:[o.properties.includes('openDirectory')?data.root:data.mpv]})},{root,mpv:mpvPath});
       await page.evaluate(async url=>{const a=window.mediaCenter;await a.saveConnection({provider:'navidrome',name:'Fixture Music',url,username:'test-user',secret:'test-password'});await a.saveConnection({provider:'audiobookshelf',name:'Fixture Books',url,username:'',secret:'test-token'});await a.chooseMpv();const root=await a.localAdd();await a.localPlaylist({action:'create',rootId:root.id,name:'Local test playlist',files:['studio.wav']});await a.command({action:'volume',value:0});await a.play({queue:[{target:{kind:'local-file',serverId:'local',rootId:root.id,fileId:'studio.wav'},title:'Local studio fixture',subtitle:'Fixture artist'}],index:0})},url);await new Promise(r=>setTimeout(r,1500));await page.evaluate(()=>window.mediaCenter.command({action:'toggle'}));
+      if(process.env.MEDIA_CENTER_REDESIGN_ONLY){await page.reload();await require(process.env.MEDIA_CENTER_REDESIGN_ONLY==='workspace'?'./workspace-refresh-smoke.cjs':process.env.MEDIA_CENTER_REDESIGN_ONLY==='consistency'?'./consistency-pass-smoke.cjs':process.env.MEDIA_CENTER_REDESIGN_ONLY==='collections'?'./collection-design-smoke.cjs':process.env.MEDIA_CENTER_REDESIGN_ONLY==='recap'?'./recap-refresh-smoke.cjs':'./redesign-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);return}
       if(process.env.MEDIA_CENTER_VIEW_PINS_ONLY){await page.reload();await require('./view-pins-smoke.cjs')({page,artifacts});assert.deepEqual(errors,[]);return}
       if(process.env.MEDIA_CENTER_UI150_ONLY){await page.reload();await require('./ui-150-smoke.cjs')({desktop,page,artifacts,setOffline:value=>{failReadRequests=value}});await require('./installer-quit-smoke.cjs')({desktop,page,profileArg});assert.deepEqual(errors,[]);writeFileSync(resolve(artifacts,'ui-150-smoke.json'),JSON.stringify({passed:true,version:require('../package.json').version,packagedExecutable:process.env.MEDIA_CENTER_EXECUTABLE,rendererErrors:errors},null,2));return}
       if(process.env.MEDIA_CENTER_PLAYER_POLISH_ONLY){await page.reload();await require('./player-polish-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);return}
@@ -154,7 +155,7 @@ async function main() {
       if(process.env.MEDIA_CENTER_CONTROLS_ONLY){await page.reload();await require('./immersive-controls-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);return}
       if(process.env.MEDIA_CENTER_REFINEMENTS_ONLY){await page.reload();await require('./listening-refinements-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);return}
       if(process.env.MEDIA_CENTER_APP_STYLES_ONLY){await page.reload();await require('./app-styles-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);return}
-      if(process.env.MEDIA_CENTER_STYLES_ONLY){await page.reload();await require('./consistency-smoke.cjs')({desktop,page,artifacts});await require('./immersive-styles-smoke.cjs')({desktop,page,artifacts});await require('./installer-quit-smoke.cjs')({desktop,page,profileArg});assert.deepEqual(errors,[]);return}
+      if(process.env.MEDIA_CENTER_STYLES_ONLY){await page.reload();if(process.env.MEDIA_CENTER_STYLES_ONLY!=='listening')await require('./consistency-smoke.cjs')({desktop,page,artifacts});await require('./immersive-styles-smoke.cjs')({desktop,page,artifacts});await require('./installer-quit-smoke.cjs')({desktop,page,profileArg});assert.deepEqual(errors,[]);return}
       if(process.env.MEDIA_CENTER_UI_CLEANUP_ONLY){await page.reload();await require('./ui-cleanup-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);return}
       if(process.env.MEDIA_CENTER_CONSISTENCY_ONLY){await page.reload();await require('./consistency-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);return}
       if(process.env.MEDIA_CENTER_POLISH_ONLY){await page.reload();await require('./library-actions-smoke.cjs')({desktop,page,artifacts});assert.deepEqual(errors,[]);return}
@@ -232,14 +233,14 @@ async function main() {
     assert.equal(mutations.find(m => m.songs?.length === 3).songs.join(','),'song,song,song')
     await page.getByRole('button', { name: 'Refresh libraries', exact: true }).click()
     await page.getByRole('button', { name: /Tomorrow morning/ }).click()
-    await page.getByRole('heading', { name: 'Playlist tracks', exact: true }).waitFor()
+    await page.locator('.song-row:not(.track-list-heading)').first().waitFor()
     assert.equal(await page.locator('.song-row .track-artwork').count(),3,'Every playlist track has a thumbnail')
     await page.locator('.song-row .track-artwork').first().scrollIntoViewIfNeeded()
     await page.waitForFunction(()=>[...document.querySelectorAll('.song-row .track-artwork img')].some(img=>img.complete&&img.naturalWidth>0))
     assert.ok(requests.some(r=>r.includes('getCoverArt')&&r.includes('fixture-song-cover')),'Artwork resolves via authenticated main-process cover API')
     await page.setViewportSize({width:1008,height:680})
     assert.equal(await page.locator('.song-table').evaluate(el=>el.scrollWidth>el.clientWidth),false,'Track artwork fits narrow playlist rows')
-    await page.locator('.song-row').first().scrollIntoViewIfNeeded()
+    await page.locator('.song-row:not(.track-list-heading)').first().scrollIntoViewIfNeeded()
     await page.screenshot({path:resolve(artifacts,'playlist-artwork.png')})
     await page.locator('.detail-heading').getByRole('button',{name:'More options',exact:true}).click()
     await page.locator('.collection-management').waitFor();assert.equal(await page.locator('.collection-management button').count(),6)
@@ -250,10 +251,11 @@ async function main() {
     await page.getByRole('button', { name: 'Back', exact: true }).click()
     await page.getByRole('button', { name: 'Albums', exact: true }).click()
     await page.getByRole('button', { name: /The Test Album Test Artist/ }).click()
-    await page.getByRole('heading', { name: 'Tracks', exact: true }).waitFor()
+    await page.locator('.song-row:not(.track-list-heading)').first().waitFor()
     assert.equal(await page.locator('.workspace').evaluate(el=>el.scrollTop),0,'Opening an album from a scrolled library must start at the heading')
     await require('./collection-header-smoke.cjs')(page,artifacts,'album')
     await page.getByRole('button', { name: 'Audiobooks', exact: true }).click()
+    await page.getByRole('button', { name: 'All books', exact: true }).click()
     await page.getByRole('button', { name: /The Test Book Test Author/ }).click()
     await page.getByRole('heading', { name: 'Chapters', exact: true }).waitFor()
     assert.equal(await page.locator('.chapter-row').count(), 3)
@@ -285,8 +287,8 @@ async function main() {
     for (const width of [1024,1440,1920]) {
       await page.setViewportSize({width,height:900})
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Episode screen must fit the viewport')
-      const layout=await page.locator('.episode-card').first().evaluate(el=>{const copy=el.querySelector('.episode-copy').getBoundingClientRect(),controls=el.querySelector('.episode-bottom').getBoundingClientRect(),card=el.getBoundingClientRect();return{copyBottom:copy.bottom,controlsTop:controls.top,controlsRight:controls.right,cardRight:card.right}})
-      assert.ok(layout.controlsTop>=layout.copyBottom,'Episode actions sit in one footer below the description')
+      const layout=await page.locator('.episode-card').first().evaluate(el=>{const copy=el.querySelector('.episode-copy').getBoundingClientRect(),controls=el.querySelector('.episode-bottom').getBoundingClientRect(),card=el.getBoundingClientRect();return{copyBottom:copy.bottom,copyRight:copy.right,controlsLeft:controls.left,controlsTop:controls.top,controlsRight:controls.right,cardRight:card.right}})
+      assert.ok(layout.controlsTop>=layout.copyBottom-1||layout.controlsLeft>=layout.copyRight-1,'Episode actions stay clear of the description in row and stacked layouts')
       assert.ok(layout.cardRight-layout.controlsRight<30,'Episode controls use the card width')
       await page.locator('.episode-card').first().evaluate(el=>el.scrollIntoView({block:'start'}))
       await page.screenshot({path:resolve(artifacts,'episodes-v021-'+width+'.png')})

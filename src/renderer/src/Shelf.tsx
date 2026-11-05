@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState,type ReactNode} from 'react'
 import {ArrowLeft,ArrowRight} from 'lucide-react'
 export function ShelfControls({start,end,previousLabel,nextLabel,onPrevious,onNext,children}:{start:boolean;end:boolean;previousLabel:string;nextLabel:string;onPrevious:()=>void;onNext:()=>void;children?:ReactNode}){
- return <div className="shelf-buttons">{children}<button className="icon-button" aria-label={previousLabel} disabled={start} onClick={onPrevious}><ArrowLeft size={18}/></button><button className="icon-button" aria-label={nextLabel} disabled={end} onClick={onNext}><ArrowRight size={18}/></button></div>
+ return <div className="shelf-buttons">{children}<button className="icon-button" aria-label={previousLabel} title={previousLabel} disabled={start} onClick={onPrevious}><ArrowLeft size={18}/></button><button className="icon-button" aria-label={nextLabel} title={nextLabel} disabled={end} onClick={onNext}><ArrowRight size={18}/></button></div>
 }
 export function Shelf({title,subtitle,children,empty,action}:{title:string;subtitle:string;children:ReactNode[];empty:string;action?:ReactNode}){
  const scroll=useRef<HTMLDivElement>(null),[edges,setEdges]=useState({start:true,end:true})

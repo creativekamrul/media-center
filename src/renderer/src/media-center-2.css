@@ -20,14 +20,14 @@ html[data-theme] :is(.more-options-menu,.context-menu,.jf-options-menu) {backgro
 html[data-theme] :is(.more-options-menu,.context-menu) button {color:var(--text)}
 html[data-theme] :is(.home-album-card,.music-card) .card-play {background:#171a1d;color:#fff;border:1px solid #ffffff50;box-shadow:0 3px 12px #0005}
 html[data-theme=liquid-glass] {--bg:#101824;--panel:#253344;--accent:#c3e3ff;--accent-text:#101824;--text:#f3f6fb;--muted:#bbc8d8;--control:#263445;--control-text:#f3f6fb;--line:#d5e6ff20;--control-border:#d5e6ff35;--control-hover:#d5e6ff12}
-html[data-theme=liquid-glass] :is(.app-shell,.mini-player) {background:radial-gradient(ellipse at 0 0,#314e66 0,transparent 55%),radial-gradient(ellipse at 95% 95%,#323554 0,transparent 60%),var(--bg)}
+html[data-theme=liquid-glass] :is(.app-shell,.mini-player) {background:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--accent) 14%,var(--bg)) 0,transparent 55%),radial-gradient(ellipse at 95% 95%,color-mix(in srgb,var(--accent) 8%,var(--bg)) 0,transparent 60%),var(--bg)}
 html[data-theme=liquid-glass] .workspace {background:transparent}
 html[data-theme=liquid-glass] :is(.sidebar,.topbar,.player-bar,.jf-dock,.settings-panel,.home-feature,.home-stats,.daily-card,.engine-card,.plan-card,.custom-mix-card,.episode-card) {background:color-mix(in srgb,var(--panel) 74%,transparent);backdrop-filter:blur(24px) saturate(125%);border-color:var(--line);box-shadow:inset 0 1px #ffffff0d,0 8px 28px #00000012}
 html[data-theme=liquid-glass] :is(.settings-panel,.home-feature,.home-stats,.daily-card,.engine-card,.plan-card,.episode-card) {border-radius:18px}
 html[data-theme=liquid-glass] :is(button.secondary,.icon-button) {background:color-mix(in srgb,var(--panel) 82%,transparent);border-color:var(--control-border);color:var(--text)}
 html[data-theme=liquid-glass] :is(button.secondary,.icon-button):hover:not(:disabled) {background:color-mix(in srgb,var(--panel) 78%,var(--accent));color:var(--text)}
 html[data-theme=liquid-glass] :is(.modal,.jf-options-menu,.context-menu,.more-options-menu) {background:#202e40f5;backdrop-filter:blur(24px);color:var(--text)}
-html[data-theme=liquid-glass] :is(input:not([type=range]):not([type=checkbox]),select,textarea) {background:#101824b8;color:var(--text);border-color:var(--control-border)}
+html[data-theme=liquid-glass] :is(input:not([type=range]):not([type=checkbox]),select,textarea) {background:color-mix(in srgb,var(--bg) 85%,var(--panel));color:var(--text);border-color:var(--control-border)}
 html[data-theme=liquid-glass] option {background:#1a2737;color:#f3f6fb}
 .source-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .source-card {display:flex;align-items:center;gap:14px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface-quiet);text-align:left;color:var(--text)}

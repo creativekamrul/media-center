@@ -35,4 +35,6 @@ import './jellyfin.css'
 import './jellyfin-hub.css'
 import './jellyfin-detail.css'
 import './media-center-2.css'
+import './design-system.css'
+import './listening-design.css'
 createRoot(document.getElementById('root')!).render(<React.StrictMode>{new URLSearchParams(location.search).get('mini') === '1' ? <MiniPlayer/> : <App/>}</React.StrictMode>)

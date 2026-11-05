@@ -121,11 +121,11 @@ export interface MusicDetail { kind: 'album' | 'artist' | 'playlist'; title: str
 export interface SpokenBrowseInput { library: Library; page: number; search: string; sort: string; descending: boolean; status: 'all' | 'unplayed' | 'in-progress' | 'unfinished' | 'finished' }
 export interface ContinueItem { item: QueueItem; progress: Progress; libraryId: string }
 export interface Bookmark { time: number; title: string; createdAt?: number }
-export type QueueEdit = { action: 'append' | 'next'; items: QueueItem[] } | { action: 'remove' | 'jump'; index: number } | { action: 'move'; from: number; to: number } | { action: 'clear' | 'clear-upcoming' | 'restore' } | { action: 'sleep-chapter'; enabled: boolean }
+export type QueueEdit = { action: 'remove-many'; indices: number[]; expected: QueueItem[] } | { action: 'append' | 'next'; items: QueueItem[] } | { action: 'remove' | 'jump'; index: number } | { action: 'move'; from: number; to: number } | { action: 'clear' | 'clear-upcoming' | 'restore' } | { action: 'sleep-chapter'; enabled: boolean }
 export interface LocalRoot { id: string; name: string; path: string }
 export interface LocalFile { addedAt?:number; id: string; name: string; title: string; artist: string; album: string; duration: number; size: number; modified: number; codec?: string; sampleRate?: number; bitDepth?: number; bitRate?: number; trackNumber?: number; discNumber?: number; albumArtist?: string; genre?: string; year?: number; hasCover: boolean; fileIdentity?:string; error?: string }
 export interface LocalFolder { rootId: string; folder: string; folders: { id: string; name: string }[]; files: LocalFile[]; warnings: string[] }
 export interface ListenLater { id: string; item: QueueItem; due: string; note: string; done: boolean; createdAt: number }
 export interface HistoryItem { id: string; item: QueueItem; position: number; duration: number; playedAt: number }
 export interface Preferences { replayGain: 'no' | 'track' | 'album'; preventClipping: boolean; equalizer: number[]; closeToTray: boolean; theme: import('./themes').ThemeId; appearance?: import('./appearance').Appearance; customCss?: string; scrobble: boolean }
-export const defaultPreferences: Preferences = { replayGain: 'no', preventClipping: true, equalizer: [0,0,0,0,0,0,0,0,0,0], closeToTray: false, theme: 'forest', scrobble: true }
+export const defaultPreferences: Preferences = { replayGain: 'no', preventClipping: true, equalizer: [0,0,0,0,0,0,0,0,0,0], closeToTray: false, theme: 'monochrome', scrobble: true }

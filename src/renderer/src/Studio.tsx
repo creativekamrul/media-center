@@ -572,8 +572,21 @@ function Recovery({
 }) {
   const [data, setData] = useState<RecoveryState>(),
     w = useWork(error)
+  const [jellyfin,setJellyfin]=useState<RecoveryState['sources']>([])
+  const refresh=async()=>{
+    const [base,connections]=await Promise.all([api.recovery(),api.jfConnections()])
+    setData(base)
+    setJellyfin(await Promise.all(connections.map(async c=>{try{return {id:c.id,name:c.name,provider:'jellyfin',connected:true,message:await api.jfTest(c.id)}}catch{return {id:c.id,name:c.name,provider:'jellyfin',connected:false,message:'Unavailable. Check this connection in Settings.'}}})))
+  }
+  const retry=async(s:RecoveryState['sources'][number])=>{
+    let result:RecoveryState['sources'][number]
+    try{result={...s,connected:true,message:await(s.provider==='jellyfin'?api.jfTest(s.id):api.testConnection(s.id))}}
+    catch{result={...s,connected:false,message:'Still unavailable. Check this connection in Settings.'}}
+    if(s.provider==='jellyfin')setJellyfin(old=>old.map(c=>c.id===s.id?result:c))
+    else setData(old=>old?{...old,sources:old.sources.map(c=>c.id===s.id?result:c)}:old)
+  }
   useEffect(() => {
-    void w.run(async () => setData(await api.recovery()))
+    void w.run(refresh)
   }, [])
   return (
     <section className="settings-panel">
@@ -586,7 +599,7 @@ function Recovery({
         <button
           className="primary"
           disabled={w.busy}
-          onClick={() => void w.run(async () => setData(await api.recovery()))}
+          onClick={() => void w.run(refresh)}
         >
           {w.busy ? 'Checking…' : 'Retry connections'}
         </button>
@@ -629,8 +642,8 @@ function Recovery({
           Export diagnostics report
         </button>
       </div>
-      {data?.sources.map((s) => (
-        <div className="profile-row" key={s.id}>
+      {[...(data?.sources??[]),...jellyfin].map((s) => (
+        <div className="profile-row" key={`${s.provider}:${s.id}`}>
           <div>
             <strong>{s.name}</strong>
             <small>{s.message}</small>
@@ -638,6 +651,7 @@ function Recovery({
           <span className={`health-status ${s.connected ? 'online' : ''}`}>
             {s.connected ? 'Connected' : 'Needs attention'}
           </span>
+          <button className="secondary" disabled={w.busy} onClick={()=>void w.run(()=>retry(s))}>Retry {s.name}</button>
         </div>
       ))}
       {data && <p>{data.pending} local checkpoints marked for review</p>}

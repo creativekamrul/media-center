@@ -119,8 +119,8 @@ module.exports = async function dailySmoke({desktop,page,waitPlayback,artifacts}
   await page.getByRole('button',{name:'Save PNG image',exact:true}).click()
   await page.getByText('Your recap image was saved.',{exact:true}).waitFor()
   const png=readFileSync(recapPath);assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(png.readUInt32BE(16),1080);assert.equal(png.readUInt32BE(20),1440)
-  for(const style of ['sunset','ink']){
-    await page.getByLabel('Picture style',{exact:true}).selectOption(style)
+  for(const style of ['Cinema','Journal']){
+    await page.locator('.recap-style-choice').filter({hasText:style}).click()
     await desktop.evaluate(({dialog},path)=>{dialog.showSaveDialog=async()=>({canceled:false,filePath:path})},resolve(artifacts,'listening-recap-'+style+'.png'))
     await page.getByRole('button',{name:'Save PNG image',exact:true}).click()
     await page.getByText('Your recap image was saved.',{exact:true}).waitFor()
@@ -132,7 +132,7 @@ module.exports = async function dailySmoke({desktop,page,waitPlayback,artifacts}
   await page.getByLabel('Recap end date',{exact:true}).fill('2000-01-02')
   assert.equal(await page.getByRole('button',{name:'Save PNG image',exact:true}).isDisabled(),true,'Date edits invalidate old image')
   await page.getByRole('button',{name:'Create my recap',exact:true}).click()
-  await page.getByText('No listening was recorded on this device in this date range. Try a different range.',{exact:true}).waitFor()
+  await page.getByText('No listening or watching was recorded on this device in this date range. Try a different range.',{exact:true}).waitFor()
   await page.getByRole('button',{name:'Listening history',exact:true}).click()
   await page.locator('.history-card').first().waitFor()
   assert.ok((await page.locator('.history-card').first().boundingBox()).height<110)

@@ -1,5 +1,8 @@
 import type { ListeningRecap } from '../../shared/recap'
 export const recapStyles = {
+  overview: {name:'Overview',description:'Clean metric cards, media breakdown and ranked favorites'},
+  cinema: {name:'Cinema',description:'A large headline with listening and watching side by side'},
+  journal: {name:'Journal',description:'An understated activity chart and detailed media summary'},
   aurora: {
     name: 'Spotlight',
     description: 'A bold headline and ranked favorites',
@@ -238,7 +241,7 @@ export function renderRecap(
   }
   const total = (x: number, y: number, size = 130, max = W) => {
     txt(minutes, x, y, size, p.accent, max, 'Segoe UI', 750)
-    txt('MINUTES LISTENED', x, y + 40, 20, p.muted, max)
+    txt('MINUTES OF MEDIA', x, y + 40, 20, p.muted, max)
   }
   const list = (x: number, y: number, w = W, n = 5, step = 74) => {
     d.top.slice(0, n).forEach((t, i) => {
@@ -279,7 +282,7 @@ export function renderRecap(
   }
   const metrics = (y: number) => {
     metric(64, y, 304, String(d.activeDays), 'active days')
-    metric(388, y, 304, String(d.uniqueItems), 'different listens')
+    metric(388, y, 304, String(d.uniqueItems), 'different titles')
     metric(712, y, 304, String(d.longestStreak), 'day longest streak')
   }
   const chart = (x: number, y: number, w: number, h: number) => {
@@ -310,7 +313,7 @@ export function renderRecap(
       )
   }
   const mix = (x: number, y: number, w = W) => {
-    txt('HOW YOU LISTENED', x, y, 18, p.accent, w)
+    txt('YOUR MEDIA MIX', x, y, 18, p.accent, w)
     let off = x
     d.kinds.forEach((k, i) => {
       const size = (w * k.seconds) / Math.max(1, d.totalSeconds)
@@ -359,7 +362,33 @@ export function renderRecap(
     c.fill()
   }
   rect(0, 0, 1080, 1440, p.bg)
-  if (style === 'aurora') {
+  if (['overview','cinema','journal'].includes(style)) {
+    header('Media recap')
+    txt(title,64,195,54,p.text,W,'Segoe UI',700)
+    const watching=d.kinds.filter(k=>['jellyfin-movie','jellyfin-episode'].includes(k.kind)).reduce((n,k)=>n+k.seconds,0)
+    if(style==='cinema'){
+      rect(64,238,W,220,p.panel,24)
+      total(92,380,132,W-56)
+    }else{total(64,368,120)}
+    metric(64,490,466,fmt(d.totalSeconds-watching),'Listening')
+    metric(550,490,466,fmt(watching),'Watching · Jellyfin')
+    if(style==='journal'){
+      txt('ACTIVITY THROUGH THE PERIOD',64,662,18,p.muted)
+      chart(64,692,W,140)
+      txt('TOP TITLES',64,900,18,p.accent)
+      list(64,950,W,3,72)
+    }else{
+      txt('TOP TITLES',64,662,18,p.accent)
+      list(64,716,W,5,74)
+    }
+    const entries=d.kinds.slice(0,8)
+    entries.forEach((k,i)=>{
+      const x=64+(i%2)*486,y=(style==='journal'?1170:1130)+Math.floor(i/2)*46
+      txt(kindNames[k.kind]??k.kind,x,y,20,p.muted,290)
+      txt(fmt(k.seconds),x+300,y,20,p.text,160)
+    })
+    txt(`${d.activeDays} active days · ${d.uniqueItems} titles · ${d.longestStreak}-day streak`,64,1350,20,p.muted,W)
+  } else if (style === 'aurora') {
     header('Spotlight')
     txt(title, 64, 206, 66, p.text, W, 'Georgia')
     total(58, 392, 148)
@@ -445,7 +474,7 @@ export function renderRecap(
     rect(64, 238, 596, 280, p.panel, 24)
     total(92, 408, 135, 530)
     metric(680, 238, 336, String(d.activeDays), 'active days')
-    metric(680, 376, 336, String(d.uniqueItems), 'different listens')
+    metric(680, 376, 336, String(d.uniqueItems), 'different titles')
     metric(64, 544, 304, String(d.longestStreak), 'day longest streak')
     metric(388, 544, 304, fmt(d.averageSeconds), 'average per day')
     metric(

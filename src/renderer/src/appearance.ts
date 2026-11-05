@@ -1,3 +1,4 @@
+import {appearanceColors,currentStyle} from '../../shared/styles'
 import { accentText, defaultAppearance, fontCss } from '../../shared/appearance'
 import type { Preferences } from '../../shared/types'
 export function watchAppearance(error:(e:unknown)=>void=()=>{}){
@@ -12,13 +13,16 @@ export function applyAppearance(p:Preferences){
   const root=document.documentElement,a=p.appearance??defaultAppearance
   root.dataset.showHelp=String(a.showHelp??true)
   root.dataset.theme=p.theme
-  root.dataset.appStyle=a.appStyle??'default'
+  root.dataset.appStyle=currentStyle(a.appStyle??'default')
  root.dataset.density=a.density??'comfortable'
  root.dataset.surfaceStyle=a.surfaceStyle??'solid'
  root.dataset.translucency=String(a.translucency??false)
-  root.dataset.customColors=Object.keys(a.colors).length?'true':'false'
-  const variables:Record<string,string|undefined>={'--bg':a.colors.background,'--panel':a.colors.panel,'--accent':a.colors.accent,'--text':a.colors.text,'--muted':a.colors.muted,'--control':a.colors.panel,'--control-text':a.colors.text}
-  if(a.colors.accent){variables['--line']='color-mix(in srgb, var(--text) 12%, transparent)';variables['--control-border']='color-mix(in srgb, var(--text) 22%, transparent)';variables['--control-hover']='color-mix(in srgb, var(--text) 7%, transparent)';variables['--accent-text']=accentText(a.colors.accent)}
+  root.dataset.customColors=a.stylePalette||Object.keys(a.colors).length?'true':'false'
+  root.dataset.stylePalette=String(a.stylePalette??false)
+  const colors=a.stylePalette?appearanceColors(p.theme,a):a.colors
+  root.style.colorScheme=accentText(appearanceColors(p.theme,a).background)==='#101010'?'light':'dark'
+  const variables:Record<string,string|undefined>={'--bg':colors.background,'--panel':colors.panel,'--accent':colors.accent,'--text':colors.text,'--muted':colors.muted,'--control':colors.panel,'--control-text':colors.text}
+  if(colors.accent){variables['--line']='color-mix(in srgb, var(--text) 12%, transparent)';variables['--control-border']='color-mix(in srgb, var(--text) 22%, transparent)';variables['--control-hover']='color-mix(in srgb, var(--text) 7%, transparent)';variables['--accent-text']=accentText(colors.accent)}
   else for(const key of ['--line','--control-border','--control-hover','--accent-text'])variables[key]=undefined
   for(const [key,value] of Object.entries(variables))if(value)root.style.setProperty(key,value);else root.style.removeProperty(key)
   root.style.setProperty('--body-font',fontCss(a.bodyFont));root.style.setProperty('--heading-font',fontCss(a.headingFont));root.style.setProperty('--lyrics-font',fontCss(a.lyricsFont))

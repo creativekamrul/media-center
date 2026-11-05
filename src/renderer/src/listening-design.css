@@ -1,0 +1,173 @@
+/* Now Playing is the workspace canvas, not an inset card. */
+html:root[data-theme][data-app-style] .workspace>main:has(>.expanded-player) {
+ width:100%;max-width:none;margin:0;padding:0;overflow:hidden;
+}
+html:root[data-theme][data-app-style] .queue-page.expanded-player {
+ width:100%;max-width:none;margin:0;border:0;border-radius:0;box-shadow:none;
+ padding:24px var(--ui-gutter);box-sizing:border-box;
+}
+.queue-section-label {margin:18px 0 8px;font-size:12px;font-weight:600;color:var(--muted)}
+.queue-selection {display:flex;align-items:center;gap:8px;font-size:12px}
+.seek-preview {position:absolute;bottom:calc(100% + 4px);transform:translateX(-50%);pointer-events:none;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 9px;white-space:nowrap;font-size:12px;z-index:5;box-shadow:0 4px 16px #0003}
+.seek-preview small {display:block;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+/* Listening uses an independent dark contrast pair over user-selected artwork. */
+html:root[data-theme][data-app-style] :is(.expanded-player,.immersive-player) {
+ --bg:#10131a;--panel:#202631;--text:#f5f5f7;--muted:#c3c5cf;--accent:#d4e6f4;--accent-text:#10131a;
+ --ui-secondary:#c3c5cf;--ui-surface:#202631;--ui-hover:#ffffff12;
+ --control:#ffffff12;--control-text:#f5f5f7;--control-border:#ffffff20;--control-hover:#ffffff1c;--line:#ffffff18;
+ color:#f5f5f7;color-scheme:dark;
+}
+html:root[data-theme][data-app-style] .immersive-player {
+ --text:#f5f5f7;--muted:#c3c5cf;--control:#ffffff12;--control-text:#f5f5f7;
+ --line:#ffffff18;--control-border:#ffffff20;--control-hover:#ffffff1c;
+ color:var(--text);
+}
+html:root[data-theme][data-app-style] .immersive-header {padding:22px 32px;gap:16px;min-height:82px}
+html:root[data-theme][data-app-style] .immersive-header :is(button.secondary,.more-options-trigger,.immersive-lyric-menu>summary) {
+ background:#ffffff0d;color:#f5f5f7;border:1px solid #ffffff12;border-radius:10px;
+ box-shadow:none;backdrop-filter:blur(16px);font-size:13px;font-weight:600;min-height:40px;padding:9px 14px;
+}
+html:root[data-theme][data-app-style] .immersive-header :is(button.secondary,.more-options-trigger):hover {background:#ffffff20;color:#fff}
+html:root[data-theme][data-app-style] .listening-panel-tabs {display:flex;gap:2px;padding:4px;border-radius:12px;background:#ffffff0c}
+html:root[data-theme][data-app-style] .listening-panel-tabs button.secondary {border:0;background:transparent;backdrop-filter:none;min-height:34px;height:34px;padding:7px 14px}
+html:root[data-theme][data-app-style] .listening-panel-tabs button[aria-pressed=true] {background:#ffffff20;color:#fff}
+html:root[data-theme][data-app-style] .immersive-player :is(.immersive-stage,.immersive-side) {border:0;background:transparent;box-shadow:none;border-radius:0;backdrop-filter:none}
+html:root[data-theme][data-app-style] .immersive-player .screen-cover {border:0;border-radius:12px;box-shadow:0 18px 60px #0002}
+html:root[data-theme][data-app-style] .immersive-player .screen-cover>.art {border-radius:0;box-shadow:none}
+html:root[data-theme][data-app-style] .immersive-player .screen-queue {background:transparent;border:0;border-radius:0;padding:16px 8px 8px;box-shadow:none}
+html:root[data-theme][data-app-style] .immersive-player button.screen-queue-item {display:grid;grid-template-columns:16px 40px minmax(0,1fr) auto;gap:12px;padding:10px 12px;min-height:60px;border:0;border-radius:9px;background:transparent;color:#f5f5f7;box-shadow:none;text-align:left}
+html:root[data-theme][data-app-style] .immersive-player button.screen-queue-item:is(:hover,.current) {background:#ffffff12;color:#fff}
+html:root[data-theme][data-app-style] .screen-queue-item>.track-artwork {width:40px;height:40px}
+html:root[data-theme][data-app-style] .screen-queue-item strong {font-size:13px;font-weight:600}
+html:root[data-theme][data-app-style] .screen-queue-item small {font-size:12px;color:#d1d1dc;opacity:1;margin-top:4px}
+html:root[data-theme][data-app-style] .screen-queue-item.current strong {color:var(--lyric-word)}
+html:root[data-theme][data-app-style] .screen-queue>header {padding:0 12px 14px;gap:12px}
+html:root[data-theme][data-app-style] .screen-queue>header h2 {font-size:14px;font-weight:600}
+html:root[data-theme][data-app-style] .screen-queue header>span {color:#c3c5cf;font-size:12px}
+html:root[data-theme][data-app-style] .immersive-player .icon-button {color:#e8e8ee;border:0;background:transparent;border-radius:50%;width:36px;height:36px;box-shadow:none}
+html:root[data-theme][data-app-style] .immersive-player .icon-button.active {color:var(--lyric-word);background:#ffffff0c}
+html:root[data-theme][data-app-style] .immersive-player .main-play {background:#f5f5f7;color:#121218;border:0;border-radius:50%;box-shadow:none}
+html:root[data-theme][data-app-style] .screen-utilities {color:#f5f5f7}
+html:root[data-theme][data-app-style] .screen-utilities :is(select,.secondary) {background:#ffffff10;color:#f5f5f7;border:1px solid #ffffff18;border-radius:8px}
+html:root[data-theme][data-app-style] .screen-utilities option {background:#20222a;color:#fff}
+html:root[data-theme][data-app-style] .screen-utilities input.volume {appearance:none;height:28px;background:transparent;accent-color:#f5f5f7}
+html:root[data-theme][data-app-style] .screen-utilities input.volume::-webkit-slider-runnable-track {height:4px;border-radius:4px;background:linear-gradient(to right,#f5f5f7 var(--volume-level),#ffffff40 var(--volume-level));box-shadow:none}
+html:root[data-theme][data-app-style] .screen-utilities input.volume::-webkit-slider-thumb {appearance:none;width:12px;height:12px;margin-top:-4px;background:#f5f5f7;border:0;border-radius:50%;opacity:1;box-shadow:none}
+.screen-controls>.seek-row {margin:16px 0 0;font-size:11px}
+.screen-controls>.screen-playback-error {color:#ffd3d3}
+
+/* Studio deliberately retains its lyrics-left / artwork-right composition. */
+html:root[data-theme][data-app-style] .layout-studio .immersive-layout {grid-template-columns:minmax(0,1fr) minmax(280px,340px);gap:32px;padding:0 32px 24px}
+html:root[data-theme][data-app-style] .layout-studio .screen-track {padding:18px 10px}
+html:root[data-theme][data-app-style] .layout-studio .screen-queue {border:1px solid #ffffff20;border-radius:18px;background:linear-gradient(145deg,#ffffff14,#ffffff06);backdrop-filter:blur(24px) saturate(115%);box-shadow:inset 0 1px #ffffff08;padding:18px 12px 12px;margin-top:12px;max-height:none;flex:1;min-height:140px}
+
+/* Lounge has a fixed artwork column, interchangeable content, and one transport footer. */
+html:root[data-theme][data-app-style] .layout-lounge .immersive-layout {grid-template-columns:minmax(240px,.72fr) minmax(0,1.28fr);gap:clamp(28px,4vw,80px);padding:0 clamp(28px,3vw,64px);min-height:0}
+html:root[data-theme][data-app-style] .layout-lounge .immersive-side {grid-column:1;grid-row:1;justify-content:center;overflow:hidden}
+html:root[data-theme][data-app-style] .layout-lounge .immersive-stage {grid-column:2;grid-row:1;overflow:hidden}
+html:root[data-theme][data-app-style] .layout-lounge .screen-track {padding:16px 0;text-align:left;overflow:hidden;width:100%}
+html:root[data-theme][data-app-style] .layout-lounge .screen-cover {width:min(100%,46vh,560px);margin:0 0 28px;aspect-ratio:1}
+html:root[data-theme][data-app-style] .layout-lounge .screen-track h2 {font-size:clamp(24px,2.2vw,36px);line-height:1.2;font-weight:700;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin:0 0 10px}
+html:root[data-theme][data-app-style] .layout-lounge .screen-track>p {font-size:15px;color:#d5d5df}
+html:root[data-theme][data-app-style] .layout-lounge .immersive-stage>.screen-queue {height:100%;max-height:none;min-height:0;padding:12px 0 0}
+html:root[data-theme][data-app-style] .layout-lounge .immersive-stage .lyrics-panel {padding:0}
+html:root[data-theme][data-app-style] .lounge-player-dock {flex-shrink:0;padding:18px 32px 24px;background:linear-gradient(transparent,#00000024)}
+html:root[data-theme][data-app-style] .lounge-player-dock .screen-controls {display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
+html:root[data-theme][data-app-style] .lounge-player-dock .seek-row {grid-column:1/-1;grid-row:1;margin:0;width:100%;font-size:12px;color:#d8d8e1}
+html:root[data-theme][data-app-style] .lounge-player-dock .screen-transport {grid-column:2;grid-row:2;margin:0;gap:22px;flex-wrap:nowrap}
+html:root[data-theme][data-app-style] .lounge-player-dock .main-play {width:64px;height:64px}
+html:root[data-theme][data-app-style] .lounge-player-dock .screen-utilities {grid-column:3;grid-row:2;margin:0;justify-content:flex-end;gap:12px}
+html:root[data-theme][data-app-style] .lounge-player-dock .screen-spoken-skips {grid-column:1;grid-row:2;justify-content:flex-start;margin:0}
+html:root[data-theme][data-app-style] .lounge-player-dock .screen-playback-error {grid-column:1/-1;margin:0}
+
+/* Gradients stay vector-sized; blur and bleed follow canvas width on 4K/ultrawide. */
+.immersive-atmosphere {--canvas-scale:1;--fall-height:1200px;pointer-events:none;contain:paint}
+:is(.immersive-player,.expanded-player).backdrop-artwork .immersive-atmosphere>.art {filter:blur(calc(var(--artwork-blur,48px)*var(--canvas-scale))) saturate(1.12);inset:-15%;width:130%;height:130%;image-rendering:auto}
+.immersive-atmosphere .ambient-glow {inset:-8%;filter:none;background-size:100% 100%;opacity:.85}
+.immersive-atmosphere::before {content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,#0000 40%,#05070c55)}
+.immersive-atmosphere .weather-field {position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:.4}
+.immersive-atmosphere .weather-field>i {position:absolute;inset:auto;left:var(--particle-x);top:var(--particle-y);width:var(--particle-size);height:var(--particle-size);background:#edf4ff;border-radius:50%;opacity:.5;will-change:auto;animation:none;transform:none}
+.immersive-atmosphere .weather-rain>i {width:1px;height:clamp(12px,1.2vh,28px);border-radius:1px;background:linear-gradient(transparent,#c4d9f3)}
+.with-motion .immersive-atmosphere .weather-field>i {top:-40px;animation:canvas-precipitation var(--particle-duration) var(--particle-delay) linear infinite}
+@keyframes canvas-precipitation {from{transform:translate3d(0,0,0)}to{transform:translate3d(-30px,var(--fall-height),0)}}
+@media(min-width:2400px) {.immersive-atmosphere .star-field {background-size:277px 223px,411px 325px,587px 449px}}
+@media(max-width:1100px) {
+ html:root[data-theme][data-app-style] .immersive-header {padding:16px 22px;gap:10px}
+ html:root[data-theme][data-app-style] .immersive-header-actions {gap:6px;flex:1;flex-wrap:wrap}
+ html:root[data-theme][data-app-style] .layout-studio .immersive-layout {grid-template-columns:minmax(0,1fr) 280px;gap:16px;padding:0 22px 18px}
+ html:root[data-theme][data-app-style] .layout-lounge .immersive-layout {grid-template-columns:minmax(200px,.7fr) minmax(0,1.3fr);gap:28px;padding:0 24px}
+ html:root[data-theme][data-app-style] .lounge-player-dock {padding:16px 24px}
+ html:root[data-theme][data-app-style] .lounge-player-dock .screen-controls {grid-template-columns:auto 1fr;gap:12px}
+ html:root[data-theme][data-app-style] .lounge-player-dock .screen-transport {grid-column:1;gap:14px}
+ html:root[data-theme][data-app-style] .lounge-player-dock .screen-utilities {grid-column:2}
+ html:root[data-theme][data-app-style] .lounge-player-dock .screen-spoken-skips {grid-row:3;grid-column:1/-1;justify-content:center}
+}
+@media(max-height:740px) {
+ html:root[data-theme][data-app-style] .layout-lounge .screen-cover {width:min(100%,38vh);margin-bottom:18px}
+ html:root[data-theme][data-app-style] .layout-lounge .screen-track h2 {font-size:24px}
+ html:root[data-theme][data-app-style] .lounge-player-dock .main-play {width:48px;height:48px}
+ html:root[data-theme][data-app-style] .lounge-player-dock {padding-block:10px 14px}
+}
+@media(prefers-reduced-motion:reduce) {.with-motion .immersive-atmosphere .weather-field>i {top:var(--particle-y);animation:none;transform:none}}
+
+/* A colored, layered timeline for immersive listening. */
+html:root[data-theme][data-app-style] .immersive-player {--seek-accent:color-mix(in srgb,var(--lyric-word) 35%,#8155e8);--seek-thumb:color-mix(in srgb,var(--seek-accent) 25%,#fff)}
+html:root[data-theme][data-app-style] .immersive-player:is(.backdrop-ocean,.backdrop-rain) {--seek-accent:#39dce6}
+html:root[data-theme][data-app-style] .immersive-player:is(.backdrop-sunset,.backdrop-ember) {--seek-accent:#f3a280}
+html:root[data-theme][data-app-style] .immersive-player .seek-with-waves {gap:20px;padding-top:18px}
+html:root[data-theme][data-app-style] .immersive-player .seek-with-waves .seek-track {height:28px;isolation:isolate}
+html:root[data-theme][data-app-style] .immersive-player .seek-with-waves input {appearance:none;height:28px;margin:0;border:0;padding:0;box-shadow:none;background:transparent;border-radius:8px;z-index:2;--seek-height:8px;--seek-thumb-size:20px}
+html:root[data-theme][data-app-style] .immersive-player .seek-with-waves input::-webkit-slider-runnable-track {height:var(--seek-height);border-radius:999px;background:linear-gradient(to right,var(--seek-thumb) var(--progress),#ffffff30 var(--progress));border:0;box-shadow:none}
+html:root[data-theme][data-app-style] .immersive-player .seek-with-waves input::-webkit-slider-thumb {appearance:none;opacity:1;width:20px;height:20px;margin-top:calc((var(--seek-height) - var(--seek-thumb-size))/2);border:0;border-radius:50%;background:var(--seek-thumb);box-shadow:0 2px 8px #0003}
+.seek-waves {position:absolute;left:7px;right:7px;bottom:14px;height:30px;pointer-events:none;overflow:hidden;z-index:0}
+.seek-waves svg {mask-image:linear-gradient(to right,transparent,#000 14px);display:block;width:100%;height:100%;overflow:visible}
+.seek-waves path {fill:var(--seek-thumb);transform-origin:50% 100%}
+.seek-waves path:nth-child(1) {fill:var(--seek-thumb);opacity:.4}
+.seek-waves path:nth-child(2) {opacity:.5}
+.seek-waves path:nth-child(3) {opacity:.8}
+.with-motion .is-advancing .seek-waves path {animation:seek-wave-breathe 3.8s ease-in-out infinite alternate}
+.with-motion .is-advancing .seek-waves path:nth-child(2) {animation-delay:-1.7s;animation-duration:5.2s}
+.with-motion .is-advancing .seek-waves path:nth-child(3) {animation-delay:-2.6s;animation-duration:4.6s}
+@keyframes seek-wave-breathe {from{transform:scaleY(.65)}to{transform:scaleY(1)}}
+.screen-audio-quality {grid-column:1;grid-row:2;display:flex;align-items:center;gap:10px;color:#d1d1dc;font-size:11px}
+.screen-audio-quality>span {border:1px solid #ffffff30;border-radius:4px;padding:3px 5px;font-size:10px;letter-spacing:.04em}
+html:root[data-theme][data-app-style] .lounge-player-dock {padding:22px 40px 28px;background:linear-gradient(transparent,#08091055)}
+html:root[data-theme][data-app-style] .lounge-player-dock .screen-controls {row-gap:20px}
+html:root[data-theme][data-app-style] .lounge-player-dock .screen-transport {gap:26px}
+html:root[data-theme][data-app-style] .lounge-player-dock .main-play {width:72px;height:72px}
+html:root[data-theme][data-app-style] .lounge-player-dock .volume-control .volume {width:110px;height:24px;background:linear-gradient(to right,#f5f5f7 var(--volume-level),#ffffff30 var(--volume-level)) center/100% 3px no-repeat;box-shadow:none;border:0}
+html:root[data-theme][data-app-style] .lounge-player-dock .volume::-webkit-slider-thumb {width:9px;height:9px;box-shadow:none;border:0;opacity:0}
+html:root[data-theme][data-app-style] .lounge-player-dock .volume:is(:hover,:focus-visible)::-webkit-slider-thumb {opacity:1}
+html:root[data-theme][data-app-style] .lounge-player-dock .volume-value {display:none}
+@media(prefers-reduced-motion:reduce){.seek-waves path {animation:none!important}}
+@media(max-width:1100px){.screen-audio-quality {grid-row:3;grid-column:1/-1} html:root[data-theme][data-app-style] .lounge-player-dock {padding:18px 24px} html:root[data-theme][data-app-style] .lounge-player-dock .screen-transport {gap:14px}}
+
+/* Compact Studio transport: keep the artwork and lyrics in their existing columns. */
+html:root[data-theme][data-app-style] .layout-studio .immersive-side {overflow-y:auto;scrollbar-width:thin}
+html:root[data-theme][data-app-style] .layout-studio .screen-track {overflow:visible;flex-shrink:0;padding:18px 10px 12px}
+html:root[data-theme][data-app-style] .layout-studio .screen-cover {margin-bottom:20px}
+html:root[data-theme][data-app-style] .layout-studio .screen-track h2 {white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3;font-size:18px;margin:0 0 8px}
+html:root[data-theme][data-app-style] .layout-studio .screen-track>p {margin:0;color:#e0dfe5;line-height:1.5}
+html:root[data-theme][data-app-style] .layout-studio .screen-controls {position:relative;isolation:isolate;padding:4px 0 10px;margin-top:16px}
+.layout-studio .screen-controls::before {content:'';position:absolute;inset:-16px -10px -8px;background:radial-gradient(ellipse at center,#080b1938,transparent 72%);z-index:-1;pointer-events:none}
+html:root[data-theme][data-app-style] .layout-studio .screen-transport {gap:16px;margin-top:0}
+html:root[data-theme][data-app-style] .layout-studio .main-play {width:54px;height:54px;flex:none}
+html:root[data-theme][data-app-style] .layout-studio .screen-transport>.icon-button:is(:first-child,:last-child):not(.active) {color:#d1cdd6}
+html:root[data-theme][data-app-style] .layout-studio .seek-with-waves {gap:10px;padding-top:8px;margin-top:14px;color:#e0dfe5}
+html:root[data-theme][data-app-style] .layout-studio .seek-with-waves input {--seek-height:5px;--seek-thumb-size:14px}
+html:root[data-theme][data-app-style] .layout-studio .seek-with-waves input::-webkit-slider-thumb {width:14px;height:14px}
+html:root[data-theme][data-app-style] .layout-studio .seek-waves {height:16px;left:5px;right:5px;opacity:.7}
+html:root[data-theme][data-app-style] .layout-studio .screen-utilities {gap:16px;margin-top:10px;justify-content:center;flex-wrap:wrap}
+html:root[data-theme][data-app-style] .layout-studio .volume-control {gap:8px}
+html:root[data-theme][data-app-style] .layout-studio .volume {width:84px}
+html:root[data-theme][data-app-style] .layout-studio .volume-value {opacity:0;width:30px;font-size:10px;transition:opacity .15s}
+html:root[data-theme][data-app-style] .layout-studio .volume-control:is(:hover,:focus-within) .volume-value {opacity:1}
+html:root[data-theme][data-app-style] .layout-studio .player-sleep-menu>summary {color:#e0dfe5;width:36px;height:36px}
+html:root[data-theme][data-app-style] .layout-studio .player-sleep-menu>summary.active {color:var(--lyric-word);background:#ffffff12}
+html:root[data-theme][data-app-style] .layout-studio .player-sleep-popup {left:0;right:auto;z-index:10;text-align:left;background:#202631}
+html:root[data-theme][data-app-style] .layout-studio .screen-queue {margin-top:8px;padding:16px 10px 10px;border-radius:14px;border-color:#ffffff1c;background:linear-gradient(145deg,#ffffff12,#10182a24);box-shadow:none}
+html:root[data-theme][data-app-style] .layout-studio .screen-queue>header {padding:0 8px 12px}
+html:root[data-theme][data-app-style] .layout-studio button.screen-queue-item {gap:9px;padding:8px;min-height:56px;grid-template-columns:14px 36px minmax(0,1fr) auto}
+html:root[data-theme][data-app-style] .layout-studio .screen-queue-item>.track-artwork {width:36px;height:36px}
+html:root[data-theme][data-app-style] .layout-studio button.screen-queue-item.current {background:#ffffff1a}
+html:root[data-theme][data-app-style] .layout-studio .screen-queue-item.current .queue-number {color:var(--lyric-word)}
