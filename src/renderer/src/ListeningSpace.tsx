@@ -29,7 +29,7 @@ export function QueuePage({ lyricRequest=0,player, error, expanded = false, clos
   useEffect(()=>{if(!expanded)return;let live=true;const reload=()=>void api.playingScreenPreferences().then(p=>{if(live)setAppearance(p)}).catch(e=>error(message(e)));reload();window.addEventListener('profile-applied',reload);return()=>{live=false;window.removeEventListener('profile-applied',reload)}},[expanded,immersive])
   const item = player.queue[player.queueIndex]
   const queueRoot=useQueueFollow(player.queueIndex,page,(!expanded||panel==='queue')&&!immersive,JSON.stringify(item?.target))
-  const canLyrics=item?.target.kind==='music-track'||item?.target.kind==='local-file'
+  const canLyrics=item?.target.kind==='music-track'||item?.target.kind==='downtify-track'||item?.target.kind==='local-file'
   useEffect(()=>{if(!canLyrics)setPanel('queue')},[canLyrics])
   useEffect(()=>setPage(Math.floor(player.queueIndex/100)),[player.queueIndex,panel,immersive])
   const edit = (input: Parameters<typeof api.queueEdit>[0]) => void api.queueEdit(input).catch(e => error(message(e)))

@@ -2,6 +2,7 @@ import type { AudioTrack, PlayTarget } from './types'
 
 export function progressKey(target: PlayTarget): string {
   switch (target.kind) {
+    case 'downtify-track':
     case 'music-track': return JSON.stringify([target.serverId, target.kind, target.trackId])
     case 'audiobook': return JSON.stringify([target.serverId, target.kind, target.bookId])
     case 'podcast-episode': return JSON.stringify([target.serverId, target.kind, target.showId, target.episodeId])

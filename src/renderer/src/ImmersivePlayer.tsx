@@ -25,7 +25,7 @@ export function ImmersivePlayer({player,close,onExitError}:{player:PlaybackState
   return()=>{mounted.current=false;queueMicrotask(()=>{if(!mounted.current)void api.fullscreen('exit').catch(e=>exitError.current(message(e)))})}
  },[])
  const spoken=player.kind==='audiobook'||player.kind==='podcast-episode',active=player.status==='playing'||player.status==='paused'
- const item=player.queue[player.queueIndex],canLyrics=item?.target.kind==='music-track'||item?.target.kind==='local-file'
+ const item=player.queue[player.queueIndex],canLyrics=item?.target.kind==='music-track'||item?.target.kind==='downtify-track'||item?.target.kind==='local-file'
  useEffect(()=>{let live=true;void api.playingScreenPreferences().then(p=>{if(live)setPrefs(p)}).catch(e=>{if(live)setError(message(e))}).finally(()=>{if(live)setReady(true)});return()=>{live=false}},[])
  useEffect(()=>{const elements=[...document.querySelectorAll<HTMLElement>('.sidebar,.topbar,.player-bar')],previous=elements.map(el=>el.inert);elements.forEach(el=>el.inert=true);return()=>elements.forEach((el,i)=>el.inert=previous[i])},[])
  useEffect(()=>setPage(Math.floor(player.queueIndex/50)),[player.queueIndex,player.queue.length,queueOpen])

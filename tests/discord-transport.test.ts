@@ -1,3 +1,4 @@
+import {publicCoverPrint} from '../src/shared/cover-print'
 import {emptyJfState,type JfItem} from '../src/shared/jellyfin'
 import {DEFAULT_DISCORD_APPLICATION_ID} from '../src/shared/discord'
 import {EventEmitter} from 'node:events'
@@ -5,7 +6,7 @@ import {afterEach,describe,expect,it,vi} from 'vitest'
 vi.mock('../src/main/store',()=>({Store:class{}}))
 vi.mock('node:net',()=>({createConnection:vi.fn()}))
 import {createConnection} from 'node:net'
-import {DiscordPresence,discordDefaults,defaultDiscordArtwork,rpcFrame} from '../src/main/discord'
+import {DiscordPresence,discordDefaults,rpcFrame} from '../src/main/discord'
 import {emptyPlayback} from '../src/shared/types'
 import type {Store} from '../src/main/store'
 import type {Player} from '../src/main/player'
@@ -75,7 +76,7 @@ describe('Discord local transport',()=>{
     const settings={...discordDefaults,enabled:true,books:true,podcasts:true,applicationId:'123456789012345678'}
     const store={get:(key:string)=>key==='discordSettings'?settings:undefined,secret:()=> 'a'.repeat(32)} as unknown as Store
     const provider=vi.fn(()=>{throw Error('Spoken metadata must not be sent to Last.fm')}),rpc=new DiscordPresence(store,Object.assign(new EventEmitter(),{state}) as Player,provider,{} as LocalFiles)
-    try{await vi.advanceTimersByTimeAsync(1);pipe.emit('data',rpcFrame(1,{evt:'READY'}));await vi.advanceTimersByTimeAsync(1);const activity=JSON.parse(pipe.frames.at(-1)!.subarray(8).toString()).args.activity;expect(activity.assets.large_image).toBe(defaultDiscordArtwork);expect(rpc.status.artwork).toBe(true);expect(rpc.status.artworkMessage).toContain('default cover');expect(fetcher).not.toHaveBeenCalled();expect(provider).not.toHaveBeenCalled()}finally{rpc.stop()}
+    try{await vi.advanceTimersByTimeAsync(1);pipe.emit('data',rpcFrame(1,{evt:'READY'}));await vi.advanceTimersByTimeAsync(1);const activity=JSON.parse(pipe.frames.at(-1)!.subarray(8).toString()).args.activity;expect(activity.assets.large_image).toBe(publicCoverPrint(state.title));expect(rpc.status.artwork).toBe(true);expect(rpc.status.artworkMessage).toMatch(/abstract print/);expect(fetcher).not.toHaveBeenCalled();expect(provider).not.toHaveBeenCalled()}finally{rpc.stop()}
   })
   it('handles fragmented READY frames, acknowledgement, ping/pong, privacy clearing and reconnect',async()=>{
     vi.useFakeTimers();const pipes:Pipe[]=[]
@@ -88,7 +89,7 @@ describe('Discord local transport',()=>{
       expect(JSON.parse(pipe.frames[0].subarray(8).toString())).toEqual({v:1,client_id:'123456789012345678'})
       const ready=rpcFrame(1,{evt:'READY'});pipe.emit('data',ready.subarray(0,5));expect(rpc.status.connected).toBe(false);pipe.emit('data',ready.subarray(5));await vi.advanceTimersByTimeAsync(1)
       expect(rpc.status.connected).toBe(true)
-      const activity=JSON.parse(pipe.frames.at(-1)!.subarray(8).toString());expect(activity.cmd).toBe('SET_ACTIVITY');expect(activity.args.activity.details).toBe('Listening fixture');expect(activity.args.activity.assets.large_image).toBe('https://raw.githubusercontent.com/creativekamrul/media-center/v1.1.0/src/renderer/public/assets/default-cover.png');expect(rpc.status.artworkMessage).toContain('Sending the public Media Center default cover.')
+      const activity=JSON.parse(pipe.frames.at(-1)!.subarray(8).toString());expect(activity.cmd).toBe('SET_ACTIVITY');expect(activity.args.activity.details).toBe('Listening fixture');expect(activity.args.activity.assets.large_image).toBe(publicCoverPrint(state.title));expect(rpc.status.artworkMessage).toMatch(/abstract print/)
       pipe.emit('data',rpcFrame(1,{cmd:'SET_ACTIVITY',nonce:activity.nonce,data:{}}));pipe.emit('data',rpcFrame(3,{ping:'fixture'}));expect(pipe.frames.at(-1)!.readUInt32LE(0)).toBe(4)
       player.state={...state,privateListening:true};player.emit('state',player.state);expect(JSON.parse(pipe.frames.at(-1)!.subarray(8).toString()).args.activity).toBeNull();player.state={...state,kind:'audiobook'};await vi.advanceTimersByTimeAsync(3000);expect(JSON.parse(pipe.frames.at(-1)!.subarray(8).toString()).args.activity).toBeNull()
       pipe.destroy();await vi.advanceTimersByTimeAsync(18000);expect(pipes.length).toBe(2)

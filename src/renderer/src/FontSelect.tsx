@@ -8,7 +8,8 @@ export function FontSelect({label,value,onChange,theme=false}:{label:string;valu
  const missing=value.startsWith('system:')&&!installed.includes(value.slice(7))
  return <><select aria-label={label} value={value} onChange={e=>onChange(e.target.value)}>
   {theme&&<option value="theme">Use theme font</option>}
-  <optgroup label="Font presets">{fontIds.map(id=><option key={id} value={id}>{fonts[id].name}</option>)}</optgroup>
+  <optgroup label="Included with Media Center">{(['dm-sans','sora'] as const).map(id=><option key={id} value={id}>{fonts[id].name}</option>)}</optgroup>
+  <optgroup label="System font presets">{fontIds.filter(id=>id!=='dm-sans'&&id!=='sora').map(id=><option key={id} value={id}>{fonts[id].name}</option>)}</optgroup>
   {missing&&<option value={value}>{value.slice(7)} · saved font</option>}
   {!!installed.length&&<optgroup label="Installed on this device">{installed.map(name=><option key={name} value={`system:${name}`}>{name}</option>)}</optgroup>}
  </select>{error&&<small className="muted">{error}</small>}</>

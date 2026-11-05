@@ -1,3 +1,4 @@
+import type {DowntifyAPI} from './downtify'
 import type { JellyfinAPI } from './jellyfin'
 import type {PersonalAPI as importPersonalAPI} from './personal-library'
 import type {StudioAPI as importStudioAPI} from './studio'
@@ -23,7 +24,7 @@ export type LibraryItem = MusicAlbum | Audiobook | PodcastShow
 export type ItemDetail = { kind: 'album'; item: MusicAlbum; tracks: MusicTrack[] } | { kind: 'audiobook'; item: Audiobook } | { kind: 'podcast-show'; item: PodcastShow }
 export interface Page { items: LibraryItem[]; total: number; page: number; hasMore: boolean }
 // A show is never playable. Episode playback always includes its parent show ID.
-export type PlayTarget = { kind: 'music-track'; serverId: string; trackId: string } | { kind: 'audiobook'; serverId: string; bookId: string } | { kind: 'podcast-episode'; serverId: string; showId: string; episodeId: string } | { kind: 'local-file'; serverId: 'local'; rootId: string; fileId: string } | { kind: 'radio'; serverId: string; stationId: string }
+export type PlayTarget = {kind:'downtify-track';serverId:string;trackId:string} | { kind: 'music-track'; serverId: string; trackId: string } | { kind: 'audiobook'; serverId: string; bookId: string } | { kind: 'podcast-episode'; serverId: string; showId: string; episodeId: string } | { kind: 'local-file'; serverId: 'local'; rootId: string; fileId: string } | { kind: 'radio'; serverId: string; stationId: string }
 export type SpokenTarget = Extract<PlayTarget, { kind: 'audiobook' | 'podcast-episode' }>
 export interface QueueItem { target: PlayTarget; title: string; subtitle: string; cover?: string; context?: string; duration?: number }
 export interface PlaybackState {
@@ -41,7 +42,7 @@ export interface UpdateState {
   status: 'unavailable' | 'idle' | 'checking' | 'up-to-date' | 'available' | 'downloading' | 'ready' | 'installing' | 'error'
   version?: string; percent?: number; transferred?: number; total?: number; checkedAt?: number; error?: string
 }
-export interface DesktopAPI extends JellyfinAPI, importPersonalAPI, DailyAPI, ExperienceAPI, importStudioAPI {
+export interface DesktopAPI extends DowntifyAPI, JellyfinAPI, importPersonalAPI, DailyAPI, ExperienceAPI, importStudioAPI {
   windowControl(action:'get'|'minimize'|'maximize'|'close'):Promise<WindowState>
   onWindowState(listener:(state:WindowState)=>void):()=>void
   releaseNews(action:'get'|'seen'|'changelog'):Promise<{version:string;unread:boolean}>

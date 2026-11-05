@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.2.0
+
+- Connect Downtify, discover artists and albums, stream through MPV, browse saved playlists, and download tracks explicitly. When a recording confidently matches a Navidrome copy, choose which server to play it from.
+- Explore your connected libraries with an artwork-backed carousel, album links, source-specific retry, and listening-based suggestions. Hide a track or reduce suggestions for an artist, with Undo.
+- Search saved songs, albums, artists, and spoken media across sources. Preserve your place when returning from an artist or album and use clearer queue and download actions.
+- Bundle DM Sans and Sora for offline typography, update dark styles with charcoal panels and green controls, and use abstract cover prints when artwork is unavailable in the app or Discord presence.
+- Smooth the audio playhead and improve Jellyfin seeking, keyboard controls, playback options, and font consistency.
+
 ## 2.1.0
 
 - Redesign the desktop interface with consistent controls, full-width library and Now Playing pages, cleaner collection headers, and refined Home shelves.

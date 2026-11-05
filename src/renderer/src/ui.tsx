@@ -1,3 +1,4 @@
+import {CoverImage} from './CoverImage'
 import {useCollectionContext} from './media-context'
 import {loadArtwork} from './artwork-loader'
 import { useSyncExternalStore, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
@@ -27,7 +28,7 @@ export function Art({ item, small = false, personalKey }: { item: { id: string; 
     observer.observe(ref.current); return () => { live = false; observer.disconnect() }
   }, [item.id, item.serverId, item.cover,personalKey,revision])
   return <div ref={ref} className={`art tone-${hash} ${item.kind === 'audiobook' ? 'book-art' : ''} ${small ? 'small-art' : ''}`}>
-    {cover ? <img src={cover} alt="" decoding="async"/> : item.serverId!=='sample'&&!['audiobook','podcast-show','podcast-episode'].includes(item.kind)?<img src="./assets/default-cover.png" alt=""/> : <><div className="art-shape"/><div className="art-grain"/><span className="art-label">{item.kind === 'podcast-show' ? 'ON THE AIR' : item.kind === 'audiobook' ? item.subtitle : 'THE COLLECTION'}</span><strong>{item.title}</strong><span className="art-footer">{item.kind === 'podcast-show' ? 'Stories worth your time' : item.subtitle}</span></>}
+    {cover || item.serverId !== 'sample' ? <CoverImage src={cover} title={item.title}/>: <><div className="art-shape"/><div className="art-grain"/><span className="art-label">{item.kind === 'podcast-show' ? 'ON THE AIR' : item.kind === 'audiobook' ? item.subtitle : 'THE COLLECTION'}</span><strong>{item.title}</strong><span className="art-footer">{item.kind === 'podcast-show' ? 'Stories worth your time' : item.subtitle}</span></>}
   </div>
 }
 

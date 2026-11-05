@@ -7,10 +7,11 @@ describe('Installed fonts and lyric typography',()=>{
  it('accepts Unicode family names while rejecting paths and CSS payloads',()=>{
   for(const family of ['Noto Sans Bengali','বাংলা ফন্ট','Segoe UI Variable','Source Sans 3']){
    expect(fontChoiceSchema.parse(`system:${family}`)).toBe(`system:${family}`)
-   expect(fontCss(`system:${family}`)).toBe(`"${family}", sans-serif`)
+   expect(fontCss(`system:${family}`)).toBe(`"${family}", "DM Sans Variable", sans-serif`)
   }
   for(const value of ['system:','system:Arial; color:red','system:C:\\Fonts\\font.ttf','system:url(https://x)','system:Arial\n','system:Arial"','system:'+'a'.repeat(121)])expect(fontChoiceSchema.safeParse(value).success).toBe(false)
-  expect(fontCss('invalid')).toContain('Segoe UI')
+  expect(fontCss('invalid')).toContain('DM Sans Variable')
+  expect(appearanceSchema.parse({})).toMatchObject({bodyFont:'dm-sans',headingFont:'sora',lyricsFont:'dm-sans'})
  })
  it('filters and deduplicates the OS family response without exposing other data',()=>{
   expect(parseInstalledFonts('["Segoe UI","Arial","Arial","C:\\\\font.ttf",null,42]')).toEqual(['Arial','Segoe UI'])

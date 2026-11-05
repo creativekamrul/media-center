@@ -29,6 +29,18 @@ describe('playback coordination', () => {
   })
   afterEach(async () => { await player.shutdown(); vi.useRealTimers() })
 
+  it('plays Downtify through native MPV without routing it to music or spoken servers',async()=>{
+    player.downtifyStream=vi.fn(async()=> 'http://127.0.0.1:1234/private-capability')
+    const item={target:{kind:'downtify-track' as const,serverId:'discovery',trackId:'track'},title:'Discovery',subtitle:'Artist',duration:30}
+    await player.play([item],0)
+    expect(player.state.status).toBe('playing');expect(player.state.kind).toBe('downtify-track')
+    expect(mpv.load).toHaveBeenCalledWith('http://127.0.0.1:1234/private-capability',{start:'0'})
+    expect(abs.start).not.toHaveBeenCalled();expect(nav.track).not.toHaveBeenCalled();expect(nav.scrobble).not.toHaveBeenCalled()
+    await player.command({action:'seek',value:12})
+    expect(player.state.position).toBe(12)
+    expect(mpv.command).toHaveBeenCalledWith(['seek',12,'absolute+exact'])
+  })
+
   it('removes selected mixed-media queue entries atomically and rejects stale selection',async()=>{
     const episode={target:{kind:'podcast-episode' as const,serverId:'s',showId:'show',episodeId:'ep'},title:'Episode',subtitle:''}
     const items=[queue[0],episode,queue[0],{...episode,target:{...episode.target,episodeId:'ep2'}}]

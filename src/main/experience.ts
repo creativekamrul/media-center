@@ -1,3 +1,11 @@
+import {matchingRecording} from '../shared/recording-match'
+import type {DtRecord} from './providers/downtify'
+import {localAlbumKey} from '../shared/local-library'
+import type {SearchCollection} from '../shared/experience'
+import {savedShelves} from './downtify-workspace'
+import {rankLibrary} from '../shared/recommendations'
+import {Downtify} from './providers/downtify'
+import type {DtConnection} from '../shared/downtify'
 import {UndoJournal,assertUnchanged} from './undo'
 import {dialog,type BrowserWindow} from 'electron'
 import {z} from 'zod'
@@ -25,7 +33,7 @@ export function registerExperience(handle:Handle,store:Store,player:Player,downl
  handle('experience:save',experienceSchema,i=>{const assigned=Object.values(i.shortcuts).filter(Boolean).map(s=>s.toLowerCase());if(new Set(assigned).size!==assigned.length)throw Error('Assign each shortcut only once.');store.set('experience',{...i,navigation:prefs().navigation});changed()})
  handle('local:playlist-contents',z.object({rootId:id,id}).strict(),i=>{if(!local.roots().some(r=>r.id===i.rootId))throw Error('Source not found.');const p=(store.get<LocalPlaylist[]>('local-playlists:'+i.rootId)??[]).find(p=>p.id===i.id);if(!p)throw Error('Playlist not found.');return p})
  handle('local:playlist-file',z.object({rootId:id,action:z.enum(['import','export']),id:id.optional()}).strict(),i=>playlistFile(i,local,index,store,window()))
- handle('lyrics:offset',z.object({key:z.string().min(1).max(10000),seconds:z.number().finite().min(-30).max(30).optional()}).strict(),i=>{const item=player.state.queue[player.state.queueIndex];if(!item||!['music-track','local-file'].includes(item.target.kind)||progressKey(item.target)!==i.key)throw Error('The playing song changed.');if(i.seconds!==undefined)store.set('lyric-offset:'+i.key,i.seconds);return store.get<number>('lyric-offset:'+i.key)??0})
+ handle('lyrics:offset',z.object({key:z.string().min(1).max(10000),seconds:z.number().finite().min(-30).max(30).optional()}).strict(),i=>{const item=player.state.queue[player.state.queueIndex];if(!item||!['music-track','local-file','downtify-track'].includes(item.target.kind)||progressKey(item.target)!==i.key)throw Error('The playing song changed.');if(i.seconds!==undefined)store.set('lyric-offset:'+i.key,i.seconds);return store.get<number>('lyric-offset:'+i.key)??0})
  handle('media:details',queueItemSchema,async item=>{
   const t=item.target
   if(t.kind==='music-track'){const p=provider(t.serverId);if(!(p instanceof Navidrome))throw Error('Choose music.');const f=await p.track(t.trackId);return{item:trackQueue(f),favorite:f.starred,details:{Artist:f.artist,Album:f.album,Format:f.codec??'Original',Duration:String(f.duration)+' seconds',Quality:`${f.sampleRate??'?'} Hz · ${f.bitDepth??'?'} bit`,Source:p.connection.name}}}
@@ -43,10 +51,86 @@ export function registerExperience(handle:Handle,store:Store,player:Player,downl
   const queues=store.get<import('../shared/daily').SavedQueue[]>('savedQueues')??[];if(queues.length>=100)throw Error('Remove a saved queue first.');store.set('savedQueues',[{id:crypto.randomUUID(),name,items,index:0,position:0,updatedAt:Date.now()},...queues]);return'Saved as a cross-source queue in Play queue.'
  })
  handle('home:pins',z.undefined(),async()=>{const result=[];for(const pin of prefs().pins)try{let items:QueueItem[]=[];if(pin.kind==='music'){const p=provider(pin.source);if(p instanceof Navidrome)items=(await p.collection('playlist',pin.id)).tracks.slice(0,500).map(trackQueue)}else{const p=(store.get<LocalPlaylist[]>(`local-playlists:${pin.source}`)??[]).find(p=>p.id===pin.id);if(p)items=await Promise.all(p.files.slice(0,500).map(async id=>localQueue(pin.source,await local.metadata(pin.source,id))))}result.push({pin,items})}catch{result.push({pin,items:[]})}return result})
+ const dtConnections=()=>store.get<DtConnection[]>('downtify:connections')??[]
+ const sources=()=>[
+  ...store.connections().map(c=>({id:'server:'+c.id,name:c.name})),
+  ...dtConnections().map(c=>({id:'downtify:'+c.id,name:c.name})),
+  ...local.roots().map(r=>({id:'local:'+r.id,name:r.name})),
+  ...(store.connections().some(c=>c.provider==='audiobookshelf')?[{id:'podcasts',name:'Podcast inbox'}]:[])
+ ]
+ handle('explore:sources',z.undefined(),sources)
+ handle('downtify:saved-copies',z.object({serverId:id,trackId:id}).strict(),async input=>{
+  if(!dtConnections().some(c=>c.id===input.serverId))throw Error('Downtify connection unavailable.')
+  const record=store.get<DtRecord>(`downtify:track:${input.serverId}:${input.trackId}`)
+  if(!record)throw Error('Refresh this track before looking for a saved copy.')
+  const copies:{source:string;item:QueueItem}[]=[],warnings:string[]=[]
+  await Promise.all(store.connections().filter(c=>c.provider==='navidrome').map(async c=>{
+   try{
+    const service=provider(c.id)
+    if(!(service instanceof Navidrome))return
+    const result=await service.catalog({serverId:c.id,libraryId:'all',view:'songs',page:0,search:record.track.title})
+    const match=matchingRecording(record.track,result.items.filter((t):t is MusicTrack=>t.kind==='music-track'))
+    if(match&&!result.hasMore)copies.push({source:c.name,item:trackQueue(match)})
+   }catch{warnings.push(c.name+': lookup unavailable.')}
+  }))
+  return {copies:copies.sort((a,b)=>a.source.localeCompare(b.source)),warnings}
+ })
+ handle('explore:get',id.optional(),async scope=>{
+  const includes=(key:string)=>!scope||scope===key
+  const pool:{item:QueueItem;source:string}[]=[],warnings:string[]=[]
+  const albums=new Map<string,SearchCollection>()
+  const seedArtists=[...new Set(store.history().filter(h=>['music-track','local-file','downtify-track'].includes(h.item.target.kind)).map(h=>h.item.subtitle.trim()).filter(Boolean))].slice(0,3)
+  await Promise.all(store.connections().filter(c=>includes('server:'+c.id)).map(async c=>{
+   try{
+    const p=provider(c.id)
+    if(p instanceof Navidrome){
+     for(const search of ['',...seedArtists]){
+      const result=await p.catalog({serverId:c.id,libraryId:'all',view:'songs',page:0,search})
+      for(const t of result.items){
+       if(t.kind!=='music-track')continue
+       const item=trackQueue(t)
+       pool.push({item,source:c.name})
+       if(t.albumId&&t.album)albums.set(progressKey(item.target),{provider:'navidrome',kind:'album',sourceId:c.id,id:t.albumId,title:t.album,subtitle:t.artist,cover:t.cover})
+      }
+     }
+    }else{
+     for(const library of (await p.libraries()).filter(l=>l.kind==='audiobooks')){
+      const result=await p.catalog({library,page:0,search:'',sort:'media.metadata.title',descending:false,status:'all'})
+      for(const t of result.items)if(t.kind==='audiobook')pool.push({item:{target:{kind:'audiobook',serverId:c.id,bookId:t.id},title:t.title,subtitle:t.subtitle,cover:t.cover,duration:t.duration},source:c.name})
+     }
+    }
+   }catch{warnings.push(c.name+': library unavailable.')}
+  }))
+  await Promise.all(dtConnections().filter(c=>includes('downtify:'+c.id)).map(async c=>{
+   try{
+    const rows=await new Downtify(c,store.secret(`downtify:${c.id}`)??'').browse({serverId:c.id,view:'library'})
+    for(const r of rows){
+     store.set(`downtify:track:${c.id}:${r.track.id}`,r)
+     const t=r.track,item:QueueItem={target:{kind:'downtify-track',serverId:c.id,trackId:t.id},title:t.title,subtitle:t.artist,cover:t.id,duration:t.duration,context:t.album}
+     pool.push({item,source:c.name})
+     if(t.album)albums.set(progressKey(item.target),{provider:'downtify',kind:'album',sourceId:c.id,id:JSON.stringify([t.artist,t.album]),title:t.album,subtitle:t.artist,cover:t.id})
+    }
+   }catch{warnings.push(c.name+': saved music unavailable.')}
+  }))
+  for(const root of local.roots().filter(r=>includes('local:'+r.id)))try{
+   const result=await index.query({rootId:root.id,view:'songs',page:0,search:'',sort:'title'})
+   for(const t of result.tracks){
+    const item=localQueue(root.id,t)
+    pool.push({item,source:root.name})
+    if(t.album)albums.set(progressKey(item.target),{provider:'local',kind:'album',sourceId:root.id,id:localAlbumKey(t),title:t.album,subtitle:t.albumArtist||t.artist,cover:t.id})
+   }
+  }catch{warnings.push(root.name+': unavailable.')}
+  if(includes('podcasts'))try{pool.push(...(await inbox()).filter(e=>e.episode.downloaded).slice(0,100).map(e=>({item:e.item,source:e.showTitle})))}catch{warnings.push('Podcast library unavailable.')}
+  const recorded=store.listeningRows()
+  const heard=new Set(recorded.filter(r=>Number((r as Record<string,unknown>).seconds)>0 && !String(r.target.kind).startsWith('jellyfin-')).map(r=>progressKey(r.target)))
+  const listens=(recorded as unknown as {subtitle:string;seconds:number;day:string;kind:string}[])
+  return {items:rankLibrary(pool,listens).map(r=>({...r,heard:heard.has(progressKey(r.item.target)),album:albums.get(progressKey(r.item.target))})),warnings}
+ })
  handle('search:all',z.string().trim().min(2).max(500),async query=>{
   const groups:SearchGroup[]=[],warnings:string[]=[]
-  await Promise.allSettled(store.connections().map(async c=>{try{const p=provider(c.id);if(p instanceof Navidrome){const r=await p.catalog({serverId:c.id,libraryId:'all',view:'songs',page:0,search:query});groups.push({id:`music:${c.id}`,name:c.name+' · Music',items:r.items.filter((t):t is MusicTrack=>t.kind==='music-track').map(trackQueue)})}else for(const library of(await p.libraries()).filter(l=>l.kind==='audiobooks')){const r=await p.catalog({library,page:0,search:query,sort:'media.metadata.title',descending:false,status:'all'});groups.push({id:`books:${c.id}:${library.id}`,name:c.name+' · '+library.name,items:r.items.filter(t=>t.kind==='audiobook').map(t=>({target:{kind:'audiobook',serverId:c.id,bookId:t.id},title:t.title,subtitle:t.subtitle,cover:t.cover,duration:t.duration}))})}}catch{warnings.push(c.name+': search unavailable.')}}))
-  for(const root of local.roots())try{const r=await index.query({rootId:root.id,view:'songs',page:0,search:query,sort:'title'});groups.push({id:`local:${root.id}`,name:root.name+' · Local music',items:r.tracks.map(t=>localQueue(root.id,t))})}catch{warnings.push(root.name+': source unavailable.')}
+  await Promise.allSettled(store.connections().map(async c=>{try{const p=provider(c.id);if(p instanceof Navidrome){const r=await p.catalog({serverId:c.id,libraryId:'all',view:'albums',page:0,search:query});groups.push({collections:r.items.flatMap(t=>t.kind==='album'||t.kind==='artist'?[{provider:'navidrome' as const,kind:t.kind,sourceId:c.id,id:t.id,title:t.title,subtitle:t.kind==='album'?t.subtitle:'Artist',cover:t.cover}]:[]),id:`music:${c.id}`,name:c.name+' · Music',items:r.items.filter((t):t is MusicTrack=>t.kind==='music-track').map(trackQueue)})}else for(const library of(await p.libraries()).filter(l=>l.kind==='audiobooks')){const r=await p.catalog({library,page:0,search:query,sort:'media.metadata.title',descending:false,status:'all'});groups.push({id:`books:${c.id}:${library.id}`,name:c.name+' · '+library.name,items:r.items.filter(t=>t.kind==='audiobook').map(t=>({target:{kind:'audiobook',serverId:c.id,bookId:t.id},title:t.title,subtitle:t.subtitle,cover:t.cover,duration:t.duration}))})}}catch{warnings.push(c.name+': search unavailable.')}}))
+  await Promise.allSettled((store.get<DtConnection[]>('downtify:connections')??[]).map(async c=>{try{const rows=await new Downtify(c,store.secret(`downtify:${c.id}`)??'').browse({serverId:c.id,view:'library',query});for(const r of rows)store.set(`downtify:track:${c.id}:${r.track.id}`,r);const saved=savedShelves(rows,[]),term=query.toLocaleLowerCase();groups.push({collections:[...saved.artists,...saved.albums].filter(t=>t.kind!=='playlist'&&(t.title+' '+t.artist).toLocaleLowerCase().includes(term)).slice(0,120).map(t=>({provider:'downtify',kind:t.kind==='artist'?'artist':'album',sourceId:c.id,id:t.id,title:t.title,subtitle:t.artist,cover:t.coverId})),id:`downtify:${c.id}`,name:c.name+' · Saved music',items:rows.map(({track:t})=>({target:{kind:'downtify-track',serverId:c.id,trackId:t.id},title:t.title,subtitle:t.artist,cover:t.id,duration:t.duration,context:t.album}))})}catch{warnings.push(c.name+': saved music search unavailable.')}}))
+  for(const root of local.roots())try{const [r,artists,albums]=await Promise.all((['songs','artists','albums'] as const).map(view=>index.query({rootId:root.id,view,page:0,search:query,sort:'title'})));groups.push({collections:[...artists.groups.map(t=>({...t,kind:'artist' as const})),...albums.groups.map(t=>({...t,kind:'album' as const}))].map(t=>({provider:'local',kind:t.kind,sourceId:root.id,id:t.id,title:t.title,subtitle:t.subtitle,cover:t.fileId})),id:`local:${root.id}`,name:root.name+' · Local music',items:r.tracks.map(t=>localQueue(root.id,t))})}catch{warnings.push(root.name+': source unavailable.')}
   try{const rows=(await inbox()).filter(e=>(e.item.title+' '+e.showTitle).toLowerCase().includes(query.toLowerCase())).slice(0,100);for(const serverId of new Set(rows.map(e=>e.item.target.serverId))){const matches=rows.filter(e=>e.item.target.serverId===serverId);groups.push({id:`podcasts:${serverId}`,name:(store.connections().find(c=>c.id===serverId)?.name??'Audiobookshelf')+' · Podcasts',items:matches.map(e=>e.item),unavailable:matches.filter(e=>!e.episode.downloaded).map(e=>progressKey(e.item.target))})}}catch{warnings.push('Podcast episode search unavailable.')}
   return{groups:groups.sort((a,b)=>a.name.localeCompare(b.name)),warnings}
  })

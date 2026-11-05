@@ -174,7 +174,7 @@ export function registerStudio(
     const item = player.state.queue[player.state.queueIndex]
     if (
       !item ||
-      !['music-track', 'local-file'].includes(item.target.kind) ||
+      !['music-track', 'local-file', 'downtify-track'].includes(item.target.kind) ||
       progressKey(item.target) !== key
     )
       throw Error('The playing song changed.')

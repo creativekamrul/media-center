@@ -426,7 +426,7 @@ Video controls overlay a stable full-window playback surface. Showing bars or op
 - Discord has a separate opt-in Jellyfin setting. Foreground Jellyfin music uses Listening; movies and episodes use Watching. Paused preferences and private listening apply. Private Jellyfin artwork URLs are never shared; presence uses the public app cover.
 
 
-### Workspace and playback refinement (unreleased)
+### Workspace and playback refinement (2.2.0)
 - Regular Now Playing fills its workspace edge to edge; artwork and queue keep internal gutters.
 - Queue has Now playing / Up next / Previously played headings, existing drag reorder, and atomic multi-remove with one-step undo. A changed queue invalidates a pending bulk selection; active media cannot be removed.
 - Global search retains the last eight submitted/used queries for this app session only, with Clear, and arrow-key navigation between results. Existing media/source grouping remains.
@@ -434,3 +434,38 @@ Video controls overlay a stable full-window playback surface. Showing bars or op
 - Recovery shows Jellyfin alongside music/book servers and supports individual connection retries. A failed Jellyfin refresh keeps previously discovered libraries; switching queries clears old items to avoid misleading results.
 - Music/book seek previews display time and chapter names. Jellyfin has time/chapter previews and uses the shared keyboard/wheel volume control; CC shows On/Off.
 - Video thumbnail seek previews are not implemented. Server-provided trickplay integration would be separate work. No installer upgrade or live homelab/Discord verification is claimed by fixture tests.
+
+
+### Native Downtify integration (2.2.0)
+- Added an independent Downtify source with local-account login, encrypted session storage, connection testing, name/session editing and removal. Different servers/accounts use separate identities.
+- Version 3.9.0 source contracts: discovery charts, song search, albums, artists, similar tracks, saved music and saved playlists. Native track rows are virtualized; browsing and scroll state survive navigation within the session.
+- Playback uses native MPV through a capability-protected loopback relay. Remote authentication stays in the main process. Byte ranges and seeking are forwarded without permanent download requests.
+- Discovery playback uses Downtify's temporary stream cache. Save to library explicitly queues a server download; a Downloads tab displays the latest 100 jobs visible to the connected account. Navidrome must already scan that server-side destination; Media Center does not change Docker mounts or move server files.
+- Queue, saved queues, Listen later, history, LRCLIB lyrics, Studio/Lounge, global search, music statistics and opt-in Discord music presence accept the new source. Discord uses the public fallback cover; private artwork URLs are never published.
+- Local authentication is supported; OIDC-only login, Downtify administration, playlist editing, automatic Navidrome scanning, gapless prefetch/crossfade for discoveries and server trickplay thumbnails are not implemented. Downtify 3.7 compatibility and real-account playback are not claimed by 3.9 fixtures.
+- Seek motion now interpolates native samples with bounded drift, and Jellyfin seek handling uses one pointer coordinate system with native acknowledgements. Jellyfin offers chapter ticks and total/remaining time; subtitle/audio menus are separate and typography follows the app font.
+- Verification uses labeled local fixtures. The actual homelab account, upstream music providers, download destination and live Discord client still require user testing.
+# Explore and discovery workspace (2.2.0)
+
+- Explore now has a manually controlled artwork-backed featured carousel, restrained glass controls, horizontal music shelves, compact discovery cards, a books/podcasts shelf, and a dedicated viewing section when video libraries exist. Quiet media filtering replaces the tab strip. Motion respects reduced-motion preferences. Per-item Show less is device-local and reversible; it does not train an artist-dislike model.
+
+- Explore is a top-level destination for existing libraries. Global search now queries saved Downtify tracks, never its external discovery catalog. Existing Navidrome, local, Audiobookshelf and Jellyfin search remains available; podcast results cover indexed inbox episodes.
+- Explore music ranking uses recorded listening time, a 30-day recency half-life, and artist/source diversity. Candidates come from connected Navidrome libraries (including recent listening artist searches), local indexed music, and saved Downtify tracks. Results preserve server/media identity and show their recommendation reason. Audiobooks and downloaded podcast episodes are also browsable; Jellyfin has continue-watching and recently-added shelves.
+- Downtify Discover separately offers grouped remote song/album/artist search, recent searches, server-generated artist suggestions with reasons, and trending albums/tracks. Saving remains explicit. Artist profile/discography APIs were checked against the local upstream 3.9.0 source.
+- Saved Downtify Songs, Albums, Artists and Playlists use local-library-style cards and detail views. Playlist selection is a card grid rather than a dropdown. Large track lists remain virtualized; sorted playback queues follow the visible order.
+- Navidrome/local artist pages and Downtify artist pages share a discography component with filtering, sorting and source-provided release type filters. Artist artwork uses a circular profile treatment.
+- Limits: this is an initial explainable recommendation system, not a trained cross-media recommender. Video uses resume/recent shelves, not personalized genre ranking. Candidates and search results are bounded per source; no full-library index is claimed. Downtify's saved audio remains music unless its API supplies an explicit alternative media kind. Remote playlist discovery, provider-link resolution, artist watches, advanced negative feedback remain incomplete. No automatic download or watch is enabled by discovery.
+
+### Collection browsing and search consistency (2.2.0)
+
+- Saved-library search groups songs, artists, and albums by connected source. Navidrome, indexed local music, and saved Downtify collections open from search with their real track lists. Results and the query remain available on Back. Source searches are bounded by their existing catalog page limits.
+- Explore retains its carousel, filter, shelf positions, and originating keyboard focus while a detail page is open. Downtify playlist cards restore focus after Back. The playlist title, metadata and playback actions share one header.
+- Music collection actions identify albums and playlists, books offer Play or Resume according to progress, and podcast actions reflect episode ordering. Queue additions, downloads for offline use and saves to Downtify have distinct labels.
+- Explore groups recorded plays, artist matches and items absent from this device’s listening history. Recently added albums use Navidrome’s newest-album listing. Jellyfin viewing shelves continue to use resume and date-added data.
+
+### Explore album links, feedback and source loading (2.2.0)
+
+- Featured recommendations and music cards open their source album when an actual Navidrome album ID or a saved local/Downtify album group is available. Returning preserves the carousel selection.
+- Visible Downtify tracks can offer **Also in Navidrome**. Media Center compares complete title, artist, album and duration (within two seconds), retains edition qualifiers, and declines ambiguous or truncated results. A user chooses a server copy to play. Lookups are bounded and successful results are cached briefly.
+- Explore feedback distinguishes hiding one title from reducing suggestions for its credited artist. Reduced artists move behind other suggestions and are capped at one music recommendation each. The last change has immediate Undo, and all choices can be restored on this device.
+- Audio recommendations, recent albums, and Jellyfin video shelves appear as their sources finish. Source-specific failures expose retry controls while available content stays usable. Podcast inbox results are still gathered by the existing shared inbox service.

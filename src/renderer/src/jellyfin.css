@@ -10,3 +10,14 @@
 .jf-dock .jf-seek input[type=range]::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;background:var(--text);border:0;border-radius:50%;width:14px;height:14px;box-shadow:0 0 0 3px var(--panel);margin:0}
 .jf-dock .jf-options{grid-column:3;grid-row:1;gap:14px;position:relative}.jf-option-buttons{display:flex;align-items:center;gap:6px}.jf-option-buttons button{display:flex;gap:6px;align-items:center;padding:9px 12px;min-height:38px}.jf-option-buttons button[aria-expanded=true]{border-color:var(--text)}.jf-menu-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}.jf-options-menu{bottom:calc(100% + 16px);right:0;width:300px;max-height:calc(100vh - 210px);overflow:auto;box-sizing:border-box}.jf-options-menu small{color:var(--muted);line-height:1.5}.jf-options-menu label:has(input[type=checkbox]){display:flex;align-items:center}.jf-video-stage>header{padding:12px 24px;min-height:64px;box-sizing:border-box}
 @media(max-width:1100px){.jf-dock{grid-template-columns:minmax(150px,1fr) auto;gap:10px 16px}.jf-dock .jf-options{grid-column:1/-1;grid-row:3;justify-content:flex-end}.jf-seek{grid-row:2}.jf-dock .jf-transport>.jf-actions{grid-column:2}.jf-options-menu{max-height:calc(100vh - 270px)}}
+
+/* A generous pointer target with one coordinate system for progress and preview. */
+.jf-seek-track{position:relative;min-width:0}
+.jf-dock .jf-seek input[type=range]{height:28px;background:transparent}
+.jf-dock .jf-seek input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:999px;background:linear-gradient(to right,var(--text) var(--progress),var(--line) var(--progress))}
+.jf-dock .jf-seek input[type=range]::-webkit-slider-thumb{margin-top:-4.5px;box-shadow:none}
+.jf-seek-track .seek-preview{bottom:calc(100% + 8px);pointer-events:none}
+.jf-options-menu{border-radius:12px;padding:18px;gap:18px}
+.jf-menu-heading{padding-bottom:12px;border-bottom:1px solid var(--line)}
+
+.jf-chapter-markers{position:absolute;inset:0 7px;pointer-events:none}.jf-chapter-markers i{position:absolute;top:calc(50% - 2.5px);height:5px;width:2px;background:var(--panel)}.jf-dock .jf-time-mode{font:inherit;font-variant-numeric:tabular-nums;color:var(--muted);background:transparent;border:0;padding:4px;min-height:28px;white-space:nowrap}

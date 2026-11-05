@@ -166,7 +166,7 @@ export const recapPalettes = {
 } as const
 export type RecapPalette = keyof typeof recapPalettes
 export const kindNames: Record<string, string> = {
-  'music-track': 'Music', 'jellyfin-music':'Jellyfin music','jellyfin-movie':'Movies','jellyfin-episode':'TV shows',
+  'downtify-track':'Downtify', 'music-track': 'Music', 'jellyfin-music':'Jellyfin music','jellyfin-movie':'Movies','jellyfin-episode':'TV shows',
   audiobook: 'Books',
   'podcast-episode': 'Podcasts',
   'local-file': 'Local',

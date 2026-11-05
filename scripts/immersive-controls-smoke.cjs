@@ -40,6 +40,15 @@ module.exports=async({desktop,page,artifacts})=>{
   await view.getByRole('button',{name:'Open mini player',exact:true}).click();const mini=desktop.windows().find(w=>w!==page)||await desktop.waitForEvent('window');await mini.getByRole('button',{name:'Close mini player',exact:true}).click().catch(e=>{if(!mini.isClosed())throw e});assert.equal(page.isClosed(),false,'Closing mini player must keep the main window open');assert.equal(await footer.isVisible(),false)
   for(const layout of ['studio','lounge']){
    await view.getByRole('button',{name:'Appearance',exact:true}).click();const dialog=page.getByRole('dialog',{name:'Lyrics appearance',exact:true});await dialog.getByLabel('Immersive layout',{exact:true}).selectOption(layout);await dialog.getByRole('button',{name:'Save appearance',exact:true}).click()
+   await page.evaluate(()=>window.mediaCenter.command({action:'toggle'}));await wait(p=>p.status==='playing')
+   const samples=await seek.evaluate(el=>new Promise(resolve=>{
+    const values=[],start=performance.now()
+    const sample=()=>{values.push(Number(el.value));if(performance.now()-start<1200)requestAnimationFrame(sample);else resolve(values)}
+    requestAnimationFrame(sample)
+   }))
+   assert.ok(new Set(samples).size>12,`${layout}: playhead should advance between native telemetry updates`)
+   assert.ok(samples.at(-1)>samples[0],`${layout}: playhead advances while playing`)
+   await page.evaluate(()=>window.mediaCenter.command({action:'toggle'}));await wait(p=>p.status==='paused')
    for(const [width,height] of [[1440,940],[1024,720]]){
     await page.setViewportSize({width,height});await view.getByRole('slider',{name:'Volume',exact:true}).scrollIntoViewIfNeeded();const r=await wheel.boundingBox();assert.ok(r.x>=0&&r.x+r.width<=width&&r.y+r.height<=height);assert.equal(await view.evaluate(el=>el.scrollWidth>el.clientWidth),false)
     await page.screenshot({path:resolve(artifacts,`immersive-controls-${layout}-${width}.png`)})

@@ -57,7 +57,7 @@ button:disabled { opacity: .48; }
 .detail-hero .listen-actions .primary { margin-top: 0; }
 .detail-hero { gap: 32px; align-items: flex-start; padding: 28px; background: #1b241f; border: 1px solid #3f5045; border-radius: 16px; }
 .detail-hero > div:not(.art) { min-width: 0; flex: 1; align-self: center; }
-.detail-hero h1, .detail-hero h2 { font: 500 clamp(28px, 3vw, 44px)/1.15 Georgia, serif; overflow-wrap: anywhere; margin: 10px 0 15px; }
+.detail-hero h1, .detail-hero h2 { font: 500 clamp(28px, 3vw, 44px)/1.15 var(--heading-font); overflow-wrap: anywhere; margin: 10px 0 15px; }
 .detail-hero p { line-height: 1.65; }
 .detail-hero > .art { width: clamp(160px, 17vw, 230px); }
 .detail-hero .listen-actions { margin: 18px 0 0; }

@@ -1,12 +1,16 @@
 import {defaultAppearance,type Appearance,type AppStyle} from './appearance'
 import {themes,type ThemeId} from './themes'
 
+const charcoal = {
+ background:'#191a1c', panel:'#101113', accent:'#1ed760', text:'#f2f4f3', muted:'#b0b6b3'
+} as const
+
 export const stylePresets=[
- {id:'default',name:'Original',description:'Neutral dark surfaces and quiet accents.',colors:{background:'#101113',panel:'#1b1d20',accent:'#ededf0',text:'#f3f3f5',muted:'#adb1bb'}},
- {id:'precision',name:'Slate',description:'Cool charcoal, fine edges and a restrained blue accent.',colors:{background:'#151a21',panel:'#222a35',accent:'#b7d2f5',text:'#f0f3f8',muted:'#b0bdcc'}},
- {id:'editorial',name:'Paper',description:'Warm light surfaces with dark, readable text.',colors:{background:'#f4f3ef',panel:'#e7e6e1',accent:'#284b60',text:'#20252b',muted:'#565f68'}},
- {id:'frosted',name:'Frosted',description:'Smoky glass panels over a calm dark background.',colors:{background:'#111b22',panel:'#263540',accent:'#c2dce8',text:'#f0f5f7',muted:'#b3c2ca'}},
- {id:'liquid',name:'Liquid Glass',description:'Layered glass with subtle highlights and soft depth.',colors:{background:'#101824',panel:'#253344',accent:'#c3e3ff',text:'#f3f6fb',muted:'#b4c4d8'}},
+ {id:'default',name:'Original',description:'Charcoal surfaces, darker panels and green playback controls.',colors:charcoal},
+ {id:'precision',name:'Slate',description:'Cool charcoal with fine edges and a green accent.',colors:{...charcoal,background:'#1a1c1f',panel:'#101215'}},
+ {id:'editorial',name:'Paper',description:'Warm paper surfaces with a deep green accent.',colors:{background:'#f4f3ef',panel:'#e7e6e1',accent:'#146437',text:'#20252b',muted:'#515c55'}},
+ {id:'frosted',name:'Frosted',description:'Smoked charcoal glass with bright green controls.',colors:{...charcoal,background:'#191c1b',panel:'#101312'}},
+ {id:'liquid',name:'Liquid Glass',description:'Layered dark glass with soft highlights and a green accent.',colors:{...charcoal,background:'#1a1d1e',panel:'#101314'}},
 ] as const
 export type CurrentStyle=typeof stylePresets[number]['id']
 export function currentStyle(id:AppStyle):CurrentStyle {

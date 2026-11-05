@@ -17,6 +17,7 @@ describe('Jellyfin listening and watching time',()=>{
   expect(time.sample(94,true,60000)).toBe(0)
   time.reset();expect(time.sample(120,true,61000)).toBe(0)
  })
+ it('counts Downtify as music while retaining its own source identity',()=>{const store=new Store(':memory:');try{store.recordListening({target:{kind:'downtify-track',serverId:'discovery',trackId:'one'},title:'Discovery',subtitle:'Artist'},15);const day=store.listeningStats().days.at(-1)!;expect(day.music).toBe(15);expect(store.listeningRows()[0].target.kind).toBe('downtify-track');expect(store.listeningRecap({start:day.day,end:day.day}).kinds[0].kind).toBe('downtify-track')}finally{store.close()}})
  it('keeps music, movies and TV separate without changing book or podcast identities',()=>{
   const store=new Store(':memory:')
   try{

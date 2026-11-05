@@ -18,7 +18,7 @@ export function useVideoChrome(state:JfState){
   let last=Date.now(),live=true,pending=false
   const reveal=()=>{last=Date.now();set(false)}
   let pointerPosition='';const pointer=(e:PointerEvent)=>{const position=e.screenX+':'+e.screenY;if(pointerPosition!==position){pointerPosition=position;reveal()}}
-  const tick=async()=>{if(pending)return;pending=true;try{const moved=await window.mediaCenter.jfPointerActive();if(!live)return;if(moved||document.querySelector('.jf-options-menu,.jf-dock :focus-visible,.jf-video-stage :focus-visible'))reveal();else set(Date.now()-last>3200)}catch{if(live)reveal()}finally{pending=false}}
+  const tick=async()=>{if(pending)return;pending=true;try{const moved=await window.mediaCenter.jfPointerActive();if(!live)return;if(moved||document.querySelector('.jf-options-menu,.jf-seek[data-seeking=true],.jf-dock :focus-visible,.jf-video-stage :focus-visible'))reveal();else set(Date.now()-last>3200)}catch{if(live)reveal()}finally{pending=false}}
   const timer=setInterval(()=>void tick(),250)
   window.addEventListener('keydown',reveal,true);window.addEventListener('pointermove',pointer);window.addEventListener('focus',reveal)
   return()=>{live=false;clearInterval(timer);window.removeEventListener('keydown',reveal,true);window.removeEventListener('pointermove',pointer);window.removeEventListener('focus',reveal);set(false)}

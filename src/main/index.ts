@@ -1,3 +1,4 @@
+import {registerDowntify} from './downtify'
 import {VideoHost} from './video-host'
 import {registerJellyfin} from './jellyfin'
 import type {JellyfinPlayer} from './jellyfin-player'
@@ -137,6 +138,8 @@ else {
     powerMonitor.on('suspend',()=>{void player.suspend().catch(()=>{});void jellyfin?.pause().catch(()=>{})})
     powerMonitor.on('resume',()=>{store.cacheClear('music:');for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('system:resume')})
     const mpv = new Mpv(), local = new LocalFiles(store); downloads = new Downloads(join(app.getPath('userData'),'downloads'),store,provider); player = new Player(mpv, store, provider, local, downloads)
+    const downtify=registerDowntify(handle,store,player)
+    app.on('before-quit',()=>{void downtify.close()})
     jellyfin=registerJellyfin(handle,store,async()=>{if(player.state.status==='playing')await player.suspend()},new VideoHost(()=>window),()=>!!player.state.privateListening)
     jellyfin.on('state',state=>{if(window&&!window.isDestroyed())window.webContents.send('jellyfin:state',state)})
     player.on('state', state => { if(state.status==='playing'){jellyfin?.background();void jellyfin?.pause().catch(()=>{})} for(const w of [window,miniWindow]) if(w && !w.isDestroyed()) w.webContents.send('player:state',state) })
@@ -144,7 +147,7 @@ else {
     const lyrics=new LyricsClient(store)
     const lyricTarget=(key:string)=>{
       const target=player.state.queue[player.state.queueIndex]?.target
-      if(!target||!['music-track','local-file'].includes(target.kind)||progressKey(target)!==key)throw new Error('The playing track changed. Open lyrics for the current song.')
+      if(!target||!['music-track','downtify-track','local-file'].includes(target.kind)||progressKey(target)!==key)throw new Error('The playing track changed. Open lyrics for the current song.')
     }
     const lyricKey=z.string().min(1).max(10000)
     handle('lyrics:search',z.object({key:lyricKey,query:z.string().trim().min(2).max(300)}).strict(),async i=>{lyricTarget(i.key);const results=await lyrics.search(i.query);lyricTarget(i.key);return results})
@@ -153,7 +156,7 @@ else {
     handle('lyrics:get',z.object({refresh:z.boolean().optional()}).strict(),async i=>{
       const item=player.state.queue[player.state.queueIndex],target=item?.target
       const key=target?progressKey(target):'',base={key,title:item?.title??'',artist:item?.subtitle??'',plain:'',lines:[]}
-      if(!target||!['music-track','local-file'].includes(target.kind))return {...base,status:'unsupported'} satisfies LyricsResult
+      if(!target||!['music-track','downtify-track','local-file'].includes(target.kind))return {...base,status:'unsupported'} satisfies LyricsResult
       const binding=lyrics.saved(key)
       if(binding)return {...binding,key,saved:true,recordId:binding.id} satisfies LyricsResult
       let signature: import('../shared/lyrics').LyricsSignature | undefined
@@ -172,6 +175,8 @@ else {
             const p=provider(target.serverId);if(!(p instanceof Navidrome))throw new Error('Choose a music source.')
             const metadataKey='lyrics-metadata:'+key
             try{const track=await p.track(target.trackId);signature={title:track.title,artist:track.artist,album:track.album,duration:track.duration};store.cacheSet(metadataKey,signature)}catch(e){const saved=store.cache<import('../shared/lyrics').LyricsSignature>(metadataKey);if(!saved)throw e;signature=saved.value}
+          }else if(target.kind==='downtify-track'){
+            signature={title:item.title,artist:item.subtitle,album:item.context??'',duration:player.state.duration}
           }else if(target.kind==='local-file'){
             const file=await local.metadata(target.rootId,target.fileId);signature={title:file.title,artist:file.artist,album:file.album,duration:file.duration}
           }
@@ -185,7 +190,7 @@ else {
     })
     handle('lyrics:seek',z.object({key:z.string().max(10000),time:z.number().finite().nonnegative()}).strict(),async i=>{
       const target=player.state.queue[player.state.queueIndex]?.target
-      if(!target||!['music-track','local-file'].includes(target.kind)||progressKey(target)!==i.key)throw new Error('The playing track changed.')
+      if(!target||!['music-track','downtify-track','local-file'].includes(target.kind)||progressKey(target)!==i.key)throw new Error('The playing track changed.')
       if(i.time>player.state.duration||!['playing','paused'].includes(player.state.status))throw new Error('This lyric position is not available for playback.')
       await player.command({action:'seek',value:i.time})
     })
@@ -287,7 +292,7 @@ else {
       if (p instanceof Navidrome) return p.detail(input.itemId)
       const item = await p.detail(input.itemId); return item.kind === 'audiobook' ? { kind: 'audiobook', item } : { kind: 'podcast-show', item }
     })
-    handle('item:cover', z.object({ serverId: id, itemId: id }).strict(), input => downloads.cover(input.serverId,input.itemId) ?? provider(input.serverId).cover(input.itemId))
+    handle('item:cover', z.object({ serverId: id, itemId: id }).strict(), input => downtify.has(input.serverId)?downtify.cover(input.serverId,input.itemId):downloads.cover(input.serverId,input.itemId) ?? provider(input.serverId).cover(input.itemId))
     handle('player:play', z.object({ queue: z.array(queueItemSchema).min(1).max(5000), index: z.number().int().min(0), position: z.number().finite().min(0).optional() }).strict(), async input => { if (input.index >= input.queue.length) throw new Error('Queue position is out of bounds.'); await player.play(input.queue, input.index, input.position) })
     handle('player:command', commandSchema, input => mediaCommand(input))
     handle('player:seek',z.object({key:z.string().max(10000),queueIndex:z.number().int().min(0).max(4999),time:z.number().finite().nonnegative()}).strict(), i=>player.seekTo(i))
@@ -295,7 +300,7 @@ else {
     const mediaKeys=[['MediaPlayPause','toggle'],['MediaNextTrack','next'],['MediaPreviousTrack','previous'],['MediaStop','stop']] as const
     const mediaAvailable=(ready:boolean)=>{for(const [key,action]of mediaKeys){globalShortcut.unregister(key);if(!ready)globalShortcut.register(key,()=>{void mediaCommand({action}).catch(()=>{})})}}
     mediaAvailable(false)
-    windowsMedia=new WindowsMedia(player,async item=>{const t=item.target;if(t.kind==='local-file')return local.cover(t.rootId,t.fileId);const id=item.cover??(t.kind==='music-track'?t.trackId:t.kind==='audiobook'?t.bookId:t.kind==='podcast-episode'?t.showId:'');return id?downloads.cover(t.serverId,id)??await provider(t.serverId).cover(id):null},mediaAvailable,{
+    windowsMedia=new WindowsMedia(player,async item=>{const t=item.target;if(t.kind==='downtify-track')return downtify.cover(t.serverId,t.trackId);if(t.kind==='local-file')return local.cover(t.rootId,t.fileId);const id=item.cover??(t.kind==='music-track'?t.trackId:t.kind==='audiobook'?t.bookId:t.kind==='podcast-episode'?t.showId:'');return id?downloads.cover(t.serverId,id)??await provider(t.serverId).cover(id):null},mediaAvailable,{
       snapshot:()=>{const jf=jellyfinActive();if(!jf)return;const s=jf.state,i=s.queue[s.index];return {title:i?.title??'Jellyfin',subtitle:i?.subtitle??'',status:s.status,position:s.position,duration:s.duration}},
       command:async(action,value)=>{const jf=jellyfinActive();if(!jf)return;if(action==='play'&&jf.state.status==='paused'||action==='pause'&&jf.state.status==='playing')await jf.command({action:'toggle'});else if(action==='seek'&&Number.isFinite(value)&&value!>=0)await jf.command({action:'seek',value:value!});else if(['next','previous','stop'].includes(action))await jf.command({action:action as 'next'|'previous'|'stop'})},
       subscribe:fn=>{jellyfin!.on('state',fn);return()=>jellyfin!.off('state',fn)}

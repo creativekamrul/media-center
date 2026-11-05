@@ -1,3 +1,4 @@
+import {publicCoverPrint} from '../src/shared/cover-print'
 import {queueItemSchema} from '../src/main/features'
 import type {QueueItem} from '../src/shared/types'
 import {describe,it,expect,vi} from 'vitest'
@@ -48,7 +49,7 @@ describe('personal library',()=>{
  })
  it('uses the public Discord fallback and clears it during private listening',()=>{
   const state={...emptyPlayback,status:'playing' as const,kind:'music-track' as const,title:'Track',subtitle:'Artist'},settings={...discordDefaults,enabled:true,defaultCoverAsset:true}
-  expect(presence(state,settings)?.assets?.large_image).toContain('/v1.1.0/src/renderer/public/assets/default-cover.png');expect(presence(state,{...settings,defaultCoverAsset:false})?.assets?.large_image).toContain('/default-cover.png');expect(presence({...state,privateListening:true},settings)).toBeNull()
+  expect(presence(state,settings)?.assets?.large_image).toBe(publicCoverPrint(state.title));expect(presence(state,{...settings,defaultCoverAsset:false})?.assets?.large_image).toBe(publicCoverPrint(state.title));expect(presence({...state,privateListening:true},settings)).toBeNull()
  })
 })
 

@@ -1,0 +1,15 @@
+/* Defaults apply before the saved appearance arrives, including in the mini player. */
+:root {
+  --body-font: "DM Sans Variable", "Segoe UI", sans-serif;
+  --heading-font: "Sora Variable", "DM Sans Variable", sans-serif;
+  --lyrics-font: "DM Sans Variable", "Segoe UI", sans-serif;
+  font-family: var(--body-font);
+}
+
+body { font-family: var(--body-font); }
+:where(a, button, input, select, option, textarea, summary, label) { font-family: inherit; }
+
+/* Themes change color and material. The user's heading choice applies in every view. */
+html:root[data-theme][data-app-style] :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--heading-font);
+}

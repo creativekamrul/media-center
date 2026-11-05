@@ -1,6 +1,7 @@
+import {publicCoverPrint} from '../src/shared/cover-print'
 import {describe,it,expect,vi} from 'vitest'
 vi.mock('../src/main/store',()=>({Store:class{}}))
-import {presence,jellyfinPresence,defaultDiscordArtwork,discordDefaults,discordSchema,publicArtwork,rpcFrame} from '../src/main/discord'
+import {presence,jellyfinPresence,discordDefaults,discordSchema,publicArtwork,rpcFrame} from '../src/main/discord'
 import {emptyJfState,type JfItem} from '../src/shared/jellyfin'
 import {emptyPlayback} from '../src/shared/types'
 describe('Discord presence privacy and artwork',()=>{
@@ -11,7 +12,7 @@ describe('Discord presence privacy and artwork',()=>{
       const activity=jellyfinPresence(state,settings,false,1000000)
       expect(activity?.type).toBe(kind==='Audio'?2:3)
       expect(activity?.timestamps).toEqual({start:970,end:1270})
-      expect(activity?.assets.large_image).toBe(defaultDiscordArtwork)
+      expect(activity?.assets.large_image).toBe(publicCoverPrint(state.queue[0].title))
       expect(JSON.stringify(activity)).not.toMatch(/private-server|token=secret/)
       expect(jellyfinPresence(state,{...settings,jellyfin:false})).toBeNull()
       expect(jellyfinPresence(state,settings,true)).toBeNull()
@@ -26,6 +27,7 @@ describe('Discord presence privacy and artwork',()=>{
   })
   const playing={...emptyPlayback,status:'playing' as const,kind:'music-track' as const,title:'Track',subtitle:'Artist',position:30,duration:300,speed:1.5}
   const settings={...discordDefaults,enabled:true,applicationId:'123456789012345678'}
+  it('uses the music opt-in for Downtify and honors private listening',()=>{const state={...playing,kind:'downtify-track' as const};expect(presence(state,settings)?.type).toBe(2);expect(presence(state,{...settings,music:false})).toBeNull();expect(presence({...state,privateListening:true},settings)).toBeNull()})
   it('requires opt-in for each media kind and hides idle and disabled activity',()=>{
     expect(presence(playing,discordDefaults)).toBeNull();expect(presence({...playing,kind:'audiobook'},settings)).toBeNull();expect(presence({...playing,kind:'podcast-episode'},settings)).toBeNull();expect(presence({...playing,kind:'local-file'},settings)).toBeNull();expect(presence({...playing,status:'idle'},settings)).toBeNull();expect(presence({...playing,status:'paused'},{...settings,showPaused:false})).toBeNull()
   })
@@ -36,7 +38,7 @@ describe('Discord presence privacy and artwork',()=>{
   it('only sends public Last.fm CDN artwork, never credentials or arbitrary server URLs',()=>{
     const art='https://lastfm.freetls.fastly.net/i/u/300x300/cover.png'
     expect(publicArtwork(art)).toBe(art);expect(presence(playing,settings,art)?.assets?.large_image).toBe(art)
-    for(const url of ['https://private.test/cover?token=secret','file:///C:/music/cover.jpg','http://lastfm.freetls.fastly.net/image','https://lastfm.freetls.fastly.net/image?token=secret','https://user:pass@lastfm.freetls.fastly.net/image','https://lastfm.freetls.fastly.net.attacker.test/image']){expect(publicArtwork(url)).toBeUndefined();expect(presence(playing,settings,url)?.assets?.large_image).toBe(defaultDiscordArtwork)}
+    for(const url of ['https://private.test/cover?token=secret','file:///C:/music/cover.jpg','http://lastfm.freetls.fastly.net/image','https://lastfm.freetls.fastly.net/image?token=secret','https://user:pass@lastfm.freetls.fastly.net/image','https://lastfm.freetls.fastly.net.attacker.test/image']){expect(publicArtwork(url)).toBeUndefined();expect(presence(playing,settings,url)?.assets?.large_image).toBe(publicCoverPrint(playing.title))}
   })
   it('sends the current Last.fm CDN cover while rejecting lookalike hosts and unsafe URL variants',()=>{
     const art='https://lastfm-img.freetls.fastly.net/i/u/300x300/98a9460a6ebe178b5524ac41d5bbfda4.jpg'
@@ -46,23 +48,23 @@ describe('Discord presence privacy and artwork',()=>{
       art.replace('lastfm-img.','other.'),art.replace('https://','https://user:pass@'),
       art.replace('.net/','.net:444/'),art+'?token=secret',art+'#fragment',
       art.replace('98a9460a6ebe178b5524ac41d5bbfda4','2a96cbd8b46e442fc41c2b86b821562f')
-    ])expect(presence(playing,settings,url)?.assets?.large_image).toBe(defaultDiscordArtwork)
+    ])expect(presence(playing,settings,url)?.assets?.large_image).toBe(publicCoverPrint(playing.title))
   })
   it('validates configuration without accepting a bot token',()=>{
     const {hasLastfmKey:_,...base}=discordDefaults
     expect(discordSchema.safeParse(base).success).toBe(true);expect(discordSchema.safeParse({...base,enabled:true}).success).toBe(true);expect(discordSchema.safeParse({...base,applicationId:'abc'}).success).toBe(false);expect(discordSchema.safeParse({...base,botToken:'no'}).success).toBe(false)
   })
   it('automatically supplies a public default for every shared media type without an API key or uploaded asset',()=>{
-    for(const legacy of [undefined,false,true])expect(presence(playing,{...settings,defaultCoverAsset:legacy})?.assets?.large_image).toBe(defaultDiscordArtwork)
-    expect(presence({...playing,kind:'local-file'},{...settings,local:true})?.assets?.large_image).toBe(defaultDiscordArtwork)
-    expect(presence({...playing,kind:'audiobook'},{...settings,books:true})?.assets?.large_image).toBe(defaultDiscordArtwork)
-    expect(presence({...playing,kind:'podcast-episode'},{...settings,podcasts:true})?.assets?.large_image).toBe(defaultDiscordArtwork)
+    for(const legacy of [undefined,false,true])expect(presence(playing,{...settings,defaultCoverAsset:legacy})?.assets?.large_image).toBe(publicCoverPrint(playing.title))
+    expect(presence({...playing,kind:'local-file'},{...settings,local:true})?.assets?.large_image).toBe(publicCoverPrint(playing.title))
+    expect(presence({...playing,kind:'audiobook'},{...settings,books:true})?.assets?.large_image).toBe(publicCoverPrint(playing.title))
+    expect(presence({...playing,kind:'podcast-episode'},{...settings,podcasts:true})?.assets?.large_image).toBe(publicCoverPrint(playing.title))
     expect(presence({...playing,privateListening:true},settings)).toBeNull()
   })
   it.each(['audiobook','podcast-episode'] as const)('uses safe chosen artwork or the default for %s without exposing private URLs',kind=>{
     const optedIn={...settings,books:true,podcasts:true},state={...playing,kind},safe='https://coverartarchive.org/release/22222222-1234-1234-1234-123456789abc/front-500'
     expect(presence(state,optedIn,safe)?.assets.large_image).toBe(safe)
-    for(const url of [undefined,'https://private.test/cover?token=secret','file:///C:/book.png'])expect(presence(state,optedIn,url)?.assets.large_image).toBe(defaultDiscordArtwork)
+    for(const url of [undefined,'https://private.test/cover?token=secret','file:///C:/book.png'])expect(presence(state,optedIn,url)?.assets.large_image).toBe(publicCoverPrint(playing.title))
     expect(presence({...state,privateListening:true},optedIn)).toBeNull()
   })
   it('encodes little-endian IPC frames using byte length for Unicode titles',()=>{

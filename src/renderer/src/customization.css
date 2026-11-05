@@ -1,6 +1,6 @@
-[data-theme] body{font-family:var(--body-font,'Segoe UI',sans-serif)}
-[data-theme] h1,[data-theme] .hero h2,[data-theme] .brand-name{font-family:var(--heading-font,Georgia,serif)}
-[data-theme] .lyrics-panel .lyric-line,[data-theme] .lyrics-plain{font-family:var(--lyrics-font,'Segoe UI',sans-serif)}
+[data-theme] body{font-family:var(--body-font)}
+[data-theme] h1,[data-theme] .hero h2,[data-theme] .brand-name{font-family:var(--heading-font)}
+[data-theme] .lyrics-panel .lyric-line,[data-theme] .lyrics-plain{font-family:var(--lyrics-font)}
 [data-theme] .primary,[data-theme] .play-main,[data-theme] .main-play,[data-theme] .now-tabs .secondary[aria-pressed=true]{color:var(--accent-text,#17191e)}
 [data-custom-colors=true] .settings-panel{background:var(--panel);color:var(--text);border-color:var(--line)}
 [data-custom-colors=true] :is(.muted,.field,.track-row strong,.chapter-row strong,.episode-copy>p,.description){color:var(--text)}

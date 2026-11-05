@@ -40,6 +40,8 @@ export function rewindPosition(
 }
 
 export class Player extends EventEmitter {
+  downtifyStream?: (serverId:string,trackId:string)=>Promise<string>
+
   private closing = false
   private generation = 0
   private fadeTail?: Mpv
@@ -312,7 +314,7 @@ export class Player extends EventEmitter {
     await this.audioPreferences(prefs)
     this.offline = await this.downloads?.ready(item.target)
     const provider =
-      item.target.kind === 'local-file' || this.offline
+      item.target.kind === 'local-file' || item.target.kind === 'downtify-track' || this.offline
         ? undefined
         : this.provider(item.target.serverId)
     this.state.speed =
@@ -362,6 +364,11 @@ export class Player extends EventEmitter {
         { start: String(position ?? 0) },
       )
       this.state.position = position ?? 0
+    } else if (item.target.kind === 'downtify-track') {
+      if(!this.downtifyStream)throw Error('Downtify is unavailable.')
+      this.state.duration=item.duration??0
+      await this.mpv.load(await this.downtifyStream(item.target.serverId,item.target.trackId),{start:String(position??0)})
+      this.state.position=position??0
     } else if (item.target.kind === 'radio') {
       if (!(provider instanceof Navidrome))
         throw new Error('Radio requires a Navidrome server.')

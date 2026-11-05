@@ -3,6 +3,7 @@ import type {PlaybackState} from '../../shared/types'
 import {progressKey} from '../../shared/timeline'
 import {api} from './actions'
 import {duration,message} from './ui'
+import {VisualPlayhead} from './visual-playhead'
 
 export function SeekBar({player,error,compact=false,waves=false}:{player:PlaybackState;error:(s:string)=>void;compact?:boolean;waves?:boolean}){
  const item=player.queue[player.queueIndex]
@@ -15,6 +16,20 @@ function TrackSeek({player,error,compact,waves}:{player:PlaybackState;error:(s:s
  const [hover,setHover]=useState<number|null>(null)
  const dragging=useRef<number|null>(null),revision=useRef(0),alive=useRef(true)
  const enabled=['playing','paused'].includes(player.status)&&player.duration>0&&player.kind!=='radio'
+ const clock=useRef(new VisualPlayhead())
+ const [displayPosition,setDisplayPosition]=useState(player.position)
+ const advancing=enabled&&player.status==='playing'&&!player.buffering
+ useEffect(()=>{
+  clock.current.sample(player.position,player.speed,advancing,performance.now())
+  setDisplayPosition(clock.current.at(performance.now()))
+ },[player.position,player.speed,advancing])
+ useEffect(()=>{
+  if(!advancing||preview!==null)return
+  let frame:number
+  const tick=()=>{setDisplayPosition(clock.current.at(performance.now()));frame=requestAnimationFrame(tick)}
+  frame=requestAnimationFrame(tick)
+  return()=>cancelAnimationFrame(frame)
+ },[advancing,preview])
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;revision.current++}},[])
  useEffect(()=>{if(!enabled){dragging.current=null;revision.current++;setPreview(null)}},[enabled])
  const clamp=(time:number)=>Math.min(player.duration,Math.max(0,time))
@@ -26,10 +41,10 @@ function TrackSeek({player,error,compact,waves}:{player:PlaybackState;error:(s:s
   catch(e){if(alive.current&&request===revision.current)error(message(e))}
   finally{if(alive.current&&request===revision.current)setPreview(null)}
  }
- const value=clamp(preview??player.position)
+ const value=clamp(preview??(advancing?displayPosition:player.position))
  return <div className={`${compact?'seek-row mini-seek-row':'seek-row'} ${waves?'seek-with-waves':''} ${player.status==='playing'&&!player.buffering?'is-advancing':''}`}>
   {!compact&&<span>{duration(value)}</span>}
-  <div className="seek-track">{waves&&enabled&&<div className="seek-waves" aria-hidden="true" style={{clipPath:`inset(0 ${100-value/player.duration*100}% 0 0)`}}><svg viewBox="0 0 1200 32" preserveAspectRatio="none">{wavePaths.map((d,i)=><path key={i} d={d}/>)}</svg></div>}<div className="chapter-ticks" aria-hidden="true">{player.duration>0&&player.chapters.filter(c=>c.start>0&&c.start<player.duration).map(c=><i key={c.id} title={c.title} style={{left:`${c.start/player.duration*100}%`}}/>)}</div><input aria-label="Playback position" aria-valuetext={`${duration(value)} of ${duration(player.duration)}`} type="range" min={0} max={player.duration||1} step={.1} disabled={!enabled} value={value}
+  <div className="seek-track">{waves&&enabled&&<div className="seek-waves" aria-hidden="true" style={{clipPath:`inset(0 ${100-value/player.duration*100}% 0 0)`}}><svg viewBox="0 0 1200 32" preserveAspectRatio="none">{wavePaths.map((d,i)=><path key={i} d={d}/>)}</svg></div>}<div className="chapter-ticks" aria-hidden="true">{player.duration>0&&player.chapters.filter(c=>c.start>0&&c.start<player.duration).map(c=><i key={c.id} title={c.title} style={{left:`${c.start/player.duration*100}%`}}/>)}</div><input aria-label="Playback position" aria-valuetext={`${duration(value)} of ${duration(player.duration)}`} type="range" min={0} max={player.duration||1} step="any" disabled={!enabled} value={value}
    style={{'--progress':`${value/(player.duration||1)*100}%`,touchAction:'none'} as CSSProperties}
    onPointerDown={e=>{if(!enabled||e.button!==0)return;e.preventDefault();e.currentTarget.focus();e.currentTarget.setPointerCapture(e.pointerId);dragging.current=e.pointerId;revision.current++;setPreview(fromPointer(e))}}
    onPointerMove={e=>{if(enabled)setHover(fromPointer(e));if(dragging.current===e.pointerId)setPreview(fromPointer(e))}}
@@ -37,6 +52,12 @@ function TrackSeek({player,error,compact,waves}:{player:PlaybackState;error:(s:s
    onPointerUp={e=>{if(dragging.current!==e.pointerId)return;e.preventDefault();dragging.current=null;e.currentTarget.releasePointerCapture(e.pointerId);void commit(fromPointer(e))}}
    onPointerCancel={()=>{dragging.current=null;setPreview(null)}}
    onLostPointerCapture={()=>{if(dragging.current!==null){dragging.current=null;setPreview(null)}}}
+   onKeyDown={e=>{
+    if(!enabled)return
+    const delta={ArrowLeft:-.1,ArrowDown:-.1,ArrowRight:.1,ArrowUp:.1,PageDown:-player.duration/10,PageUp:player.duration/10}[e.key]
+    if(delta===undefined&&e.key!=='Home'&&e.key!=='End')return
+    e.preventDefault();void commit(e.key==='Home'?0:e.key==='End'?player.duration:clamp((preview??player.position)+(delta??0)))
+   }}
    onChange={e=>{if(dragging.current===null)void commit(Number(e.currentTarget.value))}}
   />{enabled&&(preview??hover)!==null&&<div className="seek-preview" style={{left:`${Math.min(94,Math.max(6,(preview??hover??0)/player.duration*100))}%`}}>{duration(preview??hover??0)}<small>{player.chapters.find(c=>(preview??hover??0)>=c.start&&(preview??hover??0)<c.end)?.title}</small></div>}</div>
   {!compact&&<span>{duration(player.duration)}</span>}

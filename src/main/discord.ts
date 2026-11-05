@@ -1,3 +1,4 @@
+import {publicCoverPrint} from '../shared/cover-print'
 import type {JfState} from '../shared/jellyfin'
 import {discordApplicationId} from '../shared/discord'
 import { createConnection, type Socket } from 'node:net'
@@ -16,21 +17,21 @@ import { LastfmArtwork, publicArtwork, type ArtworkMetadata, type ArtworkResult 
 export { publicArtwork } from './lastfm'
 
 export const discordDefaults: DiscordSettings = {enabled:false,applicationId:'',music:true,books:false,podcasts:false,local:false,jellyfin:false,showPaused:true,hasLastfmKey:false}
-export const defaultDiscordArtwork='https://raw.githubusercontent.com/creativekamrul/media-center/v1.1.0/src/renderer/public/assets/default-cover.png'
+
 export const discordSchema=z.object({defaultCoverAsset:z.boolean().optional(),enabled:z.boolean(),applicationId:z.string().regex(/^(?:\d{15,22})?$/),music:z.boolean(),books:z.boolean(),podcasts:z.boolean(),local:z.boolean(),jellyfin:z.boolean().default(false),showPaused:z.boolean(),lastfmKey:z.string().regex(/^(?:[a-fA-F0-9]{32})?$/).optional()}).strict()
 export function rpcFrame(opcode:number,data:unknown) {const body=Buffer.from(JSON.stringify(data)),header=Buffer.alloc(8);header.writeUInt32LE(opcode,0);header.writeUInt32LE(body.length,4);return Buffer.concat([header,body])}
 export function presence(state:PlaybackState,settings:DiscordSettings,art?:string,now=Date.now()) {
-  const allowed=state.kind==='music-track'?settings.music:state.kind==='audiobook'?settings.books:state.kind==='podcast-episode'?settings.podcasts:state.kind==='local-file'?settings.local:false
+  const allowed=(state.kind==='music-track'||state.kind==='downtify-track')?settings.music:state.kind==='audiobook'?settings.books:state.kind==='podcast-episode'?settings.podcasts:state.kind==='local-file'?settings.local:false
   if(state.privateListening||!settings.enabled||!allowed||!['playing','paused'].includes(state.status)||(state.status==='paused'&&!settings.showPaused))return null
   const clean=(value:string)=>value.replace(/[\u0000-\u001f]/g,' ').slice(0,128).padEnd(2,' ')
-  return {type:2,details:clean(state.title),state:clean(`${state.status==='paused'?'Paused · ':''}${state.subtitle}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position/state.speed),end:Math.floor(now/1000+(state.duration-state.position)/state.speed)}}:{}),assets:{large_image:(art&&publicArtwork(art))||defaultDiscordArtwork,large_text:clean(state.title)}}
+  return {type:2,details:clean(state.title),state:clean(`${state.status==='paused'?'Paused · ':''}${state.subtitle}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position/state.speed),end:Math.floor(now/1000+(state.duration-state.position)/state.speed)}}:{}),assets:{large_image:(art&&publicArtwork(art))||publicCoverPrint(state.title),large_text:clean(state.title)}}
 }
 
 export function jellyfinPresence(state:JfState,settings:DiscordSettings,privateListening=false,now=Date.now()) {
  const item=state.queue[state.index]
  if(!settings.enabled||!settings.jellyfin||privateListening||!state.foreground||!item||!['Audio','Movie','Episode'].includes(item.kind)||!['playing','paused'].includes(state.status)||(state.status==='paused'&&!settings.showPaused))return null
  const clean=(text:string)=>text.replace(/[\u0000-\u001f]/g,' ').slice(0,128).padEnd(2,' ')
- return {type:item.kind==='Audio'?2:3,details:clean(item.title),state:clean(`${state.status==='paused'?'Paused · ':''}${item.subtitle||'Jellyfin'}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position),end:Math.floor(now/1000+state.duration-state.position)}}:{}),assets:{large_image:defaultDiscordArtwork,large_text:clean(item.title)}}
+ return {type:item.kind==='Audio'?2:3,details:clean(item.title),state:clean(`${state.status==='paused'?'Paused · ':''}${item.subtitle||'Jellyfin'}`),...(state.status==='playing'&&!state.buffering&&state.duration>0?{timestamps:{start:Math.floor(now/1000-state.position),end:Math.floor(now/1000+state.duration-state.position)}}:{}),assets:{large_image:publicCoverPrint(item.title),large_text:clean(item.title)}}
 }
 
 export class DiscordPresence {
@@ -113,7 +114,7 @@ export class DiscordPresence {
       const jf=this.jellyfin?.state
       if(jf?.foreground&&jf.status!=='idle'){
         const activity=jellyfinPresence(jf,settings,!!this.player.state.privateListening)
-        this.status.artworkMessage=activity?'Using the public Media Center cover for Jellyfin. Private server artwork stays on this device.':'Jellyfin sharing is off or playback is private.'
+        this.status.artworkMessage=activity?'Using the abstract print for this Jellyfin title.':'Jellyfin sharing is off or playback is private.'
         const signature=JSON.stringify(['jellyfin',jf.queue[jf.index]?.serverId,jf.queue[jf.index]?.id,activity?.type,activity?.details,activity?.state,activity===null,jf.buffering,Math.round(jf.position/10)])
         if(signature===this.signature||(activity!==null&&Date.now()-this.sentAt<5000))return
         const nonce=randomUUID();this.pending={nonce,sent:Date.now()};this.write(1,{cmd:'SET_ACTIVITY',args:{pid:process.pid,activity},nonce});this.signature=signature;this.sentAt=Date.now();this.status.artwork=!!activity?.assets;return
@@ -124,8 +125,8 @@ export class DiscordPresence {
       if(generation!==this.generation||this.stopped||(this.jellyfin?.state.foreground&&this.jellyfin.state.status!=='idle'))return
       // Never publish an old lookup after the user changed or hid the current media.
       const current=this.player.state;if(JSON.stringify(current.queue[current.queueIndex]?.target)!==JSON.stringify(state.queue[state.queueIndex]?.target)||current.status!==state.status)return
-      this.status.artworkMessage=artworkMessage+(!art&&presence(current,settings)?.assets?' Sending the public Media Center default cover.':'')
-      const activity=presence(current,settings,art),signature=JSON.stringify([activity?.details,activity?.state,art,activity===null,current.speed,current.buffering,Math.round(current.position/10)])
+      this.status.artworkMessage=artworkMessage+(!art&&presence(current,settings)?.assets?' Using this title’s abstract print.':'')
+      const activity=presence(current,settings,art),signature=JSON.stringify([activity?.details,activity?.state,activity?.assets.large_image,activity===null,current.speed,current.buffering,Math.round(current.position/10)])
       const immediate=activity===null||signature!==this.signature&&Date.now()-this.sentAt>=5000
       if(signature===this.signature||(!immediate&&Date.now()-this.sentAt<15000))return
       const nonce=randomUUID();this.pending={nonce,sent:Date.now()};this.write(1,{cmd:'SET_ACTIVITY',args:{pid:process.pid,activity},nonce});this.signature=signature;this.sentAt=Date.now();this.status.artwork=!!activity?.assets

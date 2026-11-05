@@ -14,22 +14,24 @@ export function Modal({ title, close, children }: { title: string; close: () => 
   }}><div className="section-title"><h2>{title}</h2><button className="icon-button" aria-label="Close dialog" onClick={close}><X size={19}/></button></div>{children}</section></div>
 }
 export function tomorrow() { const d = new Date(); d.setDate(d.getDate() + 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}` }
-export function ListenActions({ items, resolveItems, error, compact = false, disabled = false, hidePlay = false, more, primaryActions, inMenu=false }: { items: QueueItem[]; resolveItems?:()=>Promise<QueueItem[]>; error: (s: string) => void; compact?: boolean; disabled?: boolean; hidePlay?: boolean; more?:ReactNode;primaryActions?:ReactNode;inMenu?:boolean }) {
+export function ListenActions({ items, resolveItems, error, compact = false, disabled = false, hidePlay = false, more, primaryActions, playLabel="Play", inMenu=false }: { items: QueueItem[]; resolveItems?:()=>Promise<QueueItem[]>; error: (s: string) => void; compact?: boolean; disabled?: boolean; hidePlay?: boolean; more?:ReactNode;primaryActions?:ReactNode;playLabel?:string;inMenu?:boolean }) {
   const actionRoot=useRef<HTMLDivElement>(null)
   const [plan, setPlan] = useState(false), [due, setDue] = useState(tomorrow), [note, setNote] = useState(''), [notice, setNotice] = useState(''), [busy, setBusy] = useState(false), [failure,setFailure]=useState('')
   async function run(work: () => Promise<unknown>, text: string) { setBusy(true); setFailure(''); try { await work(); setNotice(text) } catch (e) { if(plan||actionRoot.current?.closest('[role="dialog"]'))setFailure(message(e));else error(message(e)) } finally { setBusy(false) } }
   const [planItems,setPlanItems]=useState<QueueItem[]>([])
   const selection=()=>resolveItems?resolveItems():Promise.resolve(items)
   const nextAction=<button title="Play next" aria-label="Play next" className="secondary" disabled={disabled||busy||!items.length} onClick={()=>void run(async()=>api.queueEdit({action:'next',items:await selection()}),'Added next')}><Plus size={15}/>Play next</button>
-  const queueAction=<button title="Add to queue" aria-label="Add to queue" className="secondary" disabled={disabled||busy||!items.length} onClick={()=>void run(async()=>api.queueEdit({action:'append',items:await selection()}),'Added to queue')}><ListPlus size={15}/>Queue</button>
+  const queueAction=<button title="Add to queue" aria-label="Add to queue" className="secondary" disabled={disabled||busy||!items.length} onClick={()=>void run(async()=>api.queueEdit({action:'append',items:await selection()}),'Added to queue')}><ListPlus size={15}/>Add to queue</button>
   const laterAction=<button title="Listen later" aria-label="Listen later" className="secondary" disabled={disabled||busy||!items.length} onClick={()=>void run(async()=>{setPlanItems(await selection());setPlan(true)},'')}><CalendarPlus size={15}/>Listen later</button>
-  const downloadAction=items.some(i=>['music-track','audiobook','podcast-episode'].includes(i.target.kind))&&<button title="Download original audio" aria-label="Download selection" className="secondary" disabled={disabled||busy||!items.length||items.length>1000} onClick={()=>void run(()=>api.downloadAdd(items),'Added to downloads')}><Download size={15}/><span className="action-label">Download</span></button>
+  const saveDiscovery=items.length>0&&items.every(i=>i.target.kind==='downtify-track')&&<button className="secondary" disabled={disabled||busy} onClick={()=>void run(async()=>{for(const i of await selection())if(i.target.kind==='downtify-track')await api.dtSave({serverId:i.target.serverId,trackId:i.target.trackId})},'Sent to Downtify’s download queue')}><Download size={15}/>Save to Downtify</button>
+  const downloadAction=items.some(i=>['music-track','audiobook','podcast-episode'].includes(i.target.kind))&&<button title="Download original audio" aria-label="Download selection" className="secondary" disabled={disabled||busy||!items.length||items.length>1000} onClick={()=>void run(()=>api.downloadAdd(items),'Added to downloads')}><Download size={15}/><span className="action-label">Download for offline</span></button>
   return <><div ref={actionRoot} className={`listen-actions ${compact?'compact':''} ${inMenu?'in-menu':'has-more simplified-actions'}`}>
-    {!hidePlay&&<button title="Play" aria-label="Play selection" className={compact?'icon-button':'primary'} disabled={disabled||busy||!items.length} onClick={()=>void run(async()=>api.play({queue:await selection(),index:0}),'')}><Play size={15}/>{!compact&&'Play'}</button>}
+    {!hidePlay&&<button title={playLabel} aria-label="Play selection" className={compact?'icon-button':'primary'} disabled={disabled||busy||!items.length} onClick={()=>void run(async()=>api.play({queue:await selection(),index:0}),'')}><Play size={15}/>{!compact&&playLabel}</button>}
     {(!compact||inMenu)&&nextAction}
     {primaryActions}
-    {inMenu?<>{queueAction}{laterAction}{downloadAction}{more}</>:<MoreOptions>
+    {inMenu?<>{queueAction}{laterAction}{downloadAction}{saveDiscovery}{more}</>:<MoreOptions>
       {compact&&nextAction}{queueAction}{laterAction}
+      {saveDiscovery}
       {downloadAction&&<div className="more-options-group">{downloadAction}</div>}
       {more&&<div className="more-options-group">{more}</div>}
     </MoreOptions>}

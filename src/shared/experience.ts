@@ -28,8 +28,20 @@ export const experienceSchema=z.object({
 }).strict()
 export type Experience=z.infer<typeof experienceSchema>
 export const defaultExperience=experienceSchema.parse({})
-export interface SearchGroup {id:string;name:string;items:QueueItem[];unavailable?:string[]}
+export interface SearchCollection {
+ provider:'navidrome'|'local'|'downtify'
+ kind:'artist'|'album'
+ sourceId:string
+ id:string
+ title:string
+ subtitle:string
+ cover?:string
+}
+export interface SearchGroup {collections?:SearchCollection[];id:string;name:string;items:QueueItem[];unavailable?:string[]}
 export interface ExperienceAPI {
+ exploreSources():Promise<{id:string;name:string}[]>
+ savedCopies(input:{serverId:string;trackId:string}):Promise<{copies:{source:string;item:QueueItem}[];warnings:string[]}>
+ explore(source?:string):Promise<{items:import('./recommendations').Recommendation[];warnings:string[]}>
  experience():Promise<Experience>
  saveNavigation(input:z.infer<typeof navigationChangeSchema>):Promise<void>
  saveExperience(input:Experience):Promise<void>

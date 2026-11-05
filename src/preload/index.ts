@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopAPI, PlaybackState, UpdateState } from '../shared/types'
 
 const api: DesktopAPI = {
+ exploreSources:()=>ipcRenderer.invoke('explore:sources'),savedCopies:i=>ipcRenderer.invoke('downtify:saved-copies',i),explore:source=>ipcRenderer.invoke('explore:get',source),dtWorkspace:i=>ipcRenderer.invoke('downtify:workspace',i),dtCollections:i=>ipcRenderer.invoke('downtify:collections',i),dtJobs: (id:string) => ipcRenderer.invoke('downtify:jobs',id),dtConnections:()=>ipcRenderer.invoke('downtify:connections'),dtConnect:i=>ipcRenderer.invoke('downtify:connect',i),dtTest:id=>ipcRenderer.invoke('downtify:test',id),dtRemove:id=>ipcRenderer.invoke('downtify:remove',id),dtBrowse:i=>ipcRenderer.invoke('downtify:browse',i),dtPlaylists:id=>ipcRenderer.invoke('downtify:playlists',id),dtSave:i=>ipcRenderer.invoke('downtify:save',i),
  jfPointerActive:()=>ipcRenderer.invoke('jellyfin:pointer-active'),
  jfVideoBounds:i=>ipcRenderer.invoke('jellyfin:video-bounds',i),
  jfTest:id=>ipcRenderer.invoke('jellyfin:test',id),
