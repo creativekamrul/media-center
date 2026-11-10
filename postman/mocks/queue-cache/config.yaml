@@ -1,0 +1,10 @@
+version: 1
+name: Saved Music Queue Cache Fixture
+slug: saved-music-queue-cache-fixture
+protocol: http
+port: 18547
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

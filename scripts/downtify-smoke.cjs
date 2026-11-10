@@ -82,7 +82,7 @@ async function main(){
   const search=await page.evaluate(()=>window.mediaCenter.unifiedSearch('Fixture'));assert.ok(search.groups.some(g=>g.id.startsWith('downtify:')&&g.items[0].target.kind==='downtify-track'))
   assert.ok(!requests.slice(beforeSearch).some(r=>r.path.includes('finder')||r.path.includes('/songs/search')),'Global search stays in saved libraries')
   stallNav=true
-  await page.getByRole('button',{name:'Explore',exact:true}).click();await page.getByRole('heading',{name:'More from artists you play',exact:true}).waitFor();await page.locator('.explore-card').first().waitFor();await page.screenshot({path:resolve(artifacts,'explore-preview.png'),animations:'disabled'})
+  await page.locator('.sidebar').getByRole('button',{name:'Explore',exact:true}).click();await page.getByRole('heading',{name:'More from artists you play',exact:true}).waitFor();await page.locator('.explore-card').first().waitFor();await page.screenshot({path:resolve(artifacts,'explore-preview.png'),animations:'disabled'})
   releaseNav()
   const retryNav=page.getByRole('button',{name:'Retry Nav fixture',exact:true})
   await retryNav.waitFor();stallNav=false;await retryNav.click();await retryNav.waitFor({state:'hidden'})

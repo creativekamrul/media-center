@@ -1,0 +1,10 @@
+version: 1
+name: Jellyfin Offline Progress Fixture
+slug: jellyfin-offline-progress
+protocol: http
+port: 18550
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

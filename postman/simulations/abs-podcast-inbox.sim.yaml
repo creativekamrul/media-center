@@ -1,0 +1,6 @@
+simulation: Android Audiobookshelf podcast inbox
+routing: path
+mocks:
+  - name: Audiobookshelf Podcast Inbox Fixture
+    routeKey: abs
+    path: ../mocks/abs-podcast-inbox/config.yaml

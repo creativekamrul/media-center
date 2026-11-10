@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ <uses-permission android:name="android.permission.INTERNET"/>
+ <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+ <application android:usesCleartextTraffic="true">
+  <activity android:name="local.mediacenter.library.TransitionTestActivity" android:exported="true" android:permission="android.permission.DUMP" android:theme="@android:style/Theme.Material.NoActionBar"/>
+  <activity android:name="local.mediacenter.library.UpdateTestActivity" android:exported="true" android:permission="android.permission.DUMP" android:theme="@android:style/Theme.Material.NoActionBar"/>
+  <activity android:name="local.mediacenter.library.FocusTestActivity" android:exported="true" android:permission="android.permission.DUMP" android:theme="@android:style/Theme.Material.NoActionBar"/>
+  <provider android:name="local.mediacenter.library.MigrationTestProvider" android:authorities="local.mediacenter.library.test.migration" android:exported="false"/>
+  <provider android:name="local.mediacenter.library.TransferTestProvider" android:authorities="local.mediacenter.library.test.transfers" android:exported="true" android:permission="android.permission.MANAGE_DOCUMENTS" android:grantUriPermissions="true"/>
+  <activity android:name="local.mediacenter.library.TransferTestActivity" android:exported="true" android:permission="android.permission.DUMP" android:theme="@android:style/Theme.Material.NoActionBar"/>
+ </application>
+</manifest>

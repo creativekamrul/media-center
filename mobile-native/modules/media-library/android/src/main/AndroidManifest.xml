@@ -1,0 +1,11 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+ <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+ <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+ <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+ <uses-permission android:name="android.permission.WAKE_LOCK" />
+ <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" /><uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" /><application><provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.updates" android:exported="false" android:grantUriPermissions="true"><meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/update_paths" /></provider><service android:name=".DownloadService" android:exported="false" android:foregroundServiceType="dataSync" /><service android:name=".PlaybackService" android:exported="false" android:foregroundServiceType="mediaPlayback" />
+ <activity android:name=".VideoActivity" android:exported="false" android:supportsPictureInPicture="true" android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden" android:theme="@android:style/Theme.Material.NoActionBar" />
+<receiver android:name=".MediaWidget" android:exported="false" android:label="Media Center player"><intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter><meta-data android:name="android.appwidget.provider" android:resource="@xml/media_widget_info"/></receiver>
+</application>
+</manifest>

@@ -1,0 +1,10 @@
+version: 1
+name: Jellyfin Playlist Editing Fixture
+slug: jellyfin-playlist-edit-fixture
+protocol: http
+port: 18549
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

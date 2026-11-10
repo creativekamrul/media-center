@@ -1,0 +1,6 @@
+simulation: Android saved music queue cache
+routing: path
+mocks:
+  - name: Saved Music Queue Cache Fixture
+    routeKey: music
+    path: ../mocks/queue-cache/config.yaml

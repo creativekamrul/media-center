@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {connectionHelp} from '../src/connectionStatus.ts';
+test('connection recovery distinguishes authentication, TLS, timeout and DNS',()=>{assert.match(connectionHelp('HTTP 401').title,/Sign-in/);assert.match(connectionHelp('Certificate or TLS handshake failed').title,/Certificate/);assert.match(connectionHelp('Server timed out').title,/too long/);assert.match(connectionHelp('DNS could not resolve server').title,/address/);assert.match(connectionHelp('Connection refused').help,/VPN/)});

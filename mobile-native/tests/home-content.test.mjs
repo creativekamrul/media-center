@@ -1,0 +1,5 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {homeContentKind} from '../src/homeContent.ts';
+test('native music history opens a playable track rather than an album',()=>{for(const provider of ['navidrome','downtify']){assert.equal(homeContentKind(provider,'music'),'track');assert.equal(homeContentKind(provider,'track'),'track');assert.equal(homeContentKind(provider,'album'),'album');assert.equal(homeContentKind(provider,'playlist'),'playlist')}});
+test('Audiobookshelf Home preserves the explicit book and podcast-show distinction',()=>{assert.equal(homeContentKind('audiobookshelf','book'),'book');assert.equal(homeContentKind('audiobookshelf','show'),'show');for(const kind of ['music','track','album','episode',undefined])assert.throws(()=>homeContentKind('audiobookshelf',kind),/Unsupported spoken/)});
+test('unknown and cross-media Home records fail instead of requesting an album by a track or book id',()=>{for(const kind of ['book','show','episode','movie','unknown',undefined])assert.throws(()=>homeContentKind('navidrome',kind),/Unsupported music/);assert.throws(()=>homeContentKind('unknown','track'),/media library/)});

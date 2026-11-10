@@ -1,0 +1,26 @@
+provider: Downtify 3.9.0
+sourceCommit: 63ca91ea4de1207c4ffb0427b1c45dc3a2a23eee
+contracts:
+  - https://github.com/henriquesebastiao/downtify/blob/3.9.0/downtify/api.py
+  - https://github.com/henriquesebastiao/downtify/blob/3.9.0/downtify/manual_playlists.py
+assumptions:
+  - manual playlists permit membership edits by their owner or an explicitly granted editor
+  - only the owner may rename; imported and liked playlists are read-only in this editor
+  - membership requests append new saved file paths and remove selected existing paths
+  - existing-song reordering and duplicate occurrences are not supported by this endpoint
+  - one membership or rename operation per save; no blind retry or multi-step replacement
+  - server has no revision compare-and-set; client preflight cannot exclude concurrent edits
+acceptance:
+  date: 2026-11-10
+  passed:
+    - empty playlist creation through Android editor, one POST
+    - ordered saved-track append in one membership request
+    - owner rename preserves track membership
+    - stale draft refused with no write
+    - applied-but-error response is not blindly retried
+    - revoked permissions refuse mutation; reload disables Save
+  evidence: ignored artifacts/mobile-native-tests/downtify-playlists-runtime-20261110.json
+  limitations:
+    - no atomic provider revision compare-and-set
+    - source-derived fixture is not a real-user playlist mutation test
+ownerDiscovery: skipped; installed CLI has no postman status operation

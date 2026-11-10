@@ -1,0 +1,1 @@
+-keep class local.mediacenter.library.NativeMpv { *; }

@@ -1,0 +1,6 @@
+simulation: Android Downtify server playlists
+routing: path
+mocks:
+  - name: Downtify Playlists Fixture
+    routeKey: downtify
+    path: ../mocks/downtify-playlists/config.yaml

@@ -1,0 +1,13 @@
+# Simulation scaffold. Add fault-injection scenarios under each mock, e.g.:
+#   scenarios:
+#     - overrides:
+#         conditions:
+#           latency: { delay_ms: 500 }
+# Then serve it with: postman simulation run <this file>
+
+simulation: Android Jellyfin playback
+routing: path
+mocks:
+  - name: Jellyfin Playback Fixture
+    routeKey: jellyfin
+    path: ../mocks/jellyfin-playback/config.yaml

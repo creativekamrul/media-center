@@ -1,14 +1,14 @@
 const assert=require('node:assert/strict');const {resolve}=require('node:path');const {readFileSync,existsSync}=require('node:fs')
 module.exports=async({desktop,page,artifacts})=>{
  const saved=await page.evaluate(()=>window.mediaCenter.preferences()),playing=await page.evaluate(()=>window.mediaCenter.playingScreenPreferences())
- const file=resolve(artifacts,'exported-140-theme.css')
+ const file=resolve(artifacts,`exported-140-theme-${process.pid}.css`)
  const contrast=async locator=>{const values=await locator.evaluateAll(elements=>elements.map(el=>{
   const ctx=document.createElement('canvas').getContext('2d');ctx.canvas.width=ctx.canvas.height=1
   const paint=color=>{ctx.fillStyle=color;ctx.fillRect(0,0,1,1)}
   const lum=()=>[...ctx.getImageData(0,0,1,1).data].slice(0,3).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0)
   paint(getComputedStyle(document.documentElement).getPropertyValue('--bg'));const chain=[];for(let p=el;p;p=p.parentElement)chain.unshift(p)
   for(const p of chain)paint(getComputedStyle(p).backgroundColor)
-  const bg=lum();paint(getComputedStyle(el).color);const fg=lum();return {text:el.textContent,ratio:(Math.max(bg,fg)+.05)/(Math.min(bg,fg)+.05)}
+  const bg=lum();paint(getComputedStyle(el).color);const fg=lum();return {theme:document.documentElement.dataset.theme,style:document.documentElement.dataset.appStyle,foreground:getComputedStyle(el).color,parent:getComputedStyle(el.parentElement).backgroundColor,imported:!!document.getElementById('custom-theme-css'),text:el.textContent,ratio:(Math.max(bg,fg)+.05)/(Math.min(bg,fg)+.05)}
  }));for(const v of values)assert(v.ratio>=4.5,JSON.stringify(v))}
  const settings=async()=>{await page.locator('.sidebar').getByRole('button',{name:'Settings',exact:true}).click();await page.locator('.settings-rail').getByRole('button',{name:'Appearance',exact:true}).click()}
  const visibleCurrent=async selector=>{await page.waitForFunction(selector=>{const el=document.querySelector(selector);if(!el)return false;for(let p=el.parentElement;p;p=p.parentElement){if(!/(auto|scroll)/.test(getComputedStyle(p).overflowY)||p.scrollHeight<=p.clientHeight)continue;const a=el.getBoundingClientRect(),b=p.getBoundingClientRect();return a.top>=b.top-1&&a.bottom<=b.bottom+1}return false},selector)}
@@ -19,8 +19,9 @@ module.exports=async({desktop,page,artifacts})=>{
   assert.equal(await page.locator('.theme-picker .guidance').isVisible(),false)
   await page.getByRole('checkbox',{name:'Show page guidance',exact:true}).check();await page.getByRole('button',{name:'Save appearance',exact:true}).click()
   await desktop.evaluate(({dialog},file)=>{globalThis.__save140=dialog.showSaveDialog;globalThis.__open140=dialog.showOpenDialog;dialog.showSaveDialog=async()=>({canceled:false,filePath:file});dialog.showOpenDialog=async()=>({canceled:false,filePaths:[file]})},file)
+  await page.locator('.advanced-appearance > summary').click()
   await page.getByRole('button',{name:'Export current CSS',exact:true}).click()
-  for(let i=0;i<100&&!existsSync(file);i++)await new Promise(r=>setTimeout(r,50))
+  for(let i=0;i<100;i++){if(existsSync(file)&&readFileSync(file,'utf8').includes('/* Your custom overrides */'))break;await new Promise(r=>setTimeout(r,50))}
   const css=readFileSync(file,'utf8');assert(css.includes('Media Center CSS snapshot'));assert(css.includes('--body-font:'));assert(css.length>100000)
   await page.getByRole('button',{name:'Import theme CSS',exact:true}).click();await page.waitForFunction(()=>document.getElementById('custom-theme-css')?.textContent.includes('Media Center CSS snapshot'))
   assert.equal(await page.locator('.workspace').evaluate(el=>el.scrollWidth>el.clientWidth),false)
@@ -53,8 +54,10 @@ module.exports=async({desktop,page,artifacts})=>{
   const editor=page.getByRole('dialog',{name:'Make it yours',exact:true});await editor.getByRole('tab',{name:'Artwork',exact:true}).click()
   await editor.getByLabel('Find album artwork',{exact:true}).fill('Semantic card fixture');await editor.getByRole('button',{name:'Search covers',exact:true}).click();await editor.getByRole('button',{name:/Selectable release/}).click()
   await editor.getByRole('button',{name:'Use this cover',exact:true}).waitFor()
+  // Measure the final palette rather than an intermediate theme-transition frame.
+  await page.addStyleTag({content:'*,*::before,*::after {transition:none!important}'})
   const before=await page.evaluate(()=>window.mediaCenter.preferences())
-  for(const theme of ['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass','liquid-glass'])for(const appStyle of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']){
+  for(const theme of ['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass','liquid-glass'])for(const appStyle of ['default','precision','editorial','frosted','liquid']){
    await page.evaluate(p=>window.mediaCenter.savePreferences(p),{...before,theme,appearance:{...before.appearance,appStyle}})
    await page.waitForFunction(({theme,appStyle})=>document.documentElement.dataset.theme===theme&&document.documentElement.dataset.appStyle===appStyle,{theme,appStyle})
    const geometry=await editor.evaluate(el=>{const tab=el.querySelector('[role=tab][aria-selected=true]'),card=el.querySelector('.result-card'),action=[...el.querySelectorAll('button')].find(b=>b.textContent==='Use this cover'),heading=el.querySelector('h3');const t=getComputedStyle(tab),c=getComputedStyle(card),a=getComputedStyle(action),h=getComputedStyle(heading);return {tabFill:t.backgroundColor,tabRadius:parseFloat(t.borderTopLeftRadius),cardRadius:parseFloat(c.borderTopLeftRadius),cardFill:c.backgroundColor,actionFill:a.backgroundColor,cardHeight:card.getBoundingClientRect().height,headingFill:h.backgroundColor}})
@@ -69,16 +72,17 @@ module.exports=async({desktop,page,artifacts})=>{
   await page.getByRole('button',{name:'Open now playing',exact:true}).click();await page.getByRole('button',{name:'Lyrics',exact:true}).click()
   await page.getByRole('button',{name:'Lyrics tools',exact:true}).click();await page.getByRole('button',{name:'Find lyrics',exact:true}).click()
   const lyrics=page.getByRole('dialog',{name:'Find lyrics for this song',exact:true});await lyrics.getByRole('button',{name:'Search lyrics',exact:true}).click();await lyrics.locator('.lyric-result').first().click()
-  for(const theme of ['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass','liquid-glass'])for(const appStyle of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']){
+  for(const theme of ['forest','charcoal','glass','midnight','ocean','rose','lavender','ember','coffee','nord','monochrome','aubergine','black-glass','liquid-glass'])for(const appStyle of ['default','precision','editorial','frosted','liquid']){
    await page.evaluate(p=>window.mediaCenter.savePreferences(p),{...before,theme,appearance:{...before.appearance,appStyle}})
    await page.waitForFunction(({theme,appStyle})=>document.documentElement.dataset.theme===theme&&document.documentElement.dataset.appStyle===appStyle,{theme,appStyle})
    await contrast(lyrics.locator('.lyric-result>:is(strong,span,small)'))
    await lyrics.locator('.lyric-result').first().hover();await contrast(lyrics.locator('.lyric-result>:is(strong,span,small)'))
+   if(theme==='liquid-glass'&&appStyle==='editorial')await page.screenshot({path:resolve(artifacts,'liquid-editorial-result-contrast.png')})
    if(theme==='black-glass'&&appStyle==='frosted')await page.screenshot({path:resolve(artifacts,'lyrics-result-contrast-140.png')})
   }
   await lyrics.getByRole('button',{name:'Close dialog',exact:true}).click()
-  console.log('Result contrast passed: titles, artists and metadata in selected/unselected and hovered artwork/lyrics results across 140 combinations.')
-  console.log('Semantic UI passed: actual editor tabs, artwork result cards, action buttons and headings stay distinct across all 140 theme/style combinations.')
+  console.log('Result contrast passed: titles, artists and metadata in selected/unselected and hovered artwork/lyrics results across 70 current combinations.')
+  console.log('Semantic UI passed: actual editor tabs, artwork result cards, action buttons and headings stay distinct across all 70 current theme/style combinations.')
   console.log('1.4 checks passed: guidance persistence, CSS export/import, normal and immersive queue auto-follow across pages, compact pagination, four backgrounds and reduced motion.')
  }finally{
   await desktop.evaluate(({dialog})=>{if(globalThis.__fetch140)globalThis.fetch=globalThis.__fetch140;if(globalThis.__save140)dialog.showSaveDialog=globalThis.__save140;if(globalThis.__open140)dialog.showOpenDialog=globalThis.__open140})

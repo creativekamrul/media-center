@@ -1,0 +1,4 @@
+import React from 'react';
+import {View} from 'react-native';
+import {usePalette} from './AppState';
+export function LoadingContent({rows=false,columns=2}:{rows?:boolean;columns?:number}){const c=usePalette();return <View accessibilityLabel="Loading library content" accessibilityRole="progressbar" style={{flexDirection:rows?'column':'row',flexWrap:'wrap',gap:14,paddingVertical:14}}>{Array.from({length:rows?5:columns*2},(_,i)=><View key={i} style={{width:rows?'100%':`${100/columns-3}%`,gap:9}}><View style={{height:rows?52:undefined,aspectRatio:rows?undefined:1,backgroundColor:c.panel,borderRadius:12}}/><View style={{height:10,width:'72%',backgroundColor:c.muted+'25',borderRadius:5}}/>{!rows&&<View style={{height:8,width:'48%',backgroundColor:c.muted+'18',borderRadius:4}}/>}</View>)}</View>}

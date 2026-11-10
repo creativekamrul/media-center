@@ -1,0 +1,29 @@
+purpose:
+  stands_in_for: Navidrome 0.60.3 Subsonic album, song and original stream requests using fictional media.
+  unblocks: Android opt-in upcoming-queue caching and original-file reuse acceptance.
+assumptions:
+  - id: original-stream-request
+    status: supported
+    claim: Native music resolution uses getSong followed by a token-authenticated stream request.
+    reason: Existing version-tagged Navidrome source and native adapter use this Subsonic contract.
+    verification: Native queue-selection tests cover media/source identity, current/duplicate exclusion and bounded lookahead. Emulator acceptance passed Off/paused no-prefetch behavior, exact next-three original downloads and native cache-change updates to the already-open screen. Generated files/connection were removed and prior cache policy restored.
+    source: https://github.com/navidrome/navidrome/tree/v0.60.3/server/subsonic
+    updated_at: '2026-11-08'
+fingerprints:
+  - id: queue-cache
+    date: '2026-11-08'
+    commit: Navidrome v0.60.3 source-derived; Media Center dirty working tree
+    cli: Postman 1.73.0
+
+acceptance_2026_11_10:
+  environment: Dedicated API 37 QA AVD and disposable self-instrumenting test UID; all media generated.
+  result: A real production DownloadService restarted after killing only its UID process, completed the original with independent byte/hash verification, and preserved paused/cancelled jobs. Force-stop stayed stopped and an explicit reopen left the job paused.
+  timing: Optional 250 ms / 64 KiB stream throttle is a test control, not a Navidrome throughput claim.
+  limits: No Samsung overnight, reboot or uninterrupted huge-transfer claim.
+
+acceptance_2026_11_11:
+  environment: Dedicated QA AVD; fictional accounts and generated silent originals only.
+  transfer: A 345600044-byte original completed natively while backgrounded in 345 seconds; independent original/file/native hashes matched; paused and cancelled jobs remained unchanged.
+  catalog: 10000 generated tracks advertising about 195 GiB; 32 scroll gestures kept the view hierarchy bounded and triggered no media streams.
+  limits: This is not a real 200 GB cache, a Samsung benchmark, an overnight guarantee or byte-range-resume acceptance.
+  getRandomSongs: Deterministic first-80 fixture rows model the bounded Subsonic randomSongs response for native continuation tests; selection is intentionally repeatable.

@@ -1,0 +1,23 @@
+purpose:
+  stands_in_for: A local, deliberately bounded Jellyfin 10.11.11 original-video transport fixture.
+  unblocks: Android native seek, EOF, retry and playback-report regression checks without modifying a real library.
+assumptions:
+  - id: failed-stop-does-not-complete-media
+    status: supported
+    claim: Jellyfin 10.11.11 OnPlaybackStopped returns without updating user progress when Failed is true.
+    reason: The version-tagged server implementation explicitly guards failed playback before updating user data.
+    verification: Read the tagged implementation on 2026-11-07; native payload tests cover Failed on Stopped only. This stand-in records requests; it does not independently prove server persistence behavior.
+    source: https://github.com/jellyfin/jellyfin/blob/v10.11.11/Emby.Server.Implementations/Session/SessionManager.cs
+    updated_at: '2026-11-07'
+  - id: local-fixture-range-serving
+    status: supported
+    claim: This local fixture serves requested byte ranges from a generated five-second MPEG4 test pattern.
+    reason: A real local HTTP request returned 206 and exactly 32 bytes for bytes=0-31.
+    verification: Tested on 2026-11-07 through Postman CLI 1.73.0 one-port simulation. This establishes fixture transport only; Android playback acceptance remains to be recorded separately.
+    source: ../mocks/jellyfin-playback/default.js
+    updated_at: '2026-11-07'
+fingerprints:
+  - id: local-playback-fixture
+    date: '2026-11-07'
+    commit: 962e1ee (dirty working tree; mobile implementation untracked)
+    cli: Postman 1.73.0

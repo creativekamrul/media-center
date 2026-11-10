@@ -44,7 +44,7 @@ function TrackSeek({player,error,compact,waves}:{player:PlaybackState;error:(s:s
  const value=clamp(preview??(advancing?displayPosition:player.position))
  return <div className={`${compact?'seek-row mini-seek-row':'seek-row'} ${waves?'seek-with-waves':''} ${player.status==='playing'&&!player.buffering?'is-advancing':''}`}>
   {!compact&&<span>{duration(value)}</span>}
-  <div className="seek-track">{waves&&enabled&&<div className="seek-waves" aria-hidden="true" style={{clipPath:`inset(0 ${100-value/player.duration*100}% 0 0)`}}><svg viewBox="0 0 1200 32" preserveAspectRatio="none">{wavePaths.map((d,i)=><path key={i} d={d}/>)}</svg></div>}<div className="chapter-ticks" aria-hidden="true">{player.duration>0&&player.chapters.filter(c=>c.start>0&&c.start<player.duration).map(c=><i key={c.id} title={c.title} style={{left:`${c.start/player.duration*100}%`}}/>)}</div><input aria-label="Playback position" aria-valuetext={`${duration(value)} of ${duration(player.duration)}`} type="range" min={0} max={player.duration||1} step="any" disabled={!enabled} value={value}
+  <div className="seek-track">{waves&&enabled&&<div className="seek-waves" aria-hidden="true" style={{width:`calc((100% - 14px) * ${Math.max(0,Math.min(1,value/player.duration))})`,right:'auto'}}><svg viewBox="0 0 1200 32" preserveAspectRatio="none">{wavePaths.map((d,i)=><path key={i} d={d}/>)}</svg></div>}<div className="chapter-ticks" aria-hidden="true">{player.duration>0&&player.chapters.filter(c=>c.start>0&&c.start<player.duration).map(c=><i key={c.id} title={c.title} style={{left:`${c.start/player.duration*100}%`}}/>)}</div><input aria-label="Playback position" aria-valuetext={`${duration(value)} of ${duration(player.duration)}`} type="range" min={0} max={player.duration||1} step="any" disabled={!enabled} value={value}
    style={{'--progress':`${value/(player.duration||1)*100}%`,touchAction:'none'} as CSSProperties}
    onPointerDown={e=>{if(!enabled||e.button!==0)return;e.preventDefault();e.currentTarget.focus();e.currentTarget.setPointerCapture(e.pointerId);dragging.current=e.pointerId;revision.current++;setPreview(fromPointer(e))}}
    onPointerMove={e=>{if(enabled)setHover(fromPointer(e));if(dragging.current===e.pointerId)setPreview(fromPointer(e))}}
@@ -67,7 +67,7 @@ function TrackSeek({player,error,compact,waves}:{player:PlaybackState;error:(s:s
 // Decorative contours, deliberately independent of decoded audio samples.
 const wavePaths=[0,1,2].map(layer=>{
  const points=Array.from({length:301},(_,i)=>{
-  const x=i*4,y=29-Math.pow((Math.sin(x/(8+layer*3)+layer*2)+1)/2,2)*(7+layer*3)-Math.pow((Math.sin(x/19+layer)+1)/2,3)*7
+  const x=i*4,envelope=Math.pow(Math.sin(Math.PI*i/300),1.4),y=32-envelope*(Math.pow((Math.sin(x/(8+layer*3)+layer*2)+1)/2,2)*(7+layer*3)+Math.pow((Math.sin(x/19+layer)+1)/2,3)*7)
   return `${x},${y.toFixed(2)}`
  })
  return `M0,32 L${points.join(' L')} L1200,32 Z`

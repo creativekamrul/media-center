@@ -1,0 +1,10 @@
+version: 1
+name: Audiobookshelf Podcast Inbox Fixture
+slug: abs-podcast-inbox-fixture
+protocol: http
+port: 18546
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

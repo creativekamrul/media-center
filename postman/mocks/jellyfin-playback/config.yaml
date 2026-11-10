@@ -1,0 +1,10 @@
+version: 1
+name: Jellyfin Playback Fixture
+slug: jellyfin-playback-fixture
+protocol: http
+port: 18543
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

@@ -1,0 +1,12 @@
+provider: Audiobookshelf v2.35.1
+sources:
+  - server/controllers/MeController.js
+  - server/models/User.js
+  - server/models/MediaProgress.js
+assumptions:
+  - GET progress 404 is treated as absent only after expanded playable target validation.
+  - PATCH position can derive completion; no timeListened or fabricated playback session.
+  - Preflight detects changed snapshots but the server provides no atomic conditional update.
+unknowns:
+  - Physical Samsung network/security failure remains open.
+  - Jellyfin offline position upload is not implemented by this fixture.

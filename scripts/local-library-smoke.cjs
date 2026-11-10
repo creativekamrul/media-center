@@ -22,7 +22,8 @@ module.exports=async({page,artifacts})=>{
  await page.screenshot({path:resolve(artifacts,'local-library-playlist.png')})
  await require('./view-navigation.cjs')(page,'Songs')
  await page.getByLabel('Search local library',{exact:true}).fill('no such music')
- await page.getByText('No matches in this view.',{exact:false}).waitFor()
+ await page.getByRole('heading',{name:'No matching local music',exact:true}).waitFor()
+ assert.equal(await page.locator('.local-library-track').count(),0,'A nonmatching search must not retain stale tracks')
  await page.getByLabel('Search local library',{exact:true}).fill('Local track')
  await page.locator('.local-library-track').waitFor()
  for(const width of [1024,1440,1920]){await page.setViewportSize({width,height:940});assert.equal(await page.locator('.workspace').evaluate(el=>el.scrollWidth>el.clientWidth),false)}

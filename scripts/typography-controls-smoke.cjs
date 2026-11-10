@@ -24,7 +24,7 @@ module.exports=async({desktop,page,artifacts,mini})=>{
  await page.getByRole('button',{name:'Immersive view',exact:true}).click()
  if(await page.getByRole('button',{name:'Show lyrics',exact:true}).isVisible())await page.getByRole('button',{name:'Show lyrics',exact:true}).click()
  assert.equal(await page.locator('.immersive-stage h2').count(),0)
- for(const theme of ['black-glass','ocean'])for(const style of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']){
+ for(const theme of ['black-glass','ocean'])for(const style of ['default','precision','editorial','frosted','liquid']){
   await page.evaluate(async({theme,style})=>{const p=await window.mediaCenter.preferences();await window.mediaCenter.savePreferences({...p,theme,appearance:{...p.appearance,appStyle:style}})},{theme,style})
   await page.waitForFunction(({theme,style})=>document.documentElement.dataset.theme===theme&&document.documentElement.dataset.appStyle===style,{theme,style})
   await page.mouse.move(2,2)
@@ -41,6 +41,6 @@ module.exports=async({desktop,page,artifacts,mini})=>{
  await saved.click();const dialog=page.getByRole('dialog',{name:'Saved queues',exact:true});await dialog.waitFor();await dialog.getByRole('button',{name:'Close dialog',exact:true}).click()
  await page.screenshot({path:resolve(artifacts,'consistent-queue-toolbar.png')})
  await page.getByRole('button',{name:'Music',exact:true}).click();await require('./view-navigation.cjs')(page,'Songs','button')
- const play=page.locator('.listen-actions.compact>button').first();await play.waitFor();const r=await play.boundingBox();assert.ok(Math.abs(r.width-r.height)<1,'Compact play has equal dimensions')
- console.log('Typography and controls passed: installed fonts, shared font rendering, saved word/line spacing, clean lyric stage, ten styles in two themes, square play target and Saved queues button.')
+ await page.locator('.song-row:not(.table-heading) .song-title').first().waitFor();const play=page.locator('.player-bar .main-play');await play.waitFor();const r=await play.boundingBox();assert.ok(Math.abs(r.width-r.height)<1,'Compact play has equal dimensions')
+ console.log('Typography and controls passed: installed fonts, shared font rendering, saved word/line spacing, clean lyric stage, five current styles in two themes, square play target and Saved queues button.')
 }

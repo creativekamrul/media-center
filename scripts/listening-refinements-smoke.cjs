@@ -16,7 +16,7 @@ module.exports=async({desktop,page,artifacts})=>{
   await page.evaluate(mix=>window.mediaCenter.personalChange({action:'mix-save',mix}),mix)
   await page.getByRole('button',{name:'Open mini player',exact:true}).click();mini=desktop.windows().find(w=>w!==page)||await desktop.waitForEvent('window')
   await mini.locator('.mini-drag').waitFor()
-  for(const style of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']){
+  for(const style of ['default','precision','editorial','frosted','liquid']){
    await page.evaluate(({original,style})=>window.mediaCenter.savePreferences({...original,theme:'black-glass',appearance:{density:'comfortable',colors:{},bodyFont:'segoe',headingFont:'georgia',lyricsFont:'segoe',surfaceStyle:'solid',...original.appearance,appStyle:style,translucency:false}}),{original,style})
    await mini.waitForFunction(s=>document.documentElement.dataset.appStyle===s,style)
    assert.ok(await mini.locator('.mini-drag').evaluate(el=>{const r=el.getBoundingClientRect();return [...el.querySelectorAll('button,.mini-brand')].every(b=>b.getBoundingClientRect().bottom<=r.bottom-4)}),'Mini header divider stays below controls: '+style)
@@ -29,7 +29,7 @@ module.exports=async({desktop,page,artifacts})=>{
    assert.equal(await c.getByRole('button',{name:'Duplicate',exact:true}).count(),0)
    const more=c.getByRole('button',{name:'More options',exact:true});const r=await more.boundingBox();assert.ok(r.width>=36&&r.height>=36&&Math.abs(r.width-r.height)<1,'Mix overflow is a compact square action');const positions=await c.locator('.mix-card-actions>button,.mix-card-actions .more-options-trigger').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().y));assert.ok(Math.max(...positions)-Math.min(...positions)<2,'Mix actions share one row')
    await more.click();await c.getByRole('button',{name:`Delete mix ${mix.name}`,exact:true}).waitFor();await page.keyboard.press('Escape')
-   if(['default','retro','neon'].includes(style)){await c.screenshot({animations:'disabled',path:resolve(artifacts,`refined-mix-${style}.png`)});await mini.screenshot({animations:'disabled',path:resolve(artifacts,`refined-mini-${style}.png`)})}
+   if(['default','precision','liquid'].includes(style)){await c.screenshot({animations:'disabled',path:resolve(artifacts,`refined-mix-${style}.png`)});await mini.screenshot({animations:'disabled',path:resolve(artifacts,`refined-mini-${style}.png`)})}
   }
   await page.evaluate(async({nav,screen})=>{const a=window.mediaCenter;await a.savePlayingScreenPreferences({...screen,background:'artwork',animation:'focus',fontSize:40});await a.play({queue:[{target:{kind:'music-track',serverId:nav.serverId,trackId:'song'},title:'A little room to listen',subtitle:'Fixture artist',cover:'fixture',duration:600}],index:0});await a.command({action:'toggle'});await a.lyricEdit({key:JSON.stringify([nav.serverId,'music-track','song']),text:Array.from({length:30},(_,i)=>`[${String(Math.floor(i*5/60)).padStart(2,'0')}:${String(i*5%60).padStart(2,'0')}]A little space for the music, line ${i+1}`).join('\n')})},{nav,screen})
   await page.getByRole('button',{name:'Open now playing',exact:true}).click();await page.getByRole('button',{name:'Lyrics',exact:true}).click();await page.locator('.lyric-line').first().waitFor()

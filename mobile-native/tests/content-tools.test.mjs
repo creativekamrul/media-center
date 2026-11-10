@@ -1,0 +1,5 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {matchesText,matchesFilter,groupVersions} from '../src/contentTools.ts';
+test('collection search matches all terms across title and artist',()=>{assert.ok(matchesText({title:'Blue Moon',artist:'Ella'},'ella blue'));assert.equal(matchesText({title:'Blue Moon'},'red'),false)});
+test('unknown metadata cannot pass restrictive search filters',()=>{assert.equal(matchesFilter({},'track','a',{kind:'track',source:'',yearFrom:2000}),false);assert.ok(matchesFilter({year:2020,duration:120},'track','a',{kind:'track',source:'a',maxMinutes:3}));assert.equal(matchesFilter({duration:0},'track','a',{kind:'',source:'',maxMinutes:3}),false)});
+test('versions retain distinct remixes and prefer a configured source',()=>{const track={title:'Song',artist:'Artist',album:'Album',duration:100,kind:'track'};const groups=groupVersions([{...track,source:'a'},{...track,source:'b',duration:101},{...track,source:'b',title:'Song (Remix)'},{...track,source:'b',duration:200}],['b']);assert.equal(groups.length,3);assert.equal(groups[0].length,2);assert.equal(groups[0][0].source,'b')});

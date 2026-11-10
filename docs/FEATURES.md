@@ -56,33 +56,33 @@ Audiobookshelf search follows its relevance-ranked endpoint, capped at 100 match
 
 |---|---|
 
-| 1 — Discord Rich Presence | Optional own Application ID; local Windows IPC, reconnect, music/book/episode/local privacy switches, pause and speed-adjusted timestamps. Requires live Discord setup to verify a real profile. |
+| 1 â€” Discord Rich Presence | Optional own Application ID; local Windows IPC, reconnect, music/book/episode/local privacy switches, pause and speed-adjusted timestamps. Requires live Discord setup to verify a real profile. |
 
-| 2 — Last.fm artwork | Encrypted user key; album lookup with track fallback; seven-day positive and one-hour negative cache; bounded responses; transient retries and manual refresh; separate artwork diagnostics; per-track artist/album correction; only public Last.fm CDN URLs. Books/podcasts use validated chosen public artwork or the branded default; spoken metadata is never looked up as music. |
+| 2 â€” Last.fm artwork | Encrypted user key; album lookup with track fallback; seven-day positive and one-hour negative cache; bounded responses; transient retries and manual refresh; separate artwork diagnostics; per-track artist/album correction; only public Last.fm CDN URLs. Books/podcasts use validated chosen public artwork or the branded default; spoken metadata is never looked up as music. |
 
-| 3 — Home | Server Continue Listening with equal-sized fluid cards, recent albums, newest unfinished indexed episodes, Listen Later plans. |
+| 3 â€” Home | Server Continue Listening with equal-sized fluid cards, recent albums, newest unfinished indexed episodes, Listen Later plans. |
 
-| 4 — Offline audio | Original music/book/episode files, sequential download queue, quota, pause/resume, bulk pause/resume, item/all selection and confirmed removal, cached covers, offline MPV, retained checkpoints, explicit conflict-checked position sync. Range and If-Range resume preserve partial bytes when the server supports validators; changed or unsupported representations restart safely. |
+| 4 â€” Offline audio | Original music/book/episode files, sequential download queue, quota, pause/resume, bulk pause/resume, item/all selection and confirmed removal, cached covers, offline MPV, retained checkpoints, explicit conflict-checked position sync. Range and If-Range resume preserve partial bytes when the server supports validators; changed or unsupported representations restart safely. |
 
-| 6 — Gapless | Prepares the next music/local track in MPV's internal playlist; waits for its file-loaded event; format changes may reopen the device. Optional shared-output music crossfade is available in 0.9. |
+| 6 â€” Gapless | Prepares the next music/local track in MPV's internal playlist; waits for its file-loaded event; format changes may reopen the device. Optional shared-output music crossfade is available in 0.9. |
 
-| 7 — Smart rewind | Configurable short/long rewind after 10 seconds / 5 minutes away; explicit chapter/seek positions remain exact. |
+| 7 â€” Smart rewind | Configurable short/long rewind after 10 seconds / 5 minutes away; explicit chapter/seek positions remain exact. |
 
-| 9 — Podcast inbox | Expanded show indexing, independent progress, title/show search, newest/oldest/show sorting, all/unfinished/in-progress/finished, bulk status writes and partial failure reporting. |
+| 9 â€” Podcast inbox | Expanded show indexing, independent progress, title/show search, newest/oldest/show sorting, all/unfinished/in-progress/finished, bulk status writes and partial failure reporting. |
 
-| 13 — Mini-player | Separate frameless always-on-top window, native pin state and persisted pin choice, cover, transport, seek, return to main window. |
+| 13 â€” Mini-player | Separate frameless always-on-top window, native pin state and persisted pin choice, cover, transport, seek, return to main window. |
 
-| 14 — Saved queues | Named mixed/music/spoken sessions with index/position; load without autoplay, resume, replace, delete; drag-and-drop and keyboard-accessible arrow ordering. |
+| 14 â€” Saved queues | Named mixed/music/spoken sessions with index/position; load without autoplay, resume, replace, delete; drag-and-drop and keyboard-accessible arrow ordering. |
 
-| 15 — Playlists | Local favorite/rating/genre/artist/year/unplayed rules; ordered results; same-server JSON import/export preserving duplicates. Navidrome smart playlists remain server managed. |
+| 15 â€” Playlists | Local favorite/rating/genre/artist/year/unplayed rules; ordered results; same-server JSON import/export preserving duplicates. Navidrome smart playlists remain server managed. |
 
-| 16 — Large collections | 30-second music-page cache, request deduplication, 100-row queue/track pages, 60-row episode pages, bounded show expansion, cached inbox with background refresh. |
+| 16 â€” Large collections | 30-second music-page cache, request deduplication, 100-row queue/track pages, 60-row episode pages, bounded show expansion, cached inbox with background refresh. |
 
-| 17 — Notes/bookmarks | Timestamped searchable local notes for playable media; exact-position playback; note editing/deletion; server book bookmark title editing. |
+| 17 â€” Notes/bookmarks | Timestamped searchable local notes for playable media; exact-position playback; note editing/deletion; server book bookmark title editing. |
 
-| 18 — Listening habits | Device listening time on a fixed 30-day chart with date labels and zero-day slots, a recent-first daily table with optional quiet days and media totals, top listens, completion counts, configurable daily goal. Custom inclusive date-range recap with 12 layouts and 12 palettes, preview and 1080 × 1440 PNG export. No imported server history. |
+| 18 â€” Listening habits | Device listening time on a fixed 30-day chart with date labels and zero-day slots, a recent-first daily table with optional quiet days and media totals, top listens, completion counts, configurable daily goal. Custom inclusive date-range recap with 12 layouts and 12 palettes, preview and 1080 Ã— 1440 PNG export. No imported server history. |
 
-| 20 — Personal backups | Native file export/preview, server/root matching, transactional replacement of preferences/queues/notes/plans/rules, strict validation; local playlists/favorites, lyric bindings and offsets, history, stats and daily-use preferences included; credentials, downloads and server progress excluded. |
+| 20 â€” Personal backups | Native file export/preview, server/root matching, transactional replacement of preferences/queues/notes/plans/rules, strict validation; local playlists/favorites, lyric bindings and offsets, history, stats and daily-use preferences included; credentials, downloads and server progress excluded. |
 
 The inbox indexes up to 100,000 episodes and displays refresh warnings rather than pretending a partial index is complete. Rule evaluation is capped at 100,000 tracks and 5,000 selected results. Downloads are capped at 1,000 entries, named queues at 100, and notes at 10,000. Initial inbox indexing requires expanded show requests and may take time.
 
@@ -198,7 +198,7 @@ Limits: local watching requires an available source; identity matching is strong
 
 | Podcast subscriptions | Audiobookshelf 2.35.1 server search, RSS preview, reviewed OPML import/export and up to 100 selected subscriptions per request. Server management permission required; background subscription requests disable automatic audio download. |
 
-| Crossfade | Optional 0–12 second shared-output MPV music/local-music overlap. Album neighbors can retain gapless playback. Disabled for exclusive output, spoken media, radio and repeat-one; transitions at the queue-end repeat wrap use the existing normal path. Format/hardware transition quality needs listening verification. |
+| Crossfade | Optional 0â€“12 second shared-output MPV music/local-music overlap. Album neighbors can retain gapless playback. Disabled for exclusive output, spoken media, radio and repeat-one; transitions at the queue-end repeat wrap use the existing normal path. Format/hardware transition quality needs listening verification. |
 
 | Recovery / diagnostics | Connection checks/retry, current-playback retry, link to offline checkpoint review. Exported JSON contains allowlisted technical state, not paths, addresses, credentials, track/source names or raw errors. |
 
@@ -248,11 +248,11 @@ Limits: local watching requires an available source; identity matching is strong
 
 - Refreshed mini player with icon branding, larger square art, two-line titles, centered main-style transport and seek controls, elapsed/total time and theme synchronization.
 
-## 1.2.0 — Custom mixes and collection navigation
+## 1.2.0 â€” Custom mixes and collection navigation
 
 - Custom mix recipes support up to eight condition groups (outer AND/OR; group AND/OR/NOT), with up to twelve conditions per group. Text: title, artist, album, genre and format. Numbers: year, duration in seconds, Navidrome rating and play count. Favorite and non-favorite rules work for Navidrome and local folders.
-- Select up to ten music servers/folders, preview artwork and duration, then play, queue or save for later. Recipes save separately from the generated queue; preview again to regenerate. Sort by title/artist/album/year/duration/play count or shuffle, with a 1–1,000 track limit and optional limit per artist.
-- Saved recipes appear on Home and in Library tools → Custom mixes, with editing, duplication and deletion. Personal backups remap source identities; personal-data reset removes recipes.
+- Select up to ten music servers/folders, preview artwork and duration, then play, queue or save for later. Recipes save separately from the generated queue; preview again to regenerate. Sort by title/artist/album/year/duration/play count or shuffle, with a 1â€“1,000 track limit and optional limit per artist.
+- Saved recipes appear on Home and in Library tools â†’ Custom mixes, with editing, duplication and deletion. Personal backups remap source identities; personal-data reset removes recipes.
 - Catalog scans are cached for two minutes; Refresh sources forces a rescan. Navidrome scans stop at 15,000 songs per selected server/library; local indexing retains its 50,000-file bound; a preview evaluates at most 100,000 songs overall. Warnings identify partial scans and source failures. Unknown numeric metadata does not satisfy numeric comparisons. BPM analysis, arbitrary-depth rule trees and scheduled regeneration are not implemented.
 - Home's recently played albums loads 60 per server per page (or all returned if fewer) with incremental loading, identity deduplication and retryable source failures. It is no longer limited to eight. These are Navidrome recent albums, not fabricated local album history.
 - Shared headers follow collection names/icons and active themes across Music, Local music, Audiobooks, Podcasts and Library tools. Underlined navigation replaces pill tabs. Dedicated spoken Continue listening views preserve explicit audiobook/episode targets.
@@ -336,10 +336,10 @@ Collection and episode controls share compact playback rows with personal/progre
 
 - Immersive view occupies the space previously reserved for the bottom player and hosts a complete transport under the cover. Studio and Lounge retain queue access; exiting restores the footer and keyboard access. Shared utilities preserve sleep/volume behavior, and the existing identity-safe SeekBar handles seeking. Audiobooks and podcast episodes have speed and separate 15/30-second skip controls.
 - Main and immersive volume controls accept mouse-wheel input over the icon, slider and percentage. Wheel input accumulates in 100-pixel (or three-line) increments for five-point changes, clamps at 0/100, and does not scroll the page. Ctrl+wheel remains available for zoom; slider/keyboard changes use the same bounded, serialized main-process command path.
-- Verified with typecheck, 209 unit tests, production build and the full Electron/MPV suite with zero renderer errors. New native checks cover footer hide/restore, all three immersive layouts at 1440×940 and 1024×720, seek/shuffle/repeat/sleep/mini controls, bounded and rapid wheel input, and skip/speed for both audiobooks and podcast episodes.
+- Verified with typecheck, 209 unit tests, production build and the full Electron/MPV suite with zero renderer errors. New native checks cover footer hide/restore, all three immersive layouts at 1440Ã—940 and 1024Ã—720, seek/shuffle/repeat/sleep/mini controls, bounded and rapid wheel input, and skip/speed for both audiobooks and podcast episodes.
 
 - The first pinned view opens when entering Music, Local music or Library tools, even when the old default is still pinned. Explicit links and returning from detail keep their intended view.
-- Album/playlist track tables offer original order, title A–Z/Z–A, artist, album, date added, release year, duration and disc/track sorting. Header playback, Play next, Add to queue and play-from-row follow the display order without rewriting a server playlist. Manual playlist reordering uses Original order. Duplicate track occurrences remain distinct. Standalone server song searches sort the loaded page; local sorting runs before pagination (complete local queue resolution is available in 1.5.0 below).
+- Album/playlist track tables offer original order, title Aâ€“Z/Zâ€“A, artist, album, date added, release year, duration and disc/track sorting. Header playback, Play next, Add to queue and play-from-row follow the display order without rewriting a server playlist. Manual playlist reordering uses Original order. Duplicate track occurrences remain distinct. Standalone server song searches sort the loaded page; local sorting runs before pagination (complete local queue resolution is available in 1.5.0 below).
 - Navidrome date sorting uses its optional `created` field ([0.60.3 response source](https://github.com/navidrome/navidrome/blob/v0.60.3/server/subsonic/responses/responses.go)); this is a library date, not an insertion date within a playlist. Unknown dates sort last. Local date added records first indexing and survives rescans and identified renames; legacy files without a recorded date remain unknown.
 - Now Playing places view switches and lyrics tools/appearance in one responsive header. All 13 themes and 10 application styles share restrained navigation, consistent utility controls and a compact Settings layout, with separate palette and style choices.
 
@@ -461,7 +461,7 @@ Video controls overlay a stable full-window playback surface. Showing bars or op
 - Saved-library search groups songs, artists, and albums by connected source. Navidrome, indexed local music, and saved Downtify collections open from search with their real track lists. Results and the query remain available on Back. Source searches are bounded by their existing catalog page limits.
 - Explore retains its carousel, filter, shelf positions, and originating keyboard focus while a detail page is open. Downtify playlist cards restore focus after Back. The playlist title, metadata and playback actions share one header.
 - Music collection actions identify albums and playlists, books offer Play or Resume according to progress, and podcast actions reflect episode ordering. Queue additions, downloads for offline use and saves to Downtify have distinct labels.
-- Explore groups recorded plays, artist matches and items absent from this device’s listening history. Recently added albums use Navidrome’s newest-album listing. Jellyfin viewing shelves continue to use resume and date-added data.
+- Explore groups recorded plays, artist matches and items absent from this deviceâ€™s listening history. Recently added albums use Navidromeâ€™s newest-album listing. Jellyfin viewing shelves continue to use resume and date-added data.
 
 ### Explore album links, feedback and source loading (2.2.0)
 
@@ -469,3 +469,108 @@ Video controls overlay a stable full-window playback surface. Showing bars or op
 - Visible Downtify tracks can offer **Also in Navidrome**. Media Center compares complete title, artist, album and duration (within two seconds), retains edition qualifiers, and declines ambiguous or truncated results. A user chooses a server copy to play. Lookups are bounded and successful results are cached briefly.
 - Explore feedback distinguishes hiding one title from reducing suggestions for its credited artist. Reduced artists move behind other suggestions and are capped at one music recommendation each. The last change has immediate Undo, and all choices can be restored on this device.
 - Audio recommendations, recent albums, and Jellyfin video shelves appear as their sources finish. Source-specific failures expose retry controls while available content stays usable. Podcast inbox results are still gathered by the existing shared inbox service.
+
+## Mobile development (unreleased)
+
+- SDK-free mobile design preview with fictional catalog and silent simulated playback.
+- Separate React Native / Expo Android foundation in `mobile-native/`, with bundled DM Sans/Sora, demo browsing, library views and player layout. TypeScript and Android Hermes bundle checks pass. An ARM64 preview APK is built and installed on a physical S23 Ultra (Android 16); launch, Explore rendering and Settings were observed. Full interaction and playback testing remain pending.
+- Tested portable UTF-8 M3U8 generator preserves order and repeated tracks, references relative completed files and rejects stream URLs. Android storage publication and other-player import verification remain unimplemented.
+- Pending: embedded libmpv/FFmpeg, foreground playback service, DAC negotiation and validation, secure server accounts, original streaming, persistent downloads, shared-folder sync, complete native UI parity and device tests.
+- See `docs/mobile/AUDIO-OFFLINE-REQUIREMENTS.md`. Mobile is a full streaming/offline player with optional portable library sync, not an offline-only utility.
+
+### Android preview 0.1.1 (local, unreleased)
+
+- Floating icon navigation, side menu, vector favorites/player icons, and grouped settings. Bundled fonts retained.
+- Native Navidrome connection add/edit/test/remove; encrypted Android Keystore credentials, HTTPS by default and explicit per-account HTTP opt-in. Native allowlisted library requests; credentials and authenticated URLs are not returned to the UI.
+- Real album, artist, playlist and track browsing, music-folder selection and search, with loading/error/empty states. Separate labeled demo library and persisted account selection/preferences.
+- Still incomplete: native MPV playback, background audio, DAC validation, downloads/shared-folder writing and other mobile providers. This APK is a connection/browsing preview, not a working audio player.
+
+### Android preview 0.1.2 (local, unreleased)
+
+- Detail pages hide root title/menu and bottom tabs, with their own back header. Removed repeated connection/preview strip; refresh moved to the side menu.
+- Android Back closes track/detail levels first, restores the parent list page, and returns root tabs to Home before allowing exit.
+- Native playback remains incomplete.
+
+### Android candidate 0.2.0 (local, unreleased)
+
+- Replaces track paging buttons with virtualized incremental lists and preserves
+  duplicate playlist entries. Uses Expo Router detail screens and Back navigation.
+- Embedded MPV original audio, background media service, MediaSession transport,
+  playback clock, pause and five-second seek verified on an S23 Ultra/Android 16.
+- User-selected shared folder downloads preserve original audio bytes and export
+  relative UTF-8 M3U8 playlists. Offline MPV playback verified with the fixture
+  server disconnected; other-player import and persistent sync remain pending.
+- Adds native Downtify connection/library/streaming code, lyrics, favorites,
+  queue controls, sleep timer, palettes and surface styles. These need broader
+  real-server/interaction coverage before release.
+- This supersedes the earlier browsing-only playback limitation, but **is not
+  mobile 1.0.0 or full feature parity**. See the mobile implementation ledger for
+  missing providers, video, resumable jobs, DAC verification and distribution gates.
+
+
+### Mobile 0.3.1 preview
+
+Provider-aware Explore now includes music mixes, Audiobookshelf books/shows and Jellyfin resume/unplayed shelves. Jellyfin native original-file playback, browsing/search and session progress are implemented. Liquid Glass navigation now uses Android shader-based edge refraction separately from Frosted blur. This remains a preview with explicit offline, DAC and parity gaps in `docs/mobile/V1-IMPLEMENTATION.md`.
+
+### Mobile Library refinement (unreleased)
+
+Artwork-led provider/detail views, cross-provider pins, dedicated Downtify external discovery, adjustable glass tint/refraction, persistent music cache jobs and foreground auto-offline rules are implemented. Interrupted cache jobs require explicit resume and restart the unfinished file. Background rule scheduling and audiobook/podcast/video offline support remain incomplete; see `docs/mobile/V1-IMPLEMENTATION.md`.
+
+
+### Android phone candidate 1.0.0-rc.1
+
+Mobile now includes desktop-equivalent track sorting, ordered playback, Downtify discovery save/cache/similar actions, queue editing, original-file book and episode caching, local audio/radio, and custom/timed lyrics. See [the mobile implementation ledger](mobile/V1-IMPLEMENTATION.md) for acceptance evidence and remaining release gates. This is a local test-signed candidate; full desktop parity, background sync after termination, video caching, offline spoken progress reconciliation, USB-exclusive output and production publishing remain incomplete.
+
+
+### Mobile expansion scope
+
+The approved feature expansion is tracked individually in [the mobile expansion ledger](mobile/EXPANSION-PLAN.md). Android Auto is deferred and device handoff is excluded. This is ongoing work, not a completed release.
+
+
+### Mobile expansion development status (2026-11-07)
+
+The approved mobile expansion is tracked individually in `docs/mobile/EXPANSION-PLAN.md`. New development includes tonal EQ profiles, cross-provider mix/app-playlist tools, collection search and bulk actions, portable settings backups, native playback policies, cache conditions/budgets, and expanded Jellyfin controls. These changes are not a claim of completed mobile parity. Gapless/crossfade, USB-exclusive output, scheduled background caching, full progress reconciliation, and other queued work remain outstanding. Android Auto remains deferred and cross-device handoff excluded.
+
+
+### Android custom media and discovery batch (unreleased)
+
+- Source-scoped custom covers use the native system picker, copy and normalize the selected image privately, refresh artwork thumbnails and support restoring the server image. Server media and originals are not changed.
+- Music lyrics support native LRCLIB search and explicit match download, UTF-8 LRC/text import, export, device-local editing, timing offsets and a bounded automatic-lyrics offline cache. Books, podcast episodes and radio never request song lyrics.
+- Optional native music queue continuation uses connected saved-music sources and cached music, honors recommendation feedback and queue identity, and stays disabled by default. Clearing upcoming tracks suppresses continuation; spoken items, repeat and sleep sessions are excluded. Background/runtime acceptance remains open.
+- A Discovery inbox retains tracks, albums and artists saved from Explore or Downtify Discover for later review, with search and removal. It does not automatically download media.
+- Balanced custom mixes now use favorites and artist listening history alongside variety. Saved recipe validation isolates malformed entries.
+- Mobile typecheck/lint, 56 JavaScript tests, 71 native tests and local emulator packaging pass. Desktop typecheck/build and all 300 tests pass. This does not complete the remaining mobile feature ledger or authorize calling the build stable.
+
+### Android verification checkpoint (2026-11-08)
+
+- Custom music lyrics: exact native-picker LRC import/export round-trip passed; automatic lyrics restored after testing. Custom-cover import and private persistence remain implemented, with earlier emulator rendering evidence.
+- Spoken transcripts: user-imported VTT/SRT/plain text, offline word search, guarded whole-book/episode jumps, control-lock enforcement and removal. Emulator forward/reverse jumps crossed a physical book-file boundary correctly.
+- Optional spoken silence skipping: gentle/balanced/strong modes, original source timestamps, music excluded. Bundled Android MPV runtime check passed on a generated 12-second episode containing eight seconds of silence. Default remains Off.
+- Paused-process regression: same process survived a 45-second picker hold and two-minute background check; physical Samsung long-background acceptance is still required.
+- Current mobile checks: TypeScript/lint, 61 JS tests, 113 native unit tests. Desktop typecheck/build and 300 tests pass. This is not full mobile feature parity or a stable-release claim; remaining scope and acceptance are tracked in docs/mobile/EXPANSION-PLAN.md and RELEASE-GATES.md.
+
+
+### Android public links and library radio (unreleased)
+
+- Android text sharing and pasted public music links open an explicit Downtify source/preview workflow. Receiving a share does not automatically play or download media. Plain shared titles can prefill central search.
+- Artist/track radio uses saved Navidrome, Downtify, Jellyfin music and device tracks. Similarity metadata can supply related artists; unsaved discovery IDs never enter these queues. Source timeouts, feedback, bounds, stale-playback checks and conservative recording duplicate filtering are included.
+- Fixed malformed playback JSON before the first native playback session. Current model checks: 67 JS and 121 native tests, with mobile typecheck/lint passing. Final preview builds and runtime evidence are recorded in the mobile release gates. Outstanding scope remains in the expansion ledger; this is not a stable 1.0 release.
+
+- Final checkpoint also corrects Home music-history navigation and palette-aware Liquid Glass dialog/menu backgrounds with the light Editorial style. Mobile checks pass 70 JS and 121 native tests; desktop typecheck/build, 300 tests and the full Electron integration suite pass. Scope and physical-device gates remain unfinished.
+
+- Android podcast inbox rules now support show-scoped episode filters, paged SQLite search/review, opt-in foreground checking and original-file caching through Cache transfers. Source-derived emulator acceptance covers failure recovery, cancellation and restart persistence; native checks total 131. Background scheduling and physical Samsung reliability remain separate open gates.
+
+- Android Audiobookshelf book pages now expose series membership and an ordered, paged series screen with completion status and explicit continuation to the first known unfinished book. Read-only emulator acceptance and native wrong-media/identity regression tests pass.
+
+- Android can opt into upcoming saved-music caching for the next 1/3/5 tracks, with mandatory unmetered/budget controls and a 50-new-track per-app-session bound. Native transfer events now update the focused Cache screen when downloads start elsewhere. Off/paused safety, exact upcoming downloads and open-screen completion updates passed emulator acceptance. Current native regression total: 142.
+
+
+Mobile development checkpoint (2026-11-08): podcast inbox rules, audiobook series continuation, opt-in bounded upcoming-music caching and original Jellyfin video caching have source-derived fixture/emulator acceptance. Video originals play offline in native MPV with local resume and embedded tracks. The expansion ledger still records unfinished work and physical-device/release gates; this is not a feature-complete public mobile release.
+
+
+Android development checkpoint (2026-11-08): saved-music offline collection rules support opt-in bounded WorkManager checks with native execution checkpoints, mandatory unmetered/budget gates and ownership-scoped pause/cancel behavior. Generated-fixture cold-process download/reuse passes on the emulator. Completed transfer history is separated and paged. This remains unreleased; it does not establish full mobile parity, overnight background reliability, gapless/crossfade or USB-exclusive output.
+
+
+Android emulator development checkpoint (2026-11-10): spoken multi-item queue/position restoration, bounded foreground daily/weekly mix snapshots, and permission/revision-checked Jellyfin music playlist editing now have generated-fixture runtime acceptance. Mobile TypeScript/lint, 76 JS tests and 192 native tests pass. This remains an unreleased preview; see the mobile expansion ledger and release gates for supported scope still unfinished.
+
+Android cached-video progress review (2026-11-10): explicit Jellyfin source-version/credential/revision checks, preserved checkpoints on rejected or uncertain writes, and use-phone/use-server choices pass generated emulator acceptance. Queued native reports must finish before applying a choice. Final mobile checks: 76 JS tests and 199 native tests, typecheck/lint and development APK build passing. Unfinished mobile scope remains recorded in the expansion ledger.

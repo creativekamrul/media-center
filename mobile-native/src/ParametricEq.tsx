@@ -1,0 +1,11 @@
+import React from 'react';
+import {View,Switch} from 'react-native';
+import Slider from '@react-native-community/slider';
+import {T,Button,layout} from './ui';
+import {usePalette} from './AppState';
+import type {AudioOptions,ParametricBand} from './library';
+export function ParametricEq({value,save,ready}:{value:AudioOptions;save:(v:AudioOptions)=>void;ready:boolean}){
+ const c=usePalette(),filters=value.filters??[];
+ const edit=(index:number,patch:Partial<ParametricBand>)=>save({...value,filters:filters.map((f,i)=>i===index?{...f,...patch}:f)});
+ return <View style={{gap:14}}><View style={layout.row}><T strong style={{flex:1}}>Parametric EQ</T><Switch disabled={!ready} value={!!value.parametric} onValueChange={parametric=>save({...value,parametric})}/></View><T muted>When enabled, these filters replace the 10-band sliders. The EQ preamp still applies. Start with negative preamp when boosting bands.</T>{value.parametric&&<>{filters.map((f,i)=><View key={i} style={{backgroundColor:c.panel,padding:16,borderRadius:12,gap:8}}><T strong>Band {i+1} · {f.frequency} Hz · {f.gain} dB · Q {f.q}</T><T muted>Frequency</T><Slider accessibilityLabel={'Band '+(i+1)+' frequency'} minimumValue={Math.log10(20)} maximumValue={Math.log10(20000)} value={Math.log10(f.frequency)} onSlidingComplete={v=>edit(i,{frequency:Math.round(10**v)})} minimumTrackTintColor={c.accent}/><T muted>Gain</T><Slider accessibilityLabel={'Band '+(i+1)+' gain'} minimumValue={-12} maximumValue={12} step={.5} value={f.gain} onSlidingComplete={gain=>edit(i,{gain})} minimumTrackTintColor={c.accent}/><T muted>Bandwidth (Q)</T><Slider accessibilityLabel={'Band '+(i+1)+' Q'} minimumValue={.1} maximumValue={12} step={.1} value={f.q} onSlidingComplete={q=>edit(i,{q:Math.round(q*10)/10})} minimumTrackTintColor={c.accent}/><Button label="Remove band" onPress={()=>save({...value,filters:filters.filter((_,j)=>j!==i)})}/></View>)}<Button label="Add filter" disabled={filters.length>=12} onPress={()=>save({...value,filters:[...filters,{frequency:1000,gain:0,q:1}]})}/><Button label="Headroom for parametric boosts" onPress={()=>save({...value,eqPreamp:-Math.min(24,filters.reduce((sum,f)=>sum+Math.max(0,f.gain),0))})}/></>}</View>;
+}

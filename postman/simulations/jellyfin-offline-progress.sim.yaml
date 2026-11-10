@@ -1,0 +1,6 @@
+simulation: Android Jellyfin offline progress
+routing: path
+mocks:
+  - name: Jellyfin Offline Progress Fixture
+    routeKey: jellyfin
+    path: ../mocks/jellyfin-offline-progress/config.yaml

@@ -120,7 +120,7 @@ html:root[data-theme][data-app-style] .immersive-player .seek-with-waves input {
 html:root[data-theme][data-app-style] .immersive-player .seek-with-waves input::-webkit-slider-runnable-track {height:var(--seek-height);border-radius:999px;background:linear-gradient(to right,var(--seek-thumb) var(--progress),#ffffff30 var(--progress));border:0;box-shadow:none}
 html:root[data-theme][data-app-style] .immersive-player .seek-with-waves input::-webkit-slider-thumb {appearance:none;opacity:1;width:20px;height:20px;margin-top:calc((var(--seek-height) - var(--seek-thumb-size))/2);border:0;border-radius:50%;background:var(--seek-thumb);box-shadow:0 2px 8px #0003}
 .seek-waves {position:absolute;left:7px;right:7px;bottom:14px;height:30px;pointer-events:none;overflow:hidden;z-index:0}
-.seek-waves svg {mask-image:linear-gradient(to right,transparent,#000 14px);display:block;width:100%;height:100%;overflow:visible}
+.seek-waves svg {display:block;width:100%;height:100%;overflow:visible}
 .seek-waves path {fill:var(--seek-thumb);transform-origin:50% 100%}
 .seek-waves path:nth-child(1) {fill:var(--seek-thumb);opacity:.4}
 .seek-waves path:nth-child(2) {opacity:.5}

@@ -1,0 +1,10 @@
+{
+  "platforms": [
+    "android"
+  ],
+  "android": {
+    "modules": [
+      "local.mediacenter.library.MediaLibraryModule"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+import React,{useState} from 'react';
+import {View,TextInput,Switch} from 'react-native';
+import {usePalette} from './AppState';
+import {T,Button,layout} from './ui';
+import type {PodcastInboxRule} from './library';
+
+export const podcastRuleKey=(rule:Pick<PodcastInboxRule,'account'|'show'>)=>JSON.stringify([rule.account,rule.show]);
+export const newPodcastRule=(account:string,show:string,title:string):PodcastInboxRule=>({account,show,title,include:'',exclude:'',minSeconds:0,maxSeconds:0,limit:10,onlyUnplayed:true,enabled:false,autoCache:false,unmetered:true});
+export function PodcastRuleEditor({initial,source,busy,onSave,onClose}:{initial:PodcastInboxRule;source:string;busy:boolean;onSave:(rule:PodcastInboxRule)=>void;onClose:()=>void}){
+ const c=usePalette(),[rule,setRule]=useState(initial),[min,setMin]=useState(initial.minSeconds?String(initial.minSeconds/60):''),[max,setMax]=useState(initial.maxSeconds?String(initial.maxSeconds/60):''),[error,setError]=useState('');const input={padding:13,borderRadius:10,backgroundColor:c.bg,color:c.text,fontFamily:'DMSans_400Regular',fontSize:14};const change=(update:Partial<PodcastInboxRule>)=>setRule(v=>({...v,...update}));
+ const save=()=>{const low=Number(min||0)*60,high=Number(max||0)*60;if(!Number.isFinite(low)||!Number.isFinite(high)||low<0||high<0||low>604800||high>604800||(high!==0&&high<low)){setError('Enter valid episode durations; the maximum must be at least the minimum.');return}setError('');onSave({...rule,minSeconds:low,maxSeconds:high})};
+ return <View style={{gap:16,padding:18,borderRadius:18,backgroundColor:c.panel}}><View style={{gap:5}}><T title style={{fontSize:22,lineHeight:28}}>{rule.title}</T><T muted>{source}</T><T muted style={{fontSize:12}}>Choose matching new episodes. Changes apply to future checks; Recheck existing can revisit older episodes.</T></View>
+ <View style={layout.row}><T style={{flex:1}}>Automatic checks while app is open</T><Switch accessibilityLabel="Automatic podcast checks" value={rule.enabled} onValueChange={enabled=>change({enabled})}/></View>
+ <View style={{gap:6}}><T strong>Title contains</T><TextInput accessibilityLabel="Podcast title includes" value={rule.include} onChangeText={include=>change({include})} maxLength={200} placeholder="Any title" placeholderTextColor={c.muted} style={input}/></View>
+ <View style={{gap:6}}><T strong>Exclude titles containing</T><TextInput accessibilityLabel="Podcast title excludes" value={rule.exclude} onChangeText={exclude=>change({exclude})} maxLength={200} placeholder="For example, trailer" placeholderTextColor={c.muted} style={input}/></View>
+ <View style={layout.row}><View style={{flex:1,gap:6}}><T strong>Minimum minutes</T><TextInput accessibilityLabel="Minimum episode minutes" value={min} onChangeText={setMin} keyboardType="decimal-pad" placeholder="0" placeholderTextColor={c.muted} style={input}/></View><View style={{flex:1,gap:6}}><T strong>Maximum minutes</T><TextInput accessibilityLabel="Maximum episode minutes" value={max} onChangeText={setMax} keyboardType="decimal-pad" placeholder="No limit" placeholderTextColor={c.muted} style={input}/></View></View>
+ <View style={layout.row}><T style={{flex:1}}>Only unfinished episodes</T><Switch accessibilityLabel="Only unfinished podcast episodes" value={rule.onlyUnplayed} onValueChange={onlyUnplayed=>change({onlyUnplayed})}/></View>
+ <View style={{gap:8}}><T strong>Latest matches per check</T><View style={[layout.row,{flexWrap:'wrap'}]}>{[5,10,20,50].map(limit=><Button key={limit} label={String(limit)} primary={rule.limit===limit} onPress={()=>change({limit})}/>)}</View></View>
+ <View style={layout.row}><T style={{flex:1}}>Save originals automatically</T><Switch accessibilityLabel="Automatically cache podcast originals" value={rule.autoCache} onValueChange={autoCache=>change({autoCache})}/></View>
+ {rule.autoCache&&<><View style={layout.row}><T style={{flex:1}}>Unmetered connection only</T><Switch accessibilityLabel="Podcast cache unmetered only" value={rule.unmetered} onValueChange={unmetered=>change({unmetered})}/></View><T muted style={{fontSize:12}}>Uses your Cache folder and storage/network limits. Only downloaded original episodes on the server are eligible. Transfers continue in the existing Cache manager.</T></>}
+ {!!error&&<T>{error}</T>}<View style={[layout.row,{flexWrap:'wrap'}]}><Button primary icon="check" label={busy?'Saving…':'Save podcast rule'} disabled={busy} onPress={save}/><Button label="Cancel" disabled={busy} onPress={onClose}/></View></View>
+}

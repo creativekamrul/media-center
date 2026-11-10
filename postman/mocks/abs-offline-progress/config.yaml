@@ -1,0 +1,10 @@
+version: 1
+name: Audiobookshelf Offline Progress Fixture
+slug: abs-offline-progress-fixture
+protocol: http
+port: 18548
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

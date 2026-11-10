@@ -1,0 +1,13 @@
+package local.mediacenter.library
+import org.json.*
+import org.junit.Test
+import org.junit.Assert.*
+class DowntifyPlaylistPlanTest {
+ @Test fun permissionsRequireExplicitManualAndEditGrant(){val r=JSONObject().put("manual",true).put("mine",true);assertTrue(DowntifyPlaylistPlan.writable(r));assertTrue(DowntifyPlaylistPlan.renameable(r));r.put("mine",false).put("can_edit_tracks",true);assertTrue(DowntifyPlaylistPlan.writable(r));assertFalse(DowntifyPlaylistPlan.renameable(r));for(k in listOf("manual","can_edit_tracks")){val invalid=JSONObject(r.toString()).put(k,"true");assertFalse(DowntifyPlaylistPlan.writable(invalid))};assertFalse(DowntifyPlaylistPlan.writable(JSONObject(r.toString()).put("liked",true)));assertFalse(DowntifyPlaylistPlan.writable(JSONObject()))}
+ @Test fun membershipPreservesRetainedOrderAndAppendsOnlyNewTracks(){val p=DowntifyPlaylistPlan.membership(listOf("a","b","c"),listOf("a","c","d"));assertEquals(listOf("d"),p.add);assertEquals(listOf("b"),p.remove)}
+ @Test fun unsupportedReorderingFailsBeforeAnyServerWrite(){assertTrue(runCatching{DowntifyPlaylistPlan.membership(listOf("a","b"),listOf("b","a"))}.isFailure);assertTrue(runCatching{DowntifyPlaylistPlan.membership(listOf("a","b"),listOf("c","a"))}.isFailure)}
+ @Test fun repeatedOccurrencesAreNeverSilentlyRemoved(){assertTrue(runCatching{DowntifyPlaylistPlan.membership(listOf("a","a"),listOf("a"))}.isFailure);assertTrue(runCatching{DowntifyPlaylistPlan.membership(listOf("a"),listOf("a","a"))}.isFailure)}
+ @Test fun membershipEnforcesServerLimitWithoutTruncation(){assertTrue(runCatching{DowntifyPlaylistPlan.membership(emptyList(),(0..500).map{it.toString()})}.isFailure);assertEquals(500,DowntifyPlaylistPlan.membership(emptyList(),(0..499).map{it.toString()}).add.size)}
+ @Test fun revisionBindsAccountCredentialsPermissionsSharingAndFileOrder(){val a=JSONObject().put("id","one").put("url","https://source").put("cookie","secret");val r=JSONObject().put("name","Mix").put("manual",true).put("mine",true).put("files",JSONArray(listOf("one.flac","two.flac"))).put("visibility","private");val key=DowntifyPlaylistPlan.revision(a,r);assertFalse(key.contains("secret"));assertNotEquals(key,DowntifyPlaylistPlan.revision(JSONObject(a.toString()).put("cookie","new"),r));for(changed in listOf(JSONObject(r.toString()).put("mine",false),JSONObject(r.toString()).put("visibility","public"),JSONObject(r.toString()).put("files",JSONArray(listOf("two.flac","one.flac")))))assertNotEquals(key,DowntifyPlaylistPlan.revision(a,changed))}
+ @Test fun namesAreBoundedAndNeverFilePaths(){assertEquals("Jazz",DowntifyPlaylistPlan.name(" Jazz "));for(n in listOf(""," ","x".repeat(121),"../escape","a\\b","bad\nname"))assertTrue(runCatching{DowntifyPlaylistPlan.name(n)}.isFailure)}
+}

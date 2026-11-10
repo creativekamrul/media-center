@@ -12,3 +12,4 @@ artifacts/
 
 native/**/bin/
 native/**/obj/
+mobile/dist/

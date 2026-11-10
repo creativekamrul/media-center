@@ -1,0 +1,5 @@
+import React from 'react';
+import {Modal,View,ScrollView} from 'react-native';
+import {usePalette} from './AppState';import {T,Button,IconButton,layout} from './ui';import type {IconName} from './Icon';
+export type MediaAction={label:string;icon?:IconName;disabled?:boolean;run:()=>void};
+export function ActionSheet({title,actions,onClose}:{title:string;actions:MediaAction[];onClose:()=>void}){const c=usePalette();return <Modal transparent visible animationType="slide" onRequestClose={onClose}><View style={{flex:1,justifyContent:'flex-end',backgroundColor:'#0008'}}><View style={{backgroundColor:c.bg,borderTopLeftRadius:24,borderTopRightRadius:24,padding:20,paddingBottom:36,maxHeight:'85%',gap:16}}><View style={layout.row}><T title numberOfLines={2} style={{flex:1,fontSize:22}}>{title}</T><IconButton icon="close" label="Close actions" onPress={onClose}/></View><ScrollView contentContainerStyle={{gap:10}}>{actions.map(a=><Button key={a.label} label={a.label} icon={a.icon} disabled={a.disabled} onPress={()=>{onClose();a.run()}}/>)}</ScrollView></View></View></Modal>}

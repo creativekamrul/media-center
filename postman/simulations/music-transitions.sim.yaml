@@ -1,0 +1,6 @@
+simulation: Android music transitions
+routing: path
+mocks:
+  - name: Music Transitions Fixture
+    routeKey: music
+    path: ../mocks/music-transitions/config.yaml

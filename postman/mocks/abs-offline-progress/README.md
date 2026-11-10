@@ -1,0 +1,4 @@
+# Local offline progress fixture
+Derived from Audiobookshelf tag v2.35.1 MeController and MediaProgress/User models. Fictional accounts and generated original WAV files only. Position GET/PATCH preserves book versus show/episode identity and models completion inferred from position. Unknown operations return 501. No owner mock search was available; no cloud publication.
+
+POST __control supports progress maps keyed item:episode, patchFail before/after (the latter changes server state but returns 503), and normal outage/delay controls. GET __state exposes only fictional events/state. Use to prove preview has no writes, stale preview rejection, position-only PATCH, uncertain-write preservation and episode independence. This does not establish atomic server compare-and-set: ABS has none for this endpoint.

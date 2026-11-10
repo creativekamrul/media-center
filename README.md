@@ -1,8 +1,8 @@
 # Media Center
 
-An open-source Windows desktop client for **Navidrome, Audiobookshelf, Jellyfin and local audio**. Play music, audiobooks, podcasts, movies and TV with native MPV. Connect existing servers; Media Center does not host or bundle media.
+An open-source media client for **Navidrome, Downtify, Audiobookshelf, Jellyfin and local audio**, with Windows desktop and Android applications. Play music, audiobooks, podcasts, movies and TV with native MPV. Connect existing servers; Media Center does not host or bundle media.
 
-[Download for Windows](https://github.com/creativekamrul/media-center/releases/latest) · [Website](https://creativekamrul.github.io/media-center/) · [User guide](docs/USER-GUIDE.md) · [Changelog](CHANGELOG.md)
+[Download for Windows](https://github.com/creativekamrul/media-center/releases/latest) · [Android app](mobile-native/README.md) · [Website](https://creativekamrul.github.io/media-center/) · [User guide](docs/USER-GUIDE.md) · [Changelog](CHANGELOG.md)
 
 ![Latest stable release](https://img.shields.io/github/v/release/creativekamrul/media-center) ![Windows x64](https://img.shields.io/badge/platform-Windows_x64-blue) ![GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue)
 
@@ -11,13 +11,14 @@ An open-source Windows desktop client for **Navidrome, Audiobookshelf, Jellyfin 
 | Source | Media | Compatibility baseline |
 | --- | --- | --- |
 | Navidrome | Music, albums, artists, playlists and radio | 0.60.3 |
+| Downtify | Saved music, Discover, streaming and supported library actions | 3.9.0 |
 | Audiobookshelf | Audiobooks and podcasts | 2.35.1 |
 | Jellyfin | Music, movies and TV shows | 10.11.11 |
 | Local folders | Tagged audio and folder browsing | Read-only access to selected roots |
 
 These versions are the project’s API compatibility baselines, not a guarantee for every server configuration or hardware combination.
 
-## Features
+## Windows desktop features
 
 ### Music and playlists
 
@@ -51,6 +52,19 @@ Arrange Home sections, source shortcuts, listening continuations, Jellyfin watch
 
 Download original Navidrome and Audiobookshelf audio with a storage quota, status filters, pause/resume/retry and explicit offline-progress reconciliation. Edit and test saved servers, check connection health, search Settings, export personal backups and diagnostics, and install stable updates from the app. Optional Last.fm scrobbling and Discord presence are configurable.
 
+## Android
+
+The Android app bundles MPV and uses a mobile layout with portrait and landscape playback. Its release process is separate from Windows.
+
+- Navidrome and Downtify music, Audiobookshelf books/podcasts, Jellyfin music/video, local audio and radio.
+- Home shelves, cross-library search, recommendations, custom mixes, collections, pins and app playlists.
+- Music queues, optional gapless/crossfade, graphic/parametric EQ, tonal/custom presets, ReplayGain and spoken playback controls.
+- Original-file caching in a selected shared folder, relative M3U8 exports, transfer controls, integrity checks and opt-in offline rules.
+- Custom lyrics/artwork, bookmarks, listening history, notification artwork and native video controls/PiP.
+- Permanent-key APK updates and encrypted personal-data migration. Media/cache catalogs and Android folder grants are excluded from migration.
+
+See the [Android guide](mobile-native/README.md), [1.0 release notes](docs/mobile/RELEASE-NOTES-1.0.0.md) and [release checks](docs/mobile/RELEASE-GATES.md). [Download Android 1.0.0](https://github.com/creativekamrul/media-center/releases/tag/mobile-v1.0.0) (Android 8.0+, ARM64). USB-exclusive/bit-perfect output is not established. Android Auto, device handoff and additional widget work are outside this release's scope.
+
 ## Screenshots
 
 ![Jellyfin library overview](site/assets/jellyfin.png)
@@ -70,7 +84,7 @@ Your computer must be able to reach the configured server URL. Jellyfin playback
 
 The app checks for stable updates on startup. Downloading and restarting to install are explicit actions in Settings. MPV is updated separately.
 
-## Current limitations
+## Windows desktop limitations
 
 Windows x64 is the supported desktop target. MPV is installed separately; installers are unsigned. Jellyfin uses Direct Play only: the client must decode the original file and the connection must carry its bitrate. There is no server-transcoding fallback. Jellyfin downloads, playlist editing, Live TV and box sets are not supported. Spotify, Plex and manga support are not implemented. Full Feishin and Audiobookshelf web feature parity is not complete.
 
@@ -83,7 +97,9 @@ Offline progress reconciliation requires a preview and confirmation. Personal ba
 - Connected servers receive their relevant playback/progress requests. Optional lyrics, artwork and metadata lookups use LRCLIB, Last.fm, MusicBrainz/Cover Art Archive and Apple iTunes. Enabled Last.fm scrobbling and Discord presence share the configured activity.
 - No app analytics service is configured. The website has no analytics, remote fonts or third-party scripts.
 
-## Development
+Android credentials are encrypted with Android Keystore-backed storage. Provider requests, MPV and shared-folder access stay in the Android native module. Diagnostic reports exclude server addresses, credentials and media titles. See the Android migration guide before replacing a development-signed preview.
+
+## Desktop development
 
 Electron, React, TypeScript, SQLite and MPV. Requires Windows, Node.js 22+, npm and the .NET 10 SDK for the native helper. Packaged users do not need .NET installed.
 

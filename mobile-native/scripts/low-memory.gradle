@@ -1,0 +1,9 @@
+// Apply to an existing generated project without editing generated Android files.
+gradle.beforeProject { project ->
+ project.plugins.withId('com.android.application') {
+  project.android.defaultConfig.externalNativeBuild.cmake.arguments.addAll(['-DCMAKE_JOB_POOLS=mc_compile=2;mc_link=1','-DCMAKE_JOB_POOL_COMPILE=mc_compile','-DCMAKE_JOB_POOL_LINK=mc_link'])
+ }
+ project.plugins.withId('com.android.library') {
+  project.android.defaultConfig.externalNativeBuild.cmake.arguments.addAll(['-DCMAKE_JOB_POOLS=mc_compile=2;mc_link=1','-DCMAKE_JOB_POOL_COMPILE=mc_compile','-DCMAKE_JOB_POOL_LINK=mc_link'])
+ }
+}

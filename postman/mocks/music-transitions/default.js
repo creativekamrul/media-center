@@ -1,0 +1,27 @@
+// Generated WAV originals and fictional Jellyfin 10.11.11 accounts only.
+const http=require('http');let requests=[],reports=[],failStream='',failResolve='',delay=0;
+const users={a:{id:'a'.repeat(32),token:'fixture-a'},b:{id:'b'.repeat(32),token:'fixture-b'}};
+const tracks=['a','b'].flatMap((group,g)=>[1,2].map(n=>({group,id:String(g+1).repeat(31)+n,title:`MC ${group.toUpperCase()} ${n===1?'One':'Two'}`,duration:8,rate:n===1?48000:48000,freq:220+(g*2+n)*110})));
+const album=group=>(group==='a'?'5':'6').repeat(32);
+function item(t){return {Id:t.id,Type:'Audio',Name:t.title,Artists:['Generated tone'],Album:`MC ${t.group.toUpperCase()} Album`,RunTimeTicks:t.duration*10000000,MediaSources:[{Id:t.id,Protocol:'File',Container:'wav'}]};}
+function wav(t){const samples=t.rate*t.duration,b=Buffer.alloc(44+samples*2);b.write('RIFF');b.writeUInt32LE(b.length-8,4);b.write('WAVEfmt ',8);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(1,22);b.writeUInt32LE(t.rate,24);b.writeUInt32LE(t.rate*2,28);b.writeUInt16LE(2,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(samples*2,40);for(let i=0;i<samples;i++)b.writeInt16LE(Math.round(10000*Math.sin(2*Math.PI*t.freq*i/t.rate)),44+i*2);return b;}
+const audio=Object.fromEntries(tracks.map(t=>[t.id,wav(t)]));
+http.createServer(async(req,res)=>{try{const u=new URL(req.url,'http://fixture'),p=u.pathname;let body=req.body;if(body===undefined||body===null){let text='';for await(const c of req){text+=c;if(text.length>65536)throw Error('Too large');}body=text?JSON.parse(text):{};}else if(typeof body==='string')body=JSON.parse(body||'{}');const send=(code,data)=>{res.writeHead(code,{'Content-Type':'application/json'});res.end(data===undefined?'':JSON.stringify(data));};
+ if(p==='/__state')return send(200,{requests,reports,failStream,failResolve,delay});
+ if(p==='/__control'){if(body.reset){requests=[];reports=[];}if(body.failStream!==undefined)failStream=body.failStream;if(body.failResolve!==undefined)failResolve=body.failResolve;if(body.delay!==undefined)delay=Math.max(0,Math.min(3000,body.delay));return send(200,{ok:true});}
+ if(p==='/System/Info/Public')return send(200,{Version:'10.11.11'});
+ if(p==='/Users/AuthenticateByName'){const group=body.Username;if(!users[group]||body.Pw!=='fixture-secret')return send(401,{});return send(200,{AccessToken:users[group].token,User:{Id:users[group].id}});}
+ const group=Object.keys(users).find(g=>req.headers['x-emby-token']===users[g].token||String(req.headers.authorization||'').includes(`Token="${users[g].token}"`));
+ requests.push({path:p,method:req.method,group:group||'unauthorized',id:p.split('/')[2]||'',at:Date.now()});requests=requests.slice(-2000);if(!group)return send(401,{});
+ const own=tracks.filter(t=>t.group===group),uid=users[group].id;
+ if(p==='/Users/Me')return send(200,{Id:uid});
+ if(p===`/Users/${uid}/Views`)return send(200,{Items:[{Id:(group==='a'?'7':'8').repeat(32),Type:'CollectionFolder',CollectionType:'music',Name:`MC ${group.toUpperCase()} Music`}],TotalRecordCount:1});
+ if(p===`/Users/${uid}/Items/Resume`)return send(200,{Items:[],TotalRecordCount:0});
+ if(p==='/Items'){if(u.searchParams.get('ParentId')===(group==='a'?'7':'8').repeat(32))return send(200,{Items:[{Id:album(group),Type:'MusicAlbum',Name:`MC ${group.toUpperCase()} Album`}],TotalRecordCount:1});return send(200,{Items:own.map(item),TotalRecordCount:2});}
+ const detail=new RegExp(`^/Users/${uid}/Items/([a-f0-9]+)$`).exec(p);if(detail){const t=own.find(t=>t.id===detail[1]);if(detail[1]===album(group))return send(200,{Id:album(group),Type:'MusicAlbum',Name:`MC ${group.toUpperCase()} Album`});if(!t)return send(404,{});if(failResolve===t.id)return send(503,{});return send(200,item(t));}
+ const info=/^\/Items\/([a-f0-9]+)\/PlaybackInfo$/.exec(p);if(info){const t=own.find(t=>t.id===info[1]);if(!t)return send(403,{});return send(200,{PlaySessionId:'session-'+t.id,MediaSources:[{Id:t.id,Protocol:'File',Container:'wav',RequiresOpening:false,IsInfiniteStream:false}]});}
+ const stream=/^\/Audio\/([a-f0-9]+)\/stream$/.exec(p);if(stream){const t=own.find(t=>t.id===stream[1]);if(!t)return send(403,{error:'Credentials belong to another source'});if(failStream===t.id)return send(503,{});if(u.searchParams.get('Static')!=='true'||u.searchParams.get('MediaSourceId')!==t.id)return send(400,{});if(delay)await new Promise(r=>setTimeout(r,delay));const b=audio[t.id],r=/bytes=(\d+)-(\d*)/.exec(req.headers.range||''),start=r?Number(r[1]):0,end=Math.min(b.length-1,r?.[2]?Number(r[2]):b.length-1);if(start>end){res.writeHead(416);return res.end();}res.writeHead(r?206:200,{'Content-Type':'audio/wav','Content-Length':end-start+1,'Accept-Ranges':'bytes',...(r?{'Content-Range':`bytes ${start}-${end}/${b.length}`}:{})});return res.end(b.subarray(start,end+1));}
+ if(/^\/Sessions\/Playing(?:\/(?:Progress|Stopped))?$/.test(p)){if(!own.some(t=>t.id===body.ItemId))return send(403,{});reports.push({group,event:p.split('/').pop(),id:body.ItemId,position:body.PositionTicks,at:Date.now()});res.writeHead(204);return res.end();}
+ if(/^\/Items\/.+\/Images\/Primary$/.test(p)){res.writeHead(200,{'Content-Type':'image/png'});return res.end(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64'));}
+ return send(501,{error:'Not modeled by transition fixture'});
+}catch(e){res.writeHead(500);res.end(JSON.stringify({error:String(e.message).slice(0,100)}));}}).listen(process.env.PORT||18551,'127.0.0.1');

@@ -1,0 +1,10 @@
+purpose:
+  stands_in_for: Jellyfin 10.11.11 music playlist editing with fictional accounts and media
+  unblocks: Native permission, revision, order, sharing preservation and uncertain-write checks
+assumptions:
+  - id: update-contract
+    status: source-verified-runtime-pending
+    claim: UpdatePlaylistDto omits nullable Users/IsPublic to preserve sharing; manager replaces Ids through duplicate-filtered AddToPlaylistInternal
+    verification: Pure payload/revision tests cover omission, permission and duplicates; emulator acceptance pending
+    source: https://github.com/jellyfin/jellyfin/tree/v10.11.11
+    updated_at: '2026-11-10'

@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Media Center",
+    "slug": "media-center-mobile",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "local.mediacenter.mobile"
+    },
+    "android": {
+      "package": "local.mediacenter.mobile",
+      "predictiveBackGestureEnabled": true,
+      "versionCode": 9,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png",
+        "backgroundColor": "#101513"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      "./plugins/with-short-native-paths.cjs",
+      "./plugins/with-mpv-runtime.cjs",
+      "./plugins/with-library-security.cjs",
+      "expo-router",
+      "./plugins/with-release-signing.cjs",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "backgroundColor": "#101513",
+          "dark": {
+            "backgroundColor": "#101513",
+            "image": "./assets/splash-icon.png"
+          }
+        }
+      ]
+    ],
+    "scheme": "mediacenter",
+    "backgroundColor": "#101513"
+  }
+}

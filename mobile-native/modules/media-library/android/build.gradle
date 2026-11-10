@@ -1,0 +1,29 @@
+plugins {
+ id 'com.android.library'
+ id 'expo-module-gradle-plugin'
+}
+group = 'local.mediacenter'
+version = '0.1.0'
+android {
+ namespace 'local.mediacenter.library'
+ lint { abortOnError true }
+ defaultConfig { testInstrumentationRunner "local.mediacenter.library.MigrationTestRunner"; consumerProguardFiles "consumer-rules.pro"; externalNativeBuild { cmake { cppFlags '-std=c++17'; arguments '-DCMAKE_OBJECT_PATH_MAX=240' } }; ndk { abiFilters 'arm64-v8a' } }
+ externalNativeBuild { cmake { path 'src/main/cpp/CMakeLists.txt' } }
+}
+
+dependencies { implementation "androidx.work:work-runtime-ktx:2.12.0"; implementation "com.facebook.react:react-android"; testImplementation "junit:junit:4.13.2"; testImplementation "org.json:json:20240303" }
+
+// The self-instrumenting APK must use the same verified C++ runtime as the app.
+// React Native's transitive debug runtime predates the MPV distribution's ABI.
+def instrumentedRuntime = file('../../../native-runtime/arm64-v8a/libc++_shared.so')
+tasks.configureEach { task ->
+ if (task.name == 'mergeDebugAndroidTestNativeLibs') {
+  task.inputs.file(instrumentedRuntime)
+  task.doLast {
+   if (!instrumentedRuntime.exists()) throw new GradleException('Run prepare-mpv.ps1 before native tests.')
+   def targets = task.outputs.files.asFileTree.matching { include '**/arm64-v8a/libc++_shared.so' }.files
+   if (targets.size() != 1) throw new GradleException('Expected exactly one instrumented ARM64 C++ runtime.')
+   targets.each { target -> java.nio.file.Files.copy(instrumentedRuntime.toPath(), target.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING) }
+  }
+ }
+}

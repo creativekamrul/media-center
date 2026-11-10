@@ -1,0 +1,6 @@
+simulation: Android Jellyfin playlist editing
+routing: path
+mocks:
+  - name: Jellyfin Playlist Editing Fixture
+    routeKey: jf
+    path: ../mocks/jellyfin-playlists/config.yaml

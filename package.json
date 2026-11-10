@@ -6,6 +6,10 @@
   "author": "Media Center",
   "main": "out/main/index.js",
   "scripts": {
+    "mobile:preview": "node mobile/serve-preview.mjs",
+    "mobile:test": "node mobile/tests/preview.cjs",
+    "mobile:dev": "vite --config mobile/vite.config.mjs",
+    "mobile:build": "tsc -p mobile/tsconfig.json && vite build --config mobile/vite.config.mjs && node mobile/export.mjs",
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
     "start": "electron-vite preview",

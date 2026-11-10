@@ -1,0 +1,7 @@
+# Jellyfin playlist editing fixture
+
+Local generated identities only. Contract checked against Jellyfin v10.11.11 `PlaylistsController`, `UpdatePlaylistDto` and `PlaylistManager`: explicit CanEdit permission, ordered ItemIds, Name/Ids-only update, null/omitted sharing fields preserved, duplicate removal by the provider, and a non-atomic internal replace operation. This stand-in rejects any sharing mutation. Control endpoints allow read-only, pre-write failure, uncertain post-write failure and a changed revision. All other operations return 501. No real server is modified. An owner-published mock search was not performed; the installed CLI does not support the skill's `postman status` command, and this local source-derived fixture is sufficient for isolated tests.
+
+Expected outcomes: no POST for a stale preview, denied edit or duplicate replacement; one explicit Name/Ids POST for a confirmed reorder; no automatic retry after an uncertain result; reloading sees the actual applied state. Stop the local simulation and remove its emulator connection after testing. No logs or fixtures with real credentials may be published.
+
+Sources: https://github.com/jellyfin/jellyfin/blob/v10.11.11/Jellyfin.Api/Controllers/PlaylistsController.cs and https://github.com/jellyfin/jellyfin/blob/v10.11.11/Jellyfin.Api/Models/PlaylistDtos/UpdatePlaylistDto.cs and https://github.com/jellyfin/jellyfin/blob/v10.11.11/Emby.Server.Implementations/Playlists/PlaylistManager.cs

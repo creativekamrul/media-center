@@ -1,0 +1,9 @@
+import React,{useEffect,useState} from 'react';
+import {View,Switch} from 'react-native';
+import {useApp} from './AppState';import {T,Button,layout} from './ui';
+import {musicTransitions,message,type MusicTransitions} from './library';
+export function MusicTransitionsSettings(){const app=useApp();const setNotice=app.setNotice;const [value,setValue]=useState<MusicTransitions>({gapless:true,crossfade:0}),[ready,setReady]=useState(false),[busy,setBusy]=useState(false);
+ useEffect(()=>{let live=true;void musicTransitions.get().then(v=>{if(live){setValue(v);setReady(true)}}).catch(e=>setNotice(message(e)));return()=>{live=false}},[setNotice]);
+ async function save(next:MusicTransitions){setBusy(true);try{await musicTransitions.set(next);setValue(next)}catch(e){setNotice(message(e))}finally{setBusy(false)}}
+ return <View style={{gap:14}}><T strong>Between music tracks</T><View style={layout.row}><T style={{flex:1}}>Gapless playback</T><Switch accessibilityLabel="Gapless playback" disabled={!ready||busy} value={value.gapless} onValueChange={gapless=>void save({...value,gapless})}/></View><T muted>Keep compatible audio flowing between queued music tracks. Format changes can reopen Android’s output; slow sources can still need buffering. No fixed sample rate is forced.</T><T strong>Crossfade</T><View style={[layout.row,{flexWrap:'wrap'}]}>{[0,2,3,5,8,12].map(seconds=><Button key={seconds} disabled={!ready||busy} primary={value.crossfade===seconds} label={seconds?seconds+' seconds':'Off'} onPress={()=>void save({...value,crossfade:seconds})}/>)}</View><T muted>Off by default. Overlap queued music using complementary fades, shortened for brief tracks. Crossfade takes priority over gapless and uses a second decoder/output while preparing the next track. Books, podcasts, radio and sleep-timer sessions do not overlap. Only the current queue item is counted during the overlap.</T></View>
+}

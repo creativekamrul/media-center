@@ -9,7 +9,7 @@ module.exports=async({desktop,page,artifacts})=>{
  const album={kind:'album',serverId:nav.serverId,id:'album',title:'The Test Album',subtitle:'Test Artist'}
  await page.evaluate(async item=>{await window.mediaCenter.personalChange({action:'metadata-save',ref:{kind:'playable',item},metadata:{title:'Custom playback title',artist:'Test Artist',album:'Custom album',genre:'Pop',year:2026}})},item)
  await page.getByRole('button',{name:'Library tools',exact:true}).click();await require('./view-navigation.cjs')(page,'People')
- await page.getByLabel('Name',{exact:true}).fill('Test Artist');await page.getByLabel('Role',{exact:true}).selectOption('artist');await page.getByRole('button',{name:'Explore',exact:true}).click()
+ await page.getByLabel('Name',{exact:true}).fill('Test Artist');await page.getByLabel('Role',{exact:true}).selectOption('artist');await page.getByRole('main').getByRole('button',{name:'Explore',exact:true}).click()
  await page.locator('.person-group .personal-shelf-card').first().click()
  const artist=page.locator('.artist-page')
  await artist.getByRole('button',{name:'Play selection',exact:true}).click()
@@ -41,7 +41,7 @@ module.exports=async({desktop,page,artifacts})=>{
  await page.waitForFunction(async()=>{const s=await window.mediaCenter.playback();return s.status==='playing'&&s.title==='Custom playback title'})
  await page.getByRole('button',{name:'Pause playback',exact:true}).waitFor()
  await page.screenshot({path:resolve(artifacts,'artist-playback-fixed.png')})
- await page.locator('.media-grid .media-card').filter({hasText:'The Test Album'}).click()
+ await page.locator('.artist-discography .dt-collection').filter({hasText:'The Test Album'}).click()
  await page.evaluate(()=>window.mediaCenter.command({action:'stop'}))
  await page.locator('.detail-heading').getByRole('button',{name:'Play selection',exact:true}).click()
  await page.waitForFunction(async()=> (await window.mediaCenter.playback()).status==='playing')

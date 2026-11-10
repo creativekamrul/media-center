@@ -1,0 +1,6 @@
+simulation: Android Audiobookshelf offline progress
+routing: path
+mocks:
+  - name: Audiobookshelf Offline Progress Fixture
+    routeKey: abs
+    path: ../mocks/abs-offline-progress/config.yaml

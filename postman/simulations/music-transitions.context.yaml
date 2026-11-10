@@ -1,0 +1,30 @@
+provider: Jellyfin 10.11.11 and bundled MPV Android 2026-09-17
+purpose: original-music native gapless and crossfade transitions
+contracts:
+  - https://mpv.io/manual/stable/#options-gapless-audio
+  - https://mpv.io/manual/stable/#command-interface-loadfile
+  - https://github.com/mpv-player/mpv/blob/master/player/loadfile.c
+assumptions:
+  - weak gapless mode preserves format changes rather than forcing the first file sample rate
+  - playlist prefetch opens with current demuxer options; disable it across account/header changes
+  - per-file load options use structured MPV node maps, not comma-built strings
+  - crossfade uses a second decoder/output only for music and complementary linear gains
+limitations:
+  - generated transport and engine events do not prove physical DAC continuity or bit-perfect output
+  - format changes, slow sources and output-device restrictions can require ordinary buffering
+acceptance:
+  date: 2026-11-10
+  device: API 37 emulator with native bundled MPV, generated PCM originals only
+  passed:
+    - four-track mixed-account gapless order and source authentication
+    - repeat-one identity and repeat-all wraparound
+    - crossfade overlap and complete two-second envelope, including pause/resume
+    - queue edit cancels stale prepared source; all pending names remain visible
+    - one-tap seek to 4.875 seconds of an eight-second original
+    - Stop during active fade prevents late handoff and retains the process
+    - end-of-item timer prevents overlap and queue advance
+    - next-source failure is visible, not Playing; explicit retry recovers correct identity
+  remaining:
+    - physical audible continuity, USB output and output-route changes
+    - format-changing and local/cached codec combinations
+  evidence: ignored artifacts/mobile-native-tests/music-transitions-runtime-20261110.json

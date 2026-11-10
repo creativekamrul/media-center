@@ -1,0 +1,30 @@
+purpose:
+  stands_in_for: A local, bounded Audiobookshelf 2.35.1 expanded-show, progress, original-session and original-file API.
+  unblocks: Android podcast inbox identity, filtering, persistence, cancellation and opt-in cache acceptance without changing a real library.
+assumptions:
+  - id: expanded-show-has-independent-episodes
+    status: supported
+    claim: Audiobookshelf 2.35.1 expanded podcast items carry independently identified episodes; the containing show is not a playable book.
+    reason: The pinned controller and PodcastEpisode serializer preserve mediaType, episode IDs, audioFile and published timestamps.
+    verification: Read version-tagged controller/model source on 2026-11-08; native models reject books and unknown media and retain episode/show identity. Emulator filtering, duplicate prevention, restart persistence, outage/retry, cancellation and original-cache acceptance passed on 2026-11-08.
+    source: https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/controllers/LibraryItemController.js
+    updated_at: '2026-11-08'
+  - id: browser-user-progress-is-show-and-episode-scoped
+    status: supported
+    claim: GET /api/me in Audiobookshelf 2.35.1 includes mediaProgress records with libraryItemId, episodeId and isFinished.
+    reason: MeController uses User.toOldJSONForBrowser and MediaProgress.getOldMediaProgress. A book record has no episodeId and cannot complete a podcast episode.
+    verification: Read the pinned implementations; native tests cover other-show and whole-book progress, absent/uncertain records and duplicate identities. The fixture records HTTP calls; it does not establish server-side progress mutation behavior.
+    source: https://github.com/advplyr/audiobookshelf/blob/v2.35.1/server/models/MediaProgress.js
+    updated_at: '2026-11-08'
+  - id: inbox-collection-is-read-only
+    status: unknown
+    claim: Collecting episodes in the Android inbox performs no media-progress writes or media downloads until the user explicitly requests playback or caching.
+    reason: The implementation uses expanded-show and user-progress reads and stores private SQLite identities; media caching is opt-in.
+    verification: Native plan tests and emulator HTTP evidence pass; scans only read metadata/progress, and only explicit Cache intent fetched an original file. No listening-session or progress POST occurred. Generated fixture data was removed afterward.
+    source: mobile-native/modules/media-library/android/src/main/java/local/mediacenter/library/PodcastInbox.kt
+    updated_at: '2026-11-08'
+fingerprints:
+  - id: abs-podcast-inbox
+    date: '2026-11-08'
+    commit: Audiobookshelf v2.35.1 aacdcc47ec0b6fa778b84627c79deb7ee0cecd70; Media Center dirty working tree
+    cli: Postman 1.73.0

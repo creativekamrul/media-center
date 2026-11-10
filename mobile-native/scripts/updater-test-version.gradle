@@ -1,0 +1,21 @@
+// Test-APK-only version fixture; never changes the app or production signing configuration.
+gradle.beforeProject { project ->
+ if (project.path == ':media-library') {
+  project.tasks.configureEach { task ->
+   if (task.name == 'processDebugAndroidTestManifest') {
+    task.inputs.property('mcUpdaterFixtureVersion', '42')
+    task.outputs.upToDateWhen { false }
+    task.doLast {
+     def manifests = task.outputs.files.asFileTree.matching { include '**/AndroidManifest.xml' }.files
+     if (manifests.size() != 1) throw new GradleException('Expected one isolated test manifest.')
+     manifests.each { manifest ->
+      def xml = manifest.getText('UTF-8')
+      if (!xml.contains('package="local.mediacenter.library.test"')) throw new GradleException('Refusing to alter a non-test package.')
+      xml = xml.replaceAll(/\sandroid:versionCode="[^"]*"/, '').replaceAll(/\sandroid:versionName="[^"]*"/, '')
+      manifest.setText(xml.replace('package="local.mediacenter.library.test"', 'android:versionCode="42" android:versionName="1.0.1" package="local.mediacenter.library.test"'), 'UTF-8')
+     }
+    }
+   }
+  }
+ }
+}

@@ -93,7 +93,7 @@ module.exports = async function dailySmoke({desktop,page,waitPlayback,artifacts}
   writeFileSync(backupPath,JSON.stringify({...backup,secret:'must-not-import'}))
   assert.equal(await page.evaluate(()=>window.mediaCenter.previewBackup().then(()=>false,()=>true)),true)
   const stats=await page.evaluate(()=>window.mediaCenter.listeningStats());assert.ok(stats.totalSeconds>0)
-  await page.getByRole('button',{name:'Home',exact:true}).click();await page.getByRole('heading',{name:'Welcome home.'}).waitFor();await page.screenshot({path:resolve(artifacts,'home-v03.png')})
+  await page.getByRole('button',{name:'Home',exact:true}).click();await page.getByRole('heading',{name:'Home',exact:true,level:1}).waitFor();await page.screenshot({path:resolve(artifacts,'home-v03.png')})
   await page.getByRole('region',{name:'Current listening stats',exact:true}).waitFor()
   const mixHome=await page.evaluate(()=>window.mediaCenter.home())
   assert.ok(mixHome.mixes.length>0);assert.ok(mixHome.mixes.every(m=>m.items.length<=50&&m.items.every(q=>['music-track','local-file'].includes(q.target.kind))))

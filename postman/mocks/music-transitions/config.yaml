@@ -1,0 +1,10 @@
+version: 1
+name: Music Transitions Fixture
+slug: music-transitions-fixture
+protocol: http
+port: 18551
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

@@ -1,0 +1,19 @@
+provider: Jellyfin 10.11.11
+purpose: explicit review of a cached original movie or TV episode resume position
+contract_sources:
+  - https://github.com/jellyfin/jellyfin/blob/v10.11.11/Jellyfin.Api/Controllers/PlaystateController.cs
+  - https://github.com/jellyfin/jellyfin/blob/v10.11.11/Emby.Server.Implementations/Session/SessionManager.cs
+assumptions:
+  - authenticated device session is derived by the server; no PlaySessionId or start event is invented
+  - stopped reporting can update completion or notify plugins under server policy
+  - no atomic cross-device compare-and-set exists; fresh revisions reduce but cannot eliminate races
+expected_acceptance:
+  - cached playback creates a source-version-bound pending local checkpoint
+  - review is read-only and validates explicit Movie or Episode and source version
+  - stale preview produces no report
+  - rejected or uncertain report preserves local checkpoint and requires a fresh review
+  - use-server updates local checkpoint without a POST
+  - confirmed use-phone sends exactly one stopped-position payload
+limitations:
+  - local stand-in does not establish live-server plugin behavior or server-specific watched thresholds
+  - no real server history, account, media or credentials may be stored in published fixture data

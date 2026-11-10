@@ -1,0 +1,6 @@
+export type PlaylistTrack={account:string;id:string;title?:string;artist?:string;coverArt?:string;duration?:number};
+export type PersonalPlaylist={id:string;name:string;tracks:PlaylistTrack[];updated:number};
+export function playlistTrack(t:PlaylistTrack):PlaylistTrack{if(!t.account||!t.id||t.account.length>512||t.id.length>512)throw Error('Track identity is missing.');return {account:t.account,id:t.id,title:t.title,artist:t.artist,coverArt:t.coverArt,duration:t.duration};}
+export function putPlaylist(lists:PersonalPlaylist[],next:PersonalPlaylist){const name=next.name.trim();if(!name||name.length>80)throw Error('Use a playlist name between 1 and 80 characters.');if(next.tracks.length>5000)throw Error('A playlist can hold up to 5,000 tracks.');if(lists.length>=100&&!lists.some(p=>p.id===next.id))throw Error('You can save up to 100 app playlists.');return [...lists.filter(p=>p.id!==next.id),{...next,name,tracks:next.tracks.map(playlistTrack)}];}
+export function movePlaylistTrack(rows:PlaylistTrack[],from:number,to:number){if(from<0||to<0||from>=rows.length||to>=rows.length)return rows;const next=[...rows];next.splice(to,0,next.splice(from,1)[0]);return next;}
+export function readPlaylists(raw:unknown):PersonalPlaylist[]{if(!Array.isArray(raw))return [];return raw.slice(0,100).flatMap(p=>{try{return putPlaylist([],p)}catch{return []}});}

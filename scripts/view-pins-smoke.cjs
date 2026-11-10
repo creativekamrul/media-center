@@ -51,7 +51,7 @@ module.exports=async({page,artifacts})=>{
   for(const check of await dialog.getByRole('checkbox').all())await check.check()
   await save(dialog)
   await page.emulateMedia({reducedMotion:'reduce'})
-  for(const style of ['default','soft','precision','outline','bold','retro','editorial','neon','ribbon','frosted']){
+  for(const style of ['default','precision','editorial','frosted','liquid']){
    await page.evaluate(({appearance,style})=>window.mediaCenter.savePreferences({...appearance,theme:'black-glass',appearance:{...appearance.appearance,appStyle:style}}),{appearance,style})
    await page.waitForFunction(s=>document.documentElement.dataset.appStyle===s,style)
    await page.setViewportSize({width:1024,height:800})
@@ -61,13 +61,13 @@ module.exports=async({page,artifacts})=>{
    const previous=page.getByRole('button',{name:'Previous pinned views',exact:true}),next=page.getByRole('button',{name:'Next pinned views',exact:true})
    assert.equal(await previous.isDisabled(),true);await next.click();await page.waitForFunction(()=>document.querySelector('.pinned-tab-list').scrollLeft>0)
    await previous.click();await page.waitForFunction(()=>document.querySelector('.pinned-tab-list').scrollLeft<=2)
-   if(['default','frosted','outline'].includes(style))await page.screenshot({path:resolve(artifacts,`pinned-views-${style}-1024.png`)})
+   if(['default','frosted','liquid'].includes(style))await page.screenshot({path:resolve(artifacts,`pinned-views-${style}-1024.png`)})
    dialog=await open();assert.equal(await dialog.getByRole('checkbox',{checked:true}).count(),11)
    if(style==='default')await page.screenshot({path:resolve(artifacts,'pinned-views-editor.png')})
    await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'})
    assert.equal(await page.locator('.view-customize').evaluate(el=>el===document.activeElement),true)
   }
-  console.log('Pinned views passed: default four, pin/unpin/reorder/reset/cancel, active fallback, keyboard, reload persistence, all three independent sections, stale Settings saves, and a fixed right-side control with homepage arrows and no scrollbar in ten styles.')
+  console.log('Pinned views passed: default four, pin/unpin/reorder/reset/cancel, active fallback, keyboard, reload persistence, all three independent sections, stale Settings saves, and a fixed right-side control with homepage arrows and no scrollbar in five current styles.')
  }finally{
   await page.emulateMedia({reducedMotion:'no-preference'})
   for(const [scope,pins] of Object.entries(defaults))await page.evaluate(({scope,pins})=>window.mediaCenter.saveNavigation({action:'view-pins',viewPins:{[scope]:pins}}),{scope,pins:saved.navigation.viewPins[scope]??pins})

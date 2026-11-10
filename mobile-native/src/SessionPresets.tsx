@@ -1,0 +1,8 @@
+import React,{useState} from 'react';
+import {View,TextInput} from 'react-native';
+import {useApp,usePalette,usePlayer} from './AppState';
+import {readSessions,sessionPreset} from './sessionPresetModel';
+import {playback,message} from './library';
+import {T,Button,layout} from './ui';
+export function SessionPresets(){const app=useApp(),p=usePlayer(),c=usePalette(),[name,setName]=useState('');const saved=readSessions(app.prefs.sessionPresets);return <View style={{gap:12}}><T strong>Listening session presets</T><T muted>Save speed, player volume and remaining sleep-timer duration. Presets do not change your queue or EQ.</T>{saved.map(s=><View key={s.id} style={layout.row}><Button label={s.name} onPress={()=>void (async()=>{await playback.control('speed',s.speed);await playback.control('volume',s.volume);await playback.control('sleep',s.sleepMinutes)})().catch(e=>app.setNotice(message(e)))}/><Button label="Delete" onPress={()=>app.setPrefs({sessionPresets:saved.filter(x=>x.id!==s.id)})}/></View>)}<TextInput accessibilityLabel="Session preset name" value={name} onChangeText={setName} maxLength={48} placeholder="Evening listening" placeholderTextColor={c.muted} style={{padding:12,borderRadius:12,backgroundColor:c.panel,color:c.text,fontFamily:'DMSans_400Regular'}}/><Button label="Save current session settings" disabled={!p.loaded||saved.length>=30} onPress={()=>{try{const preset=sessionPreset({id:'session-'+Date.now(),name,speed:p.speed??1,volume:p.volume??100,sleepMinutes:p.sleepUntil?Math.max(0,Math.ceil((p.sleepUntil-Date.now())/60000)):0});app.setPrefs({sessionPresets:[...saved,preset]});setName('')}catch(e){app.setNotice(message(e))}}}/></View>}
+

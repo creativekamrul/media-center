@@ -1,0 +1,11 @@
+package local.mediacenter.library
+import org.json.*
+import org.junit.Test
+import org.junit.Assert.*
+class SpokenQueuePlanTest {
+ private fun row(account:String="server",kind:String="book",item:String="item",episode:String="")=JSONObject().put("account",account).put("kind",kind).put("item",item).put("episode",episode).put("title","A title")
+ private fun saved(rows:JSONArray,index:Int=0,position:Double=0.0)=JSONObject().put("formatVersion",1).put("queue",rows).put("index",index).put("position",position)
+ @Test fun orderDuplicateOccurrencesServersAndEpisodeIdentitiesSurvive(){val r=row(kind="episode",episode="one");val rows=JSONArray().put(row()).put(r).put(row("other")).put(r).put(row(kind="episode",episode="two"));val restored=SpokenQueuePlan.read(saved(rows,3,40.25));assertEquals(5,restored.entries.size);assertEquals(3,restored.index);assertEquals(40.25,restored.position,0.0);assertEquals(restored.entries[1].ref,restored.entries[3].ref);assertNotEquals(restored.entries[0].ref.target.key("server"),restored.entries[2].ref.target.key("other"));assertNotEquals(restored.entries[1].ref,restored.entries[4].ref)}
+ @Test fun showTargetsWrongEpisodeMissingPositionAndBadVersionsFail(){for(r in listOf(row(kind="show"),row(kind="episode"),row(episode="not-a-book-field")))assertTrue(runCatching{SpokenQueuePlan.entries(JSONArray().put(r))}.isFailure);for(raw in listOf(saved(JSONArray().put(row()),1),saved(JSONArray().put(row()),position=-1.0),saved(JSONArray().put(row())).put("formatVersion",2)))assertTrue(runCatching{SpokenQueuePlan.read(raw)}.isFailure);assertTrue(runCatching{SpokenQueuePlan.entries(JSONArray())}.isFailure);assertTrue(runCatching{SpokenQueuePlan.entries(JSONArray((0..500).map{row()}))}.isFailure)}
+ @Test fun checkpointNeverPersistsSessionHeadersUrlsOrAccountCredentials(){val ref=SpokenResumeRef.parse(row());val metadata=SpokenQueuePlan.row(ref,"Title");val encoded=SpokenQueuePlan.encode(JSONArray().put(metadata).toString(),0,12.0,1000);val parsed=JSONObject(encoded);assertEquals(1,parsed.getInt("formatVersion"));assertEquals(12.0,SpokenQueuePlan.read(parsed).position,0.0);assertEquals(setOf("account","kind","item","episode","title"),metadata.keys().asSequence().toSet());assertFalse(encoded.contains("Bearer"));assertFalse(encoded.contains("contentUrl"))}
+}
