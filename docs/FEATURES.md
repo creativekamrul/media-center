@@ -591,3 +591,8 @@ Android cached-video progress review (2026-11-10): explicit Jellyfin source-vers
 - Per user request, focus outlines are disabled for both pointer and keyboard interaction. Focus and keyboard controls remain functional; click-to-arrow-key transitions no longer restore green frames.
 - Jellyfin's seek handle stays fully inside the overlay so the native video surface cannot cover its upper half. Browsing and video use compact controls, quiet secondary actions and a circular play button.
 - Updated real-Electron regression checks cover normal/video dock height, handle geometry, cards/search after clicks/Tab/arrows, and fullscreen-button click followed by keyboard seeking. TypeScript, 300 unit tests, production build, the dedicated packaged Jellyfin checks and the full packaged desktop suite passed with zero renderer errors. Both dock previews were visually inspected. Local installer: `release/Media-Center-2.2.2-win-x64.exe`; no new GitHub publication occurred.
+
+### Flush Jellyfin seek strip (local 2.2.3 candidate)
+
+- The user requested removal of the seek ball and the black band above the rail. The seek rail is aligned exactly with the dock top edge in browsing, video and fullscreen; the invisible native thumb retains click/drag geometry and keyboard seeking.
+- TypeScript, all 300 unit tests, the production build and packaged Jellyfin integration passed. Exact rail geometry is verified in browsing/video views; browsing and fullscreen previews were visually inspected with no handle or top band. Native pointer/drag/keyboard seeking, subtitles, fullscreen and source switching passed. Local installer: `release/Media-Center-2.2.3-win-x64.exe`. No new publication occurred.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.3
+
+- Make the Jellyfin seek strip flush with the playback bar in browsing, video and fullscreen views, without a seek ball or extra top band.
+
 ## 2.2.2
 
 - Remove desktop focus outlines for mouse and keyboard interaction, including click-to-arrow-key seeking.
