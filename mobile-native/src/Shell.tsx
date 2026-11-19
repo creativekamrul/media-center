@@ -7,7 +7,7 @@ import {SafeAreaView,useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {StatusBar} from 'expo-status-bar';
 
-import {router,useFocusEffect} from 'expo-router';
+import {useRouter,useFocusEffect} from 'expo-router';
 
 import {BlurView,BlurTargetView} from 'expo-blur';
 
@@ -23,12 +23,12 @@ import {playback} from './library';
 
 const tabs=[['Home','/','home'],['Explore','/explore','explore'],['Library','/library','library'],['Search','/search','search'],['Menu','/customize','menu']] as const;
 
-export function Shell({title,root=false,artwork=false,children}:{title:string;root?:boolean;artwork?:boolean;children:React.ReactNode}){
+export function Shell({title,root=false,artwork=false,children}:{title:string;root?:boolean;artwork?:boolean;children:React.ReactNode}){const router=useRouter();
 
  const {width,height}=useWindowDimensions();const wide=width>height&&width>=600;
  const app=useApp(),c=usePalette(),insets=useSafeAreaInsets();const [menu,setMenu]=useState(false),[targetTag,setTargetTag]=useState(0),[light,setLight]=useState(.25);const target=useRef<React.ElementRef<typeof View>>(null);
 
- useFocusEffect(useCallback(()=>{if(!root||title==='Home')return;const sub=BackHandler.addEventListener('hardwareBackPress',()=>{router.navigate('/');return true});return()=>sub.remove()},[root,title]));
+ useFocusEffect(useCallback(()=>{if(!root||title==='Home')return;const sub=BackHandler.addEventListener('hardwareBackPress',()=>{router.navigate('/');return true});return()=>sub.remove()},[root,title,router]));
 
  const back=()=>router.canGoBack()?router.back():router.replace('/');
 
@@ -36,12 +36,13 @@ export function Shell({title,root=false,artwork=false,children}:{title:string;ro
 
  {!root&&!artwork&&<View style={layout.header}>{!root&&<IconButton icon="back" label="Back" onPress={back}/>}<T title numberOfLines={1} style={{flex:1,fontSize:root?29:20}}>{title}</T></View>}
 
- {!!app.notice&&<Pressable onPress={()=>app.setNotice('')} style={{padding:12,backgroundColor:c.panel}}><T>{app.notice}</T></Pressable>}
+
 
  <View style={{flex:1}}>{children}</View>
 
  </BlurTargetView>
  {artwork&&<View style={{position:'absolute',top:insets.top+12,left:18,width:48,height:48,borderRadius:24,overflow:'hidden'}}>{app.prefs.material==='glass'?<LiquidGlass pointerEvents="none" targetTag={targetTag} tone={c.panel} light={.2} opacity={app.prefs.glassOpacity??.26} refraction={app.prefs.glassRefraction??.7} style={StyleSheet.absoluteFill}/>:<View style={[StyleSheet.absoluteFill,{backgroundColor:c.panel+'DD'}]}/>}<IconButton icon="back" label="Back" onPress={back}/></View>}
+ {!!app.notice&&<View accessibilityLiveRegion="polite" style={{position:'absolute',top:insets.top+8,left:16,right:16,zIndex:50,elevation:8,backgroundColor:c.panel,borderRadius:12,paddingLeft:14,paddingVertical:4,flexDirection:'row',alignItems:'center',gap:8}}><T numberOfLines={3} style={{flex:1,fontSize:13}}>{app.notice}</T><IconButton icon="close" label="Dismiss notification" onPress={()=>app.setNotice('')}/></View>}
  <View pointerEvents="box-none" style={{position:'absolute',left:wide&&root?112:14,right:14,bottom:wide?10:24,gap:8}}>
 {title!=='Now playing'&&<MiniPlayer/>}
  {root&&!wide&&<View style={{borderRadius:24,overflow:'hidden'}}>
@@ -59,4 +60,4 @@ export function Shell({title,root=false,artwork=false,children}:{title:string;ro
 }
 
 
-function MiniPlayer(){const player=usePlayer(),c=usePalette();return <>{player.track&&true&&<Pressable accessibilityLabel="Open player" onPress={()=>router.push('/player')} style={{padding:12,minHeight:68,backgroundColor:c.panel,borderRadius:14,flexDirection:'row',alignItems:'center'}}><View style={{flex:1}}><T strong numberOfLines={1}>{player.track.title}</T><T muted numberOfLines={1}>{player.track.artist}</T></View><IconButton icon={player.playing?'pause':'play'} label="Toggle playback" onPress={()=>void playback.control('toggle')}/></Pressable>}</>}
+function MiniPlayer(){const router=useRouter();const player=usePlayer(),c=usePalette();return <>{player.track&&true&&<Pressable accessibilityLabel="Open player" onPress={()=>router.push('/player')} style={{padding:12,minHeight:68,backgroundColor:c.panel,borderRadius:14,flexDirection:'row',alignItems:'center'}}><View style={{flex:1}}><T strong numberOfLines={1}>{player.track.title}</T><T muted numberOfLines={1}>{player.track.artist}</T></View><IconButton icon={player.playing?'pause':'play'} label="Toggle playback" onPress={()=>void playback.control('toggle')}/></Pressable>}</>}

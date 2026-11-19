@@ -6,7 +6,8 @@ import subprocess
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
-OUTPUT = ROOT / "release/mobile/Media-Center-Mobile-1.0.0-app-sources.zip"
+CONFIG = json.loads((ROOT / "mobile-native/app.json").read_text(encoding="utf-8"))["expo"]
+OUTPUT = ROOT / f"release/mobile/Media-Center-Mobile-{CONFIG['version']}-app-sources.zip"
 
 
 def main():
@@ -33,7 +34,7 @@ def main():
     assert any(name.endswith("/CMakeLists.txt") for name, _ in entries)
     assert any(name == "mobile-native/package-lock.json" for name, _ in entries)
     manifest = {
-        "version": "1.0.0", "versionCode": 9,
+        "version": CONFIG["version"], "versionCode": CONFIG["android"]["versionCode"],
         "scope": "Current working-tree source, including desktop, mobile JNI/config plugins and locked dependencies. Separate native-source and notice archives accompany this collection.",
         "files": [{"path": name, "sha256": hashlib.sha256(data).hexdigest()} for name, data in entries],
     }

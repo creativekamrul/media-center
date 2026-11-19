@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.2.1
+
+- Remove click-triggered focus frames on cards, search fields and sliders while retaining keyboard focus feedback.
+- Compact Jellyfin playback controls with a top-edge seek strip and elapsed / remaining time beside fullscreen.
+- Verify native Jellyfin playback, seeking, fullscreen and source switching in the packaged Windows application.
+
+## Android 1.0.1
+
+- Fix original-file caching on Android storage providers that append media extensions to temporary files; preserve journal-scoped recovery.
+- Fix a navigation crash using mounted-context routers throughout the mobile app.
+- Make notices expire and dismiss without shifting content, replace oversized playlist editing with a compact action, and refresh cache badges efficiently.
+- Verify Navidrome and saved Downtify downloads, file integrity, portable playlist exports and direct cached playback on Samsung.
+
 ## 2.2.0
 
 - Connect Downtify, discover artists and albums, stream through MPV, browse saved playlists, and download tracks explicitly. When a recording confidently matches a Navidrome copy, choose which server to play it from.

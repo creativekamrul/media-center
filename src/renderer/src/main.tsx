@@ -41,4 +41,8 @@ import './media-center-2.css'
 import './design-system.css'
 import './listening-design.css'
 import './typography.css'
+// Pointer interaction must not leave keyboard focus frames around cards and sliders.
+document.documentElement.dataset.inputModality='keyboard'
+document.addEventListener('pointerdown',()=>{document.documentElement.dataset.inputModality='pointer'},true)
+document.addEventListener('keydown',event=>{if(['Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].includes(event.key))document.documentElement.dataset.inputModality='keyboard'},true)
 createRoot(document.getElementById('root')!).render(<React.StrictMode>{new URLSearchParams(location.search).get('mini') === '1' ? <MiniPlayer/> : <App/>}</React.StrictMode>)

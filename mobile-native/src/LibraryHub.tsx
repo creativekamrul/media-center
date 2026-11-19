@@ -1,7 +1,7 @@
 import {ResumeSession} from './ResumeSession';
 import React,{useEffect,useState} from 'react';
 import {View,ScrollView,Pressable,useWindowDimensions} from 'react-native';
-import {router} from 'expo-router';
+import {useRouter} from 'expo-router';
 import {LinearGradient} from 'expo-linear-gradient';
 import {Shell} from './Shell';
 import {useApp,usePalette} from './AppState';
@@ -11,7 +11,7 @@ import {RemoteArt} from './RemoteLibrary';
 import {PinnedShelf} from './PinnedShelf';
 import {browse,spoken,jellyfin,type Account,type Entry} from './library';
 
-function Provider({account:a}:{account:Account}){
+function Provider({account:a}:{account:Account}){const router=useRouter();
  const app=useApp(),c=usePalette();const collapsed=(app.prefs.collapsedServers as string[]|undefined)??[];const closed=collapsed.includes(a.id);const [art,setArt]=useState<Entry[]>([]);
  useEffect(()=>{let live=true;const request=a.type==='jellyfin'?jellyfin.browse(a.id,'libraries').then(r=>r.items??[]):a.type==='audiobookshelf'?spoken.browse(a.id,'libraries').then(async r=>Promise.all((r.items??[]).map(async item=>{try{const preview=await spoken.browse(a.id,'items',item.id);return {...item,coverArt:preview.items?.[0]?.coverArt}}catch{return item}}))):browse(a.id,'getAlbumList2',{type:'newest',size:'3',offset:'0'}).then(r=>r.albumList2?.album??[]);request.then(rows=>{if(live)setArt(rows)}).catch(()=>{});return()=>{live=false}},[a.id,a.type]);
  const music=!['jellyfin','audiobookshelf'].includes(a.type??'');
@@ -21,7 +21,7 @@ function Provider({account:a}:{account:Account}){
  {a.type==='downtify'&&<Pressable onPress={()=>router.push({pathname:'/discover',params:{account:a.id}})} style={[layout.row,{padding:16,backgroundColor:c.accent+'16',borderRadius:14}]}><Icon name="explore" color={c.accent}/><View style={{flex:1}}><T strong>Discover on Downtify</T><T muted style={{fontSize:12}}>New artists, albums and singles</T></View><Icon name="arrow" color={c.accent}/></Pressable>}</>}</View>
 }
 const shortcuts=[{id:'resume',label:'Resume session',icon:'play',route:'/player'},{id:'discovery',label:'Discovery inbox',icon:'explore',route:'/discovery-inbox'},{id:'inbox',label:'Library inbox',icon:'library',route:'/inbox'},{id:'podcast-inbox',label:'Podcast inbox',icon:'queue',route:'/podcast-inbox'},{id:'collections',label:'Your collections',icon:'library',route:'/collections'},{id:'bookmarks',label:'Bookmarks & notes',icon:'book',route:'/bookmarks'},{id:'playlists',label:'App playlists',icon:'queue',route:'/personal-playlists'},{id:'mixes',label:'Your mixes',icon:'explore',route:'/mixes'}] as const;
-export function LibraryHub(){
+export function LibraryHub(){const router=useRouter();
  const {width,height}=useWindowDimensions();const wide=width>height&&width>=600;const app=useApp(),c=usePalette(),[editing,setEditing]=useState(false);
  const ids=shortcuts.map(s=>s.id);const saved=app.prefs.libraryShortcuts as string[]|undefined;
  const order=[...new Set([...(saved??[]).filter(id=>ids.includes(id as typeof ids[number])),...ids])];

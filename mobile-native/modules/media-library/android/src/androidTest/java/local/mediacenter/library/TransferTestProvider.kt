@@ -28,7 +28,9 @@ class TransferTestProvider:DocumentsProvider(){
  override fun queryChildDocuments(parentDocumentId:String,projection:Array<out String>?,sortOrder:String?):Cursor=MatrixCursor(columns(projection)).apply{file(parentDocumentId).listFiles()?.sortedBy{it.name}?.forEach{row(this,it)}}
  override fun isChildDocument(parentDocumentId:String,documentId:String)=file(documentId).canonicalPath.startsWith(file(parentDocumentId).canonicalPath+File.separator)
  override fun getDocumentType(documentId:String)=if(file(documentId).isDirectory)Document.MIME_TYPE_DIR else "application/octet-stream"
- override fun createDocument(parentDocumentId:String,mimeType:String,displayName:String):String {require(!displayName.contains('/')&&!displayName.contains('\\'));val f=File(file(parentDocumentId),displayName);require(!f.exists());if(mimeType==Document.MIME_TYPE_DIR)check(f.mkdir()) else check(f.createNewFile());return id(f)}
+ override fun createDocument(parentDocumentId:String,mimeType:String,displayName:String):String {require(!displayName.contains('/')&&!displayName.contains('\\'));val extension=android.webkit.MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
+  val actual=if(mimeType.startsWith("audio/")&&displayName.endsWith(".partial")&&extension!=null)"$displayName.$extension" else displayName
+  val f=File(file(parentDocumentId),actual);require(!f.exists());if(mimeType==Document.MIME_TYPE_DIR)check(f.mkdir()) else check(f.createNewFile());return id(f)}
  override fun deleteDocument(documentId:String){check(file(documentId).delete())}
  override fun renameDocument(documentId:String,displayName:String):String {check(!renameFails){"Test provider cannot rename"};val from=file(documentId);val to=File(from.parentFile,displayName);require(!to.exists()&&!displayName.contains('/')&&!displayName.contains('\\'));check(from.renameTo(to));return id(to)}
  override fun openDocument(documentId:String,mode:String,signal:CancellationSignal?):ParcelFileDescriptor {if(mode.contains('w')&&full)throw java.io.IOException("ENOSPC simulated storage failure");return ParcelFileDescriptor.open(file(documentId),ParcelFileDescriptor.parseMode(mode))}

@@ -13,7 +13,8 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 PROJECT = ROOT / "mobile-native"
 INPUT = ROOT / "artifacts/mobile-source-release"
-OUTPUT = ROOT / "release/mobile/Media-Center-Mobile-1.0.0-notices.zip"
+CONFIG = json.loads((ROOT / "mobile-native/app.json").read_text(encoding="utf-8"))["expo"]
+OUTPUT = ROOT / f"release/mobile/Media-Center-Mobile-{CONFIG['version']}-notices.zip"
 
 
 def main():

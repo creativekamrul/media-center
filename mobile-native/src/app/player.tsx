@@ -8,7 +8,7 @@ import {View,ScrollView,Pressable,Modal,StyleSheet,useWindowDimensions} from 're
 
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {router} from 'expo-router';
+import {useRouter} from 'expo-router';
 
 import {StatusBar} from 'expo-status-bar';
 
@@ -36,7 +36,7 @@ import {time} from '../catalog';
 
 type Sheet='Queue'|'Lyrics'|'Transcript'|'Playback options'|null;
 
-export default function Player(){
+export default function Player(){const router=useRouter();
 
  const {width,height}=useWindowDimensions();const wide=width>height&&width>=600;
  const app=useApp(),player=usePlayer(),c=usePalette(),p=player,t=p.track;

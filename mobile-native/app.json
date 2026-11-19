@@ -2,7 +2,7 @@
   "expo": {
     "name": "Media Center",
     "slug": "media-center-mobile",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -13,7 +13,7 @@
     "android": {
       "package": "local.mediacenter.mobile",
       "predictiveBackGestureEnabled": true,
-      "versionCode": 9,
+      "versionCode": 10,
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
         "monochromeImage": "./assets/android-icon-monochrome.png",

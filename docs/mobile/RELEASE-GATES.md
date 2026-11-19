@@ -225,3 +225,10 @@ A separate test UID completed a 345,600,044-byte generated original in 345 secon
 The signed QA app browsed a generated 10,000-track catalog advertising 209,715,200,000 bytes. After 32 scroll gestures, Android reported 176 UI hierarchy nodes and process PSS samples of 196452, 214919, 244632, 255248 and 256940 KB. No media stream request occurred during browsing. This is emulator metadata scale, not storage of 200 GB, a Samsung frame-rate result or overnight reliability proof.
 
 Collection text search, hiding sort for a single result, full-catalog Z–A sorting and two-track bulk selection passed. The saved app playlist played through native MPV in the selected sorted order, then was removed. Listening-session preset create/apply, cold-process persistence and removal passed. OS Play/Pause/Next/Previous commands passed after explicitly awaiting native acknowledgements. These checks preceded the final compatibility/timer refresh; the changed paths have separate regression checks.
+
+
+### Android 1.0.1 patch — November 19
+
+The user authorized GitHub publication of the tested patch. The ARM64 APK uses versionCode 10 and the existing permanent signing certificate. Its SHA256 is `a1904bf82000e6cf7f9281ded5919fb1602958b5afc22e011f47321612147c87`. It was installed in place on Samsung; all four source connections remained present. Original Navidrome and saved Downtify single-track cache transfers completed and exported portable playlists. Integrity checks reported two verified, zero changed, zero unavailable. Direct cached native playback advanced without error. Notice timeout/dismissal, compact playlist editing and Back/main-tab navigation passed. Native SAF recovery tests reproduce provider-added media suffixes. Regression checks: 253 native and 76 JS tests, TypeScript and lint (one existing refresh-dependency warning).
+
+This patch does not change background reliability, USB-exclusive output or broad performance claims from 1.0.0. Existing failed large playlist transfers were not automatically resumed. Mobile publication must continue to preserve the desktop latest-release marker.

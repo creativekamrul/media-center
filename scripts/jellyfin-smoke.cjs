@@ -40,6 +40,7 @@ async function main(){
   const profile=`--user-data-dir=${resolve(artifacts,`jellyfin-profile-${Date.now()}`)}`
   desktop=await electron.launch({executablePath:process.env.MEDIA_CENTER_EXECUTABLE||undefined,args:process.env.MEDIA_CENTER_EXECUTABLE?[profile]:[resolve('out/main/index.js'),profile],env:{...process.env,MEDIA_CENTER_SMOKE:'1'},timeout:30000})
   const page=await desktop.firstWindow();page.on('pageerror',e=>errors.push(e.message));await page.waitForLoadState('domcontentloaded');await desktop.evaluate(({BrowserWindow})=>{for(const w of BrowserWindow.getAllWindows()){w.webContents.setBackgroundThrottling(false);w.showInactive()}});await page.setViewportSize({width:1440,height:940});await page.getByRole('button',{name:'Keep listening',exact:true}).click()
+  await require('./focus-feedback-smoke.cjs')({page})
   await page.getByRole('button',{name:'Settings',exact:true}).click();const panel=page.getByRole('region',{name:'Jellyfin servers'})
   await panel.getByLabel('Jellyfin server address').fill(url);await panel.getByLabel('Jellyfin username',{exact:true}).fill('fixture');await panel.getByLabel('Jellyfin password',{exact:true}).fill('fixture-password');await panel.getByRole('button',{name:'Connect Jellyfin'}).click();await panel.getByText('Fixture JellyBean',{exact:true}).waitFor()
   console.log('Jellyfin connection UI passed');const connections=await page.evaluate(()=>window.mediaCenter.jfConnections());assert.equal(connections.length,1);assert.ok(!JSON.stringify(connections).includes('fixture-token'));const id=connections[0].id
@@ -68,6 +69,10 @@ async function main(){
   assert.equal(inspect().find(w=>w.handle===surface.handle).regionKind,2,'Closing options restores the picture between the overlay bars');
   await page.evaluate(()=>window.mediaCenter.jfCommand({action:'seek',value:20}));await wait(s=>Math.abs(s.position-20)<.5);await page.getByRole('button',{name:'Back 5 seconds',exact:true}).click();await wait(s=>Math.abs(s.position-15)<.5);await page.getByRole('button',{name:'Forward 5 seconds',exact:true}).click();await wait(s=>Math.abs(s.position-20)<.5);await page.keyboard.press('ArrowLeft');await wait(s=>Math.abs(s.position-15)<.5);await page.keyboard.press('ArrowRight');await wait(s=>Math.abs(s.position-20)<.5);
   const fonts=await page.evaluate(()=>{const root=document.documentElement,body=root.style.getPropertyValue('--body-font'),heading=root.style.getPropertyValue('--heading-font');root.style.setProperty('--body-font','Arial');root.style.setProperty('--heading-font','Georgia');const fonts=[...document.querySelectorAll('.jf-page h1,.jf-cinema-title h2,.jf-dock,.jf-video-stage')].map(el=>getComputedStyle(el).fontFamily);root.style.setProperty('--body-font',body);root.style.setProperty('--heading-font',heading);return fonts});assert.ok(fonts.length>=3);assert.ok(fonts.every(font=>font==='Arial'),'Jellyfin must follow the selected interface font, like music')
+  const compactDock=await page.locator('.jf-dock').boundingBox(),compactSeek=await page.getByRole('slider',{name:'Seek Jellyfin',exact:true}).boundingBox()
+  assert.ok(compactDock.height<=80,'Video controls stay in one compact row')
+  assert.ok(Math.abs(compactSeek.y+compactSeek.height/2-compactDock.y)<6,'Seek strip sits on the dock top edge')
+  assert.equal(await page.locator('.jf-time-display').count(),1)
   const seeker=page.getByRole('slider',{name:'Seek Jellyfin',exact:true}),seekBounds=await seeker.boundingBox(),jfDuration=(await page.evaluate(()=>window.mediaCenter.jfPlayback())).duration
   for(const fraction of [.65,.2]){
    await page.mouse.click(seekBounds.x+7+(seekBounds.width-14)*fraction,seekBounds.y+seekBounds.height/2)
@@ -86,6 +91,11 @@ async function main(){
   await page.evaluate(()=>window.mediaCenter.jfCommand({action:'volume',value:50}));await wait(s=>s.volume===50)
   await page.locator('.jf-options .volume-control').hover();await page.mouse.wheel(0,-100);await wait(s=>s.volume===55)
   await page.evaluate(()=>window.mediaCenter.jfCommand({action:'volume',value:0}));await wait(s=>s.volume===0)
+  await page.evaluate(()=>window.mediaCenter.jfCommand({action:'seek',value:10}));await wait(s=>s.status==='paused'&&Math.abs(s.position-10)<.5)
+  assert.equal(await seeker.evaluate(el=>getComputedStyle(el).outlineStyle),'none','Pointer seeking leaves no focus frame')
+  await seeker.press('ArrowRight')
+  assert.equal(await page.evaluate(()=>document.documentElement.dataset.inputModality),'keyboard')
+  assert.notEqual(await seeker.evaluate(el=>getComputedStyle(el).outlineStyle),'none','Keyboard seeking retains focus feedback')
   await page.getByRole('slider',{name:'Seek Jellyfin',exact:true}).hover();await page.locator('.jf-seek .seek-preview').waitFor()
   await page.screenshot({path:resolve(artifacts,'jellyfin-movie.png')})
   offline=true;await page.evaluate(()=>window.mediaCenter.jfCommand({action:'sync'}));await wait(s=>!!s.syncError);offline=false;await page.evaluate(()=>window.mediaCenter.jfCommand({action:'sync'}));await wait(s=>!s.syncError)

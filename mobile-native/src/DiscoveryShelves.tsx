@@ -1,13 +1,13 @@
 import React,{useEffect,useState} from 'react';
 import {View,FlatList,Pressable} from 'react-native';
-import {router} from 'expo-router';
+import {useRouter} from 'expo-router';
 import {useApp} from './AppState';
 import {T} from './ui';
 import {RemoteArt} from './RemoteLibrary';
 import {spoken,jellyfin,listeningHistory,type Entry} from './library';
 type Discovery=Entry&{kind:string};
 type Shelf={key:string;account:string;source:string;title:string;items:Discovery[];jellyfin:boolean};
-export function DiscoveryShelves({home=false}:{home?:boolean}){const app=useApp(),[shelves,setShelves]=useState<Shelf[]>([]);const key=app.connections.map(a=>a.id).join('|');
+export function DiscoveryShelves({home=false}:{home?:boolean}){const router=useRouter();const app=useApp(),[shelves,setShelves]=useState<Shelf[]>([]);const key=app.connections.map(a=>a.id).join('|');
  useEffect(()=>{let live=true;
  // eslint-disable-next-line react-hooks/set-state-in-effect
  setShelves([]);

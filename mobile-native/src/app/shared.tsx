@@ -1,12 +1,12 @@
 import React,{useEffect,useState} from 'react';
 import {FlatList,View,ActivityIndicator} from 'react-native';
-import {router,useLocalSearchParams} from 'expo-router';
+import {useRouter,useLocalSearchParams} from 'expo-router';
 import {Shell} from '../Shell';import {MediaHero} from '../MediaHero';import {RemoteArt} from '../RemoteLibrary';import {ActionSheet,type MediaAction} from '../ActionSheet';import {TrackSort} from '../TrackSort';import {orderTracks,type TrackSort as Sort} from '../trackOrdering';
 import {T,Button,IconButton,layout} from '../ui';import {useApp,usePalette} from '../AppState';import {sharedContent,playback,downloads,downtifySave,message,type SharedResolution,type Entry} from '../library';import {time} from '../catalog';
 type Params={kind?:string;value?:string;account?:string;received?:string};
 type Row={type:'track';item:Entry;index:number}|{type:'album';item:SharedResolution['albums'][number]};
 export default function Shared(){const p=useLocalSearchParams<Params>();return <SharedBody key={JSON.stringify([p.kind,p.value,p.account])} params={p}/>}
-function SharedBody({params:p}:{params:Params}){
+function SharedBody({params:p}:{params:Params}){const router=useRouter();
  const app=useApp(),c=usePalette(),account=app.connections.find(a=>a.id===p.account&&a.type==='downtify');const [data,setData]=useState<SharedResolution>(),[busy,setBusy]=useState(false),[saving,setSaving]=useState(false),[error,setError]=useState(''),[revision,setRevision]=useState(0),[sort,setSort]=useState<Sort>('original'),[actions,setActions]=useState<{title:string;items:MediaAction[]}|null>(null);
  useEffect(()=>{if(p.kind!=='link'||!account?.id||!p.value)return;let live=true;
  // Only an explicit source choice or release selection starts link resolution.

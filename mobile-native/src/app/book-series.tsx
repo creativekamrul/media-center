@@ -1,11 +1,11 @@
 import React,{useState} from 'react';
 import {ActivityIndicator,FlatList,Pressable,View} from 'react-native';
-import {router,useLocalSearchParams} from 'expo-router';
+import {useRouter,useLocalSearchParams} from 'expo-router';
 import {Shell} from '../Shell';import {useApp,usePalette} from '../AppState';
 import {T,Button,layout} from '../ui';import {RemoteArt} from '../RemoteLibrary';import {LoadingContent} from '../LoadingContent';
 import {bookSeries,spoken,message,type SeriesBook} from '../library';import {useInfinite} from '../useInfinite';
 
-export default function BookSeriesScreen(){
+export default function BookSeriesScreen(){const router=useRouter();
  const params=useLocalSearchParams<{account:string;book:string;series:string;title?:string}>(),app=useApp(),c=usePalette();const [title,setTitle]=useState(params.title??'Audiobook series'),[total,setTotal]=useState(0),[starting,setStarting]=useState(false);
  const source=app.connections.find(a=>a.id===params.account);
  const list=useInfinite<SeriesBook>(JSON.stringify([params.account,params.book,params.series,app.refresh]),async offset=>{const result=await bookSeries(params.account,params.book,params.series,offset);setTitle(result.title);setTotal(result.total);return {items:result.items,next:result.items.length&&offset+result.items.length<result.total?offset+result.items.length:null}});

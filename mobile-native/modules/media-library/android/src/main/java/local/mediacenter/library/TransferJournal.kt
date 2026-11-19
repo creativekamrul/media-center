@@ -26,7 +26,7 @@ internal object TransferJournal {
   val tree=Uri.parse(j.getString("tree"));val parent=Uri.parse(j.getString("parent"))
   require(tree.scheme=="content"&&Documents.isTreeUri(tree)&&parent.scheme=="content"&&parent.authority==tree.authority)
   require(Documents.getTreeDocumentId(parent)==Documents.getTreeDocumentId(tree))
-  require(j.getString("tempName")==".mc-$token.partial")
+  TransferTempName.recovery(token,j.getString("tempName"),j.getString("name"))
   val target=j.getString("name");require(target.toByteArray(Charsets.UTF_8).size<=240&&target.matches(Regex("[^/\\\\\\r\\n]+ - "+Regex.escape(token)+"\\.[A-Za-z0-9]{2,5}")))
   j.optJSONObject("record")?.let{r->
    require(r.getString("tree")==tree.toString()&&r.getString("name")==target&&r.getLong("bytes")>0)
@@ -38,7 +38,7 @@ internal object TransferJournal {
  fun begin(c:Context,tree:Uri,parent:Uri,baseName:String,suffix:String,mime:String):Pair<Uri,String>{
   check(load(c)==null){"Retry recovery of the previous transfer before starting another"}
   val token=UUID.randomUUID().toString();val name="${PortableName.stem(baseName,180)} - $token.$suffix"
-  val j=JSONObject().put("token",token).put("tree",tree.toString()).put("parent",parent.toString()).put("tempName",".mc-$token.partial").put("name",name)
+  val j=JSONObject().put("token",token).put("tree",tree.toString()).put("parent",parent.toString()).put("tempName",TransferTempName.current(token,suffix)).put("name",name)
   validate(j);save(c,j)
   // Persist intent before creation, so even a kill before receiving the URI remains recoverable.
   val temp=Documents.createDocument(c.contentResolver,parent,mime,j.getString("tempName"))?:error("Cannot create original-media file")
@@ -57,7 +57,8 @@ internal object TransferJournal {
  }
  fun recover(c:Context){
   val j=load(c)?:return;validate(j);val parent=Uri.parse(j.getString("parent"))
-  val temp=find(c,parent,j.getString("tempName"));val final=find(c,parent,j.getString("name"));val record=j.optJSONObject("record")
+  val temporary=TransferTempName.recovery(j.getString("token"),j.getString("tempName"),j.getString("name"))
+  val temp=temporary.firstNotNullOfOrNull{find(c,parent,it)};val final=find(c,parent,j.getString("name"));val record=j.optJSONObject("record")
   if(final!=null){
    require(record!=null&&matches(c,final,record)){"A recovered original needs review. No final file was deleted."}
    val rows=JSONArray(prefs(c).getString("items","[]"));require((0 until rows.length()).none{val r=rows.getJSONObject(it);r.optString("tree")==record.getString("tree")&&r.optString("key")==record.getString("key")&&r.optString("uri")!=final.toString()}){"A recovered original conflicts with an existing cached item"}

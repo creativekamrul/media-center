@@ -1,11 +1,11 @@
 import React,{useEffect,useState} from 'react';
 import {View,ScrollView,Pressable,ActivityIndicator} from 'react-native';
-import {router,useLocalSearchParams} from 'expo-router';
+import {useRouter,useLocalSearchParams} from 'expo-router';
 import {Shell} from '../Shell';import {useApp,usePalette} from '../AppState';
 import {T,Button} from '../ui';import {RemoteArt} from '../RemoteLibrary';
 import {browse,jellyfin,message,type Account,type Entry} from '../library';import {matchingArtists} from '../artistIdentity';
 type Result={account:Account;artist:Entry;albums:Entry[]};
-export default function ArtistLibraries(){const {name=''}=useLocalSearchParams<{name:string}>(),app=useApp(),c=usePalette();const [rows,setRows]=useState<Result[]>([]),[warnings,setWarnings]=useState<string[]>([]),[busy,setBusy]=useState(true);
+export default function ArtistLibraries(){const router=useRouter();const {name=''}=useLocalSearchParams<{name:string}>(),app=useApp(),c=usePalette();const [rows,setRows]=useState<Result[]>([]),[warnings,setWarnings]=useState<string[]>([]),[busy,setBusy]=useState(true);
  useEffect(()=>{let live=true;setBusy(true);setRows([]);setWarnings([]);
   void Promise.allSettled(app.connections.filter(a=>a.type!=='audiobookshelf').map(async account=>{
    try{const isJelly=account.type==='jellyfin';const found=isJelly?(await jellyfin.browse(account.id,'search',name)).items?.filter(t=>t.kind==='artist')??[]:(await browse(account.id,'search3',{query:name,artistCount:'100',songCount:'0',albumCount:'0'})).searchResult3?.artist??[];

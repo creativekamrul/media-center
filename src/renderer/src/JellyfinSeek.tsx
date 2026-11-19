@@ -1,11 +1,12 @@
+import {createPortal} from 'react-dom'
 import {useEffect,useRef,useState,type PointerEvent} from 'react'
 import type {JfState} from '../../shared/jellyfin'
 import {duration,message} from './ui'
 import {VisualPlayhead} from './visual-playhead'
 
-export function JellyfinSeek({state,error}:{state:JfState;error:(message:string)=>void}){
+export function JellyfinSeek({state,error,timeSlot}:{state:JfState;error:(message:string)=>void;timeSlot:HTMLElement|null}){
  const [preview,setPreview]=useState<number|null>(null),[hover,setHover]=useState<number|null>(null)
- const [position,setPosition]=useState(state.position),[remaining,setRemaining]=useState(()=>localStorage.getItem('jf-remaining')==='true')
+ const [position,setPosition]=useState(state.position),[remaining,setRemaining]=useState(()=>localStorage.getItem('jf-remaining')!=='false')
  const pointer=useRef<number|null>(null),revision=useRef(0),clock=useRef(new VisualPlayhead())
  const enabled=state.duration>0&&['playing','paused'].includes(state.status)&&state.nextIn===undefined
  const advancing=enabled&&state.status==='playing'&&!state.buffering
@@ -26,7 +27,7 @@ export function JellyfinSeek({state,error}:{state:JfState;error:(message:string)
   catch(e){if(request===revision.current)error(message(e))}
   finally{if(request===revision.current)setPreview(null)}
  }
- return <div className="jf-seek" data-seeking={preview!==null}><span>{duration(value)}</span><div className="jf-seek-track"><input type="range" aria-label="Seek Jellyfin" aria-valuetext={`${duration(value)} of ${duration(state.duration)}`} min={0} max={state.duration||1} step="any" disabled={!enabled} value={value} style={{'--progress':`${100*value/(state.duration||1)}%`,touchAction:'none'} as React.CSSProperties}
+ return <><div className="jf-seek" data-seeking={preview!==null}><div className="jf-seek-track"><input type="range" aria-label="Seek Jellyfin" aria-valuetext={`${duration(value)} of ${duration(state.duration)}`} min={0} max={state.duration||1} step="any" disabled={!enabled} value={value} style={{'--progress':`${100*value/(state.duration||1)}%`,touchAction:'none'} as React.CSSProperties}
   onPointerDown={e=>{if(!enabled||e.button!==0)return;e.preventDefault();e.currentTarget.focus();e.currentTarget.setPointerCapture(e.pointerId);pointer.current=e.pointerId;revision.current++;setPreview(fromPointer(e))}}
   onPointerMove={e=>{if(enabled)setHover(fromPointer(e));if(pointer.current===e.pointerId)setPreview(fromPointer(e))}}
   onPointerUp={e=>{if(pointer.current!==e.pointerId)return;e.preventDefault();pointer.current=null;e.currentTarget.releasePointerCapture(e.pointerId);void commit(fromPointer(e))}}
@@ -35,5 +36,5 @@ export function JellyfinSeek({state,error}:{state:JfState;error:(message:string)
   onChange={e=>{if(pointer.current===null)void commit(Number(e.currentTarget.value))}}/>
   {state.duration>0&&<div className="jf-chapter-markers" aria-hidden="true">{state.chapters.filter(c=>c.time>0&&c.time<state.duration).map((c,i)=><i key={i} style={{left:`${c.time/state.duration*100}%`}}/>)}</div>}
   {enabled&&(preview??hover)!==null&&<div className="seek-preview" style={{left:`${Math.min(94,Math.max(6,(preview??hover??0)/state.duration*100))}%`}}>{duration(preview??hover??0)}<small>{[...state.chapters].reverse().find(c=>c.time<=(preview??hover??0))?.title}</small></div>}
- </div><button className="jf-time-mode" title="Switch total / remaining time" aria-label={remaining?'Show total duration':'Show remaining time'} onClick={()=>setRemaining(v=>{localStorage.setItem('jf-remaining',String(!v));return !v})}>{remaining?'-'+duration(Math.max(0,state.duration-value)):duration(state.duration)}</button></div>
+ </div></div>{timeSlot&&createPortal(<><span>{duration(value)}</span><span aria-hidden="true">/</span><button className="jf-time-mode" title="Switch total / remaining time" aria-label={remaining?'Show total duration':'Show remaining time'} onClick={()=>setRemaining(v=>{localStorage.setItem('jf-remaining',String(!v));return !v})}>{remaining?'-'+duration(Math.max(0,state.duration-value)):duration(state.duration)}</button></>,timeSlot)}</>
 }

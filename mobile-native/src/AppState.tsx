@@ -30,6 +30,9 @@ export function AppState({children}:{children:React.ReactNode}){
 
  const [connections,setConnections]=useState<Account[]>([]),[prefs,set]=useState<Preferences>({palette:'charcoal',material:'solid',reduceMotion:false,likes:[]}),[ready,setReady]=useState(false),[player,setPlayer]=useState<PlaybackState>({}),[refresh,setRefresh]=useState(0),[notice,setNotice]=useState('');
 
+ // Notices are transient feedback; persistent failures belong to their owning screen/job.
+ useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(''),7000);return()=>clearTimeout(timer)},[notice]);
+
  const [connectionErrors,setConnectionErrors]=useState<Record<string,string>>({});
  const [health,setHealth]=useState<Record<string,'checking'|'online'|'offline'>>({});
 

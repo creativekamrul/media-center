@@ -7,7 +7,7 @@ import {View,ScrollView,FlatList,Pressable,ActivityIndicator} from 'react-native
 
 import {LinearGradient} from 'expo-linear-gradient';
 
-import {router} from 'expo-router';
+import {useRouter} from 'expo-router';
 
 import {DiscoveryShelves} from './DiscoveryShelves';
 import {Shell} from './Shell';
@@ -24,7 +24,7 @@ import {createMix,recommendationReason} from './recommendations';
 
 type Mix={key:string;title:string;reason:string;account:Account;tracks:Entry[];reasons?:Record<string,string>};
 
-export function Explore(){
+export function Explore(){const router=useRouter();
 
  const app=useApp(),c=usePalette(),[mixes,setMixes]=useState<Mix[]>([]),[pending,setPending]=useState(0),[actions,setActions]=useState<MediaAction[]|null>(null);
 

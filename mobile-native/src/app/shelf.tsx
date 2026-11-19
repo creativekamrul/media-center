@@ -1,10 +1,10 @@
 import React,{useEffect,useState,useRef} from 'react';
 import {FlatList,View,Pressable,ActivityIndicator} from 'react-native';
-import {router,useLocalSearchParams} from 'expo-router';
+import {useRouter,useLocalSearchParams} from 'expo-router';
 import {useApp,usePalette} from '../AppState';
 import {Shell} from '../Shell';import {T,Button} from '../ui';import {RemoteArt} from '../RemoteLibrary';
 import {homeItems} from '../homeShelves';import {playback,message,type Entry} from '../library';
-export default function Shelf(){const p=useLocalSearchParams<{account:string;title:string;kind:string}>(),app=useApp(),c=usePalette();const account=app.connections.find(a=>a.id===p.account);const [items,setItems]=useState<Entry[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState('');const more=useRef(true),loading=useRef(false),offset=useRef(0);
+export default function Shelf(){const router=useRouter();const p=useLocalSearchParams<{account:string;title:string;kind:string}>(),app=useApp(),c=usePalette();const account=app.connections.find(a=>a.id===p.account);const [items,setItems]=useState<Entry[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState('');const more=useRef(true),loading=useRef(false),offset=useRef(0);
  const load=async()=>{if(!account||loading.current||!more.current)return;loading.current=true;setBusy(true);setError('');try{const r=await homeItems(account,p.title,app.prefs.likes,offset.current);offset.current+=r.items.length;more.current=r.more;setItems(v=>[...v,...r.items])}catch(e){setError(message(e))}finally{loading.current=false;setBusy(false)}};
  // Route identities are fixed for this mounted shelf.
  // eslint-disable-next-line react-hooks/exhaustive-deps

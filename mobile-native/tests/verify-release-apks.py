@@ -12,6 +12,8 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[2]
 TOOLS = Path.home() / 'AppData/Local/Android/Sdk/build-tools/37.0.0'
 CERT = '058bc5c79fbc4462dabb952d3a2627778e5653c0a0000e15043eb6755b7adf65'
+CONFIG = json.loads((ROOT / 'mobile-native/app.json').read_text(encoding='utf-8'))['expo']
+VERSION, CODE = CONFIG['version'], CONFIG['android']['versionCode']
 DEV_CERT = 'fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c'
 
 
@@ -21,7 +23,7 @@ def verify(path, compressed, certificate):
     actual = re.search(r'certificate SHA-256 digest: ([a-f0-9]+)', result.stdout).group(1)
     assert actual == certificate, 'Unexpected signing certificate'
     manifest = subprocess.check_output([str(TOOLS / 'aapt.exe'), 'dump', 'badging', str(path)], text=True)
-    assert "package: name='local.mediacenter.mobile' versionCode='9' versionName='1.0.0'" in manifest
+    assert f"package: name='local.mediacenter.mobile' versionCode='{CODE}' versionName='{VERSION}'" in manifest
     assert "sdkVersion:'26'" in manifest
     native_count = 0
     with path.open('rb') as raw, zipfile.ZipFile(path) as archive:
@@ -52,15 +54,18 @@ def verify(path, compressed, certificate):
     assert native_count > 0
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     assert path.with_suffix('.apk.sha256').read_text().split()[0] == digest
-    return dict(file=path.name, sha256=digest, certificateSha256=actual, versionCode=9, versionName='1.0.0', nativeLibraries=native_count, compressedNativeLibraries=compressed, native16KBAlignment=True, testActivitiesExcluded=True)
+    return dict(file=path.name, sha256=digest, certificateSha256=actual, versionCode=CODE, versionName=VERSION, nativeLibraries=native_count, compressedNativeLibraries=compressed, native16KBAlignment=True, testActivitiesExcluded=True)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--preview', action='store_true')
+    parser.add_argument('--phone-only', action='store_true')
     args = parser.parse_args()
     suffixes = ('preview-arm64', 'preview-emulator-arm64') if args.preview else ('arm64', 'permanent-key-candidate-emulator-arm64')
-    report = [verify(ROOT / f'release/mobile/Media-Center-Mobile-1.0.0-{suffix}.apk', index == 1, DEV_CERT if args.preview else CERT) for index, suffix in enumerate(suffixes)]
-    output = ROOT / f'artifacts/mobile-native-tests/{"preview" if args.preview else "final-signed"}-apk-verification-20261111.json'
+    if args.phone_only:
+        suffixes = suffixes[:1]
+    report = [verify(ROOT / f'release/mobile/Media-Center-Mobile-{VERSION}-{suffix}.apk', index == 1, DEV_CERT if args.preview else CERT) for index, suffix in enumerate(suffixes)]
+    output = ROOT / f'artifacts/mobile-native-tests/{"preview" if args.preview else "final-signed"}-apk-verification-{VERSION}.json'
     output.write_text(json.dumps(report, indent=2), encoding='utf-8')
     print(json.dumps(report, indent=2))

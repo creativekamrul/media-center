@@ -7,14 +7,14 @@ import {TrackSort} from '../TrackSort';
 import {orderTracks,type TrackSort as Sort} from '../trackOrdering';
 import React,{useEffect,useState} from 'react';
 import {View,FlatList,Pressable,ActivityIndicator,useWindowDimensions} from 'react-native';
-import {router,useLocalSearchParams} from 'expo-router';
+import {useRouter,useLocalSearchParams} from 'expo-router';
 import {MediaHero} from '../MediaHero';
 import {Shell} from '../Shell';
 import {useApp,usePalette} from '../AppState';
 import {RemoteArt} from '../RemoteLibrary';
 import {T,Button,layout} from '../ui';
 import {jellyfin,playback,downloads,message,type JellyfinEntry} from '../library';
-export default function JellyfinScreen(){
+export default function JellyfinScreen(){const router=useRouter();
  const {width}=useWindowDimensions();const columns=width>=1000?6:width>=700?4:width>=500?3:2;
  const params=useLocalSearchParams<{account:string;id?:string;title?:string;kind?:string}>(),app=useApp(),c=usePalette();
  const [sheet,setSheet]=useState<{title:string;items:MediaAction[]}|null>(null);
