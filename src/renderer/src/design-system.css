@@ -173,7 +173,6 @@ html:root[data-theme][data-app-style] .media-grid .card-copy {gap:6px}
 html:root[data-theme][data-app-style] .media-grid .card-copy strong {display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;min-height:40px}
 html:root[data-theme][data-app-style] .media-grid .card-copy .progress-badge {padding:0;border:0;background:transparent;color:var(--ui-secondary)!important;font-size:11px!important}
 html:root[data-theme][data-app-style] .media-grid .card-copy .progress-badge.in-progress {color:var(--text)!important}
-html:root[data-input-modality=keyboard][data-theme][data-app-style] :is(.media-card,.music-card,.home-album-card):has(:focus-visible) {outline:2px solid var(--accent);outline-offset:5px}
 html:root[data-theme][data-app-style] :is(button,summary,select,input):focus-visible {outline:2px solid var(--accent);outline-offset:3px}
 html:root[data-theme][data-app-style] .page-state-library {display:block;min-height:360px;padding-inline:0}
 html:root[data-theme][data-app-style] .page-state-library>.page-state-icon {display:none}
@@ -467,5 +466,6 @@ html:root[data-theme][data-app-style] :is(.jf-hub,.jf-page) :is(h1,h2,h3){font-f
 .explore-feature .explore-album-link {color:#e1e8ef}
 .explore-page .explore-notice {position:fixed;bottom:calc(var(--player,90px) + 12px);right:24px;z-index:20;box-shadow:0 4px 18px #0004;max-width:min(92vw,540px)}
 
-/* Keep keyboard navigation visible without persistent click/tap frames. */
-html:root[data-input-modality=pointer] :focus-visible{outline:none!important}
+/* Focus remains functional; the desktop UI intentionally has no focus frames. */
+html:root[data-theme][data-app-style] :is(:focus,:focus-visible,:focus-within){outline:none!important}
+html:root[data-theme][data-app-style] :is(button,a,input,select,textarea,summary):focus-visible{box-shadow:none!important}

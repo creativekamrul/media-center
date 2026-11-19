@@ -17,7 +17,9 @@ module.exports=async function({page}){
   assert.equal(await input.evaluate(el=>getComputedStyle(el).outlineStyle),'none')
   await button.click();await page.keyboard.press('Tab')
   assert.equal(await input.evaluate(el=>document.activeElement===el),true)
-  assert.notEqual(await input.evaluate(el=>getComputedStyle(el).outlineStyle),'none')
-  console.log('Focus feedback passed: pointer cards/search have no frames; keyboard focus retained.')
+  assert.equal(await input.evaluate(el=>getComputedStyle(el).outlineStyle),'none')
+  await input.press('ArrowLeft')
+  assert.equal(await input.evaluate(el=>getComputedStyle(el).outlineStyle),'none')
+  console.log('Focus feedback passed: cards/search have no frames after clicks, Tab or arrow keys; keyboard focus still moves.')
  }finally{await page.locator('#focus-feedback-fixture').evaluate(el=>el.remove())}
 }

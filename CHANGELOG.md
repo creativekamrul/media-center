@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.2
+
+- Remove desktop focus outlines for mouse and keyboard interaction, including click-to-arrow-key seeking.
+- Keep the full Jellyfin seek handle inside the overlay and use a consistent compact browsing/video playback bar.
+
 ## 2.2.1
 
 - Remove click-triggered focus frames on cards, search fields and sliders while retaining keyboard focus feedback.

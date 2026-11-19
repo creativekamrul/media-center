@@ -87,7 +87,6 @@ button:disabled { opacity: .48; }
 .search { height: 42px; border-color: #637469; }
 .search input { font-size: 14px; }
 .search input::placeholder, input::placeholder, textarea::placeholder { color: #a7b6ac; }
-html[data-input-modality=keyboard] .search:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 .search input:focus-visible { outline: none; }
 .search .icon-button { min-width: 28px; width: 28px; height: 28px; }
 .check-field { font-size: 13px; color: #c4d1c8; }
