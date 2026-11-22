@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.4.1
+
+- Give the fixed desktop release a new version so installations of the earlier 2.4.0 local preview receive it through the updater.
+- Show the compiled source build ID in Settings → Updates, marking locally modified builds separately.
+- Add clear playlist loading, empty and unavailable states with explicit in-app retry and no browser fallback.
+- Search tracks by title, artist or album in chart and saved playlists, preserving repeated occurrences and saved membership/order.
+- Add Shuffle play and whole-playlist Play next alongside Play all and Add to queue. Search scopes the displayed playback actions to matches.
+- Keep chart scroll position and card focus when returning from a playlist; separate collection identities in saved page positions.
+- Preserve existing servers, settings, media identities and cache. No application-profile migration or mobile change is included.
+
 ## 2.4.0
 
 - Give desktop Downtify an artwork-led Listening Room with a featured listen, collection destinations, discovery shelves, recent listening and followed items. Replace the long top tab strip with contextual navigation.

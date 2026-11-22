@@ -494,3 +494,7 @@ html:root[data-theme][data-app-style] .detail-hero.dt-room-hero{position:relativ
 @media(max-width:800px){html:root[data-theme][data-app-style] .detail-hero.dt-room-hero{padding:26px;gap:20px}.dt-room-hero>.art{width:140px;height:140px;flex-basis:140px}.dt-room-bottom{grid-template-columns:1fr}.dt-room-title{align-items:flex-start;flex-direction:column}.dt-collection-portals{grid-template-columns:1fr}.dt-room-recent small{display:none}}
 
 .detail-heading>.dt-playlist-discovery-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:16px}.dt-playlist-discovery-actions .dt-playback-actions{margin:0}.dt-playlist-discovery-actions .primary{margin:0!important}.dt-playlist-discovery-actions>.more-options{width:auto;flex:0 0 auto}.dt-playlist-discovery-actions .more-options-trigger.icon-only{width:40px;min-width:40px;padding:8px}
+
+.dt-playlist-search{display:flex;align-items:center;gap:8px;max-width:480px;margin:16px 0}.dt-playlist-search input{width:100%;min-width:0;padding:10px 12px}.dt-playlist-state{padding:20px 0;line-height:1.6;color:var(--muted)}.dt-playlist-state p{margin-bottom:14px}.dt-playlist-discovery-actions .dt-playback-actions{flex-wrap:wrap}.build-identity{font-size:12px;color:var(--muted);margin-top:6px}.build-identity code{font:inherit;font-variant-numeric:tabular-nums}
+
+.dt-playlist-editor .dt-playback-actions{flex-wrap:wrap}

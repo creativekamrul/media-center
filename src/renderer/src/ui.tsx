@@ -37,13 +37,13 @@ const pagePositions=new Map<string,number>()
 export function usePageScroll(key: string|null) {
   useLayoutEffect(() => {
     const workspace=document.querySelector('.workspace');if(!workspace||key===null)return
-    const target=pagePositions.get(key)??0;let restoring=true
+    const target=pagePositions.get(key)??0;let restoring=true,lastPosition=target
     const restore=()=>{if(!restoring)return;workspace.scrollTop=target;if(workspace.scrollHeight-workspace.clientHeight>=target){restoring=false;observer.disconnect()}}
-    const record=()=>{if(!restoring)pagePositions.set(key,workspace.scrollTop)}
+    const record=()=>{if(!restoring){lastPosition=workspace.scrollTop;pagePositions.set(key,lastPosition)}}
     const cancel=()=>{restoring=false;observer.disconnect();record()}
     const observer=new ResizeObserver(restore)
     observer.observe(workspace.querySelector('main')??workspace);restore()
     workspace.addEventListener('scroll',record);workspace.addEventListener('wheel',cancel,{passive:true});workspace.addEventListener('pointerdown',cancel);workspace.addEventListener('keydown',cancel)
-    return()=>{record();observer.disconnect();workspace.removeEventListener('scroll',record);workspace.removeEventListener('wheel',cancel);workspace.removeEventListener('pointerdown',cancel);workspace.removeEventListener('keydown',cancel);if(pagePositions.size>200)pagePositions.delete(pagePositions.keys().next().value!)}
+    return()=>{if(!restoring)pagePositions.set(key,lastPosition);observer.disconnect();workspace.removeEventListener('scroll',record);workspace.removeEventListener('wheel',cancel);workspace.removeEventListener('pointerdown',cancel);workspace.removeEventListener('keydown',cancel);if(pagePositions.size>200)pagePositions.delete(pagePositions.keys().next().value!)}
   }, [key])
 }

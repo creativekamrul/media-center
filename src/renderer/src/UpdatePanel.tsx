@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Download, RefreshCw, RotateCcw } from 'lucide-react'
 import type { UpdateState } from '../../shared/types'
-import { APP_VERSION } from '../../shared/version'
+import { APP_VERSION, BUILD_ID } from '../../shared/version'
 import { message } from './ui'
 
 const api = window.mediaCenter
@@ -25,7 +25,7 @@ export function UpdatePanel() {
     ready: `Version ${state.version} is ready to install.`, installing: 'Saving your listening session and starting the installer…', error: 'Update needs attention.'
   }
   return <section className="settings-panel update-panel" aria-label="App updates">
-    <div className="update-heading"><div><h2>App updates</h2><p>Installed version {state.currentVersion} · Stable releases</p></div><span className="update-source">creativekamrul/media-center</span></div>
+    <div className="update-heading"><div><h2>App updates</h2><p>Installed version {state.currentVersion} · Stable releases</p><p className="build-identity">Build <code>{BUILD_ID}</code>{BUILD_ID.endsWith('-local')?' · Local build':''}</p></div><span className="update-source">creativekamrul/media-center</span></div>
     <p role="status" aria-live="polite">{text[state.status]}</p>
     {state.error && <p role="alert" className="update-error">{state.error}</p>}
     {state.status === 'downloading' && <progress aria-label="Update download progress" value={state.percent ?? 0} max={100}/>}

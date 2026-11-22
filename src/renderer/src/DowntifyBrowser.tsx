@@ -24,6 +24,7 @@ export function DowntifyBrowser({onSettings}:{onSettings:()=>void}){
  const [query,setQuery]=useState(memory.query),[search,setSearch]=useState(memory.search??''),[searchInput,setSearchInput]=useState(memory.search??'')
  const [data,setData]=useState(empty),[saved,setSaved]=useState(empty),[selected,setSelected]=useState(memory.selected),[artist,setArtist]=useState(memory.artist),[detail,setDetail]=useState(empty)
  const [busy,setBusy]=useState(false),[detailBusy,setDetailBusy]=useState(false),[error,setError]=useState(''),[revision,setRevision]=useState(0),[status,setStatus]=useState<DtStatus>()
+ const [detailError,setDetailError]=useState(''),[detailRevision,setDetailRevision]=useState(0)
  const [care,setCare]=useState(false),[creating,setCreating]=useState(false),[newPlaylist,setNewPlaylist]=useState(''),[filter,setFilter]=useState('All')
  const [recent,setRecent]=useState<string[]>(()=>{try{const rows=JSON.parse(localStorage.getItem('dt-recent')??'[]');return Array.isArray(rows)?rows.filter((v):v is string=>typeof v==='string').slice(0,8):[]}catch{return []}})
  const lastCard=useRef<DtShelf|undefined>(undefined),catalogKey=useRef('')
@@ -32,7 +33,7 @@ export function DowntifyBrowser({onSettings}:{onSettings:()=>void}){
  useEffect(()=>{const open=()=>{const c=takeDowntifyArtist();if(c){setServer(c.serverId);setView('Artists');setSelected(c);setArtist(c)}};open();window.addEventListener('downtify-artist',open);return()=>window.removeEventListener('downtify-artist',open)},[])
  useEffect(()=>api.onDowntifyChange(()=>setRevision(n=>n+1)),[])
  useEffect(()=>{memory={view,server,query,search,selected,artist}},[view,server,query,search,selected,artist])
- usePageScroll(JSON.stringify(['downtify',server,view,selected?.id,search]))
+ usePageScroll(JSON.stringify(['downtify',server,view,selected?[selected.kind,selected.id]:null,search]))
  useEffect(()=>{
   if(!server||['Downloads','Monitor','Podcasts'].includes(view)){setBusy(false);return}
   let live=true
@@ -55,7 +56,7 @@ export function DowntifyBrowser({onSettings}:{onSettings:()=>void}){
  },[server,view,search,revision])
  useEffect(()=>{
   if(!selected||selected.saved&&selected.kind==='playlist'){setDetailBusy(false);return}
-  let live=true;setDetail(empty);setDetailBusy(true);setError('')
+  let live=true;setDetail(empty);setDetailBusy(true);setDetailError('');setError('')
   const load=async()=>{
    if(selected.saved){const library=view==='Home'?saved:data
     if(selected.kind==='artist')return {...empty,albums:library.albums.filter(a=>a.artist===selected.title),tracks:library.tracks.filter(t=>(t.artists??[t.artist]).includes(selected.title))}
@@ -63,9 +64,9 @@ export function DowntifyBrowser({onSettings}:{onSettings:()=>void}){
    }
    return api.dtWorkspace({serverId:server,mode:selected.kind==='artist'?'artist':selected.kind==='playlist'?'playlist':'album',id:selected.id})
   }
-  void load().then(result=>{if(live)setDetail(result)}).catch(e=>{if(live)setError(message(e))}).finally(()=>{if(live)setDetailBusy(false)})
+  void load().then(result=>{if(live)setDetail(result)}).catch(e=>{if(live)setDetailError(message(e))}).finally(()=>{if(live)setDetailBusy(false)})
   return()=>{live=false}
- },[selected,server,data,saved,view])
+ },[selected,server,data,saved,view,detailRevision])
  const open=(next:DtView)=>{setView(next);setSelected(undefined);setArtist(undefined);setQuery('');setFilter('All');setError('');if(next==='Discover'){setSearch('');setSearchInput('')}}
  const submit=(text=searchInput)=>{const term=text.trim();setView('Discover');setSelected(undefined);setArtist(undefined);setQuery('');setSearch(term);setSearchInput(term);setFilter('All');if(term){const next=[term,...recent.filter(q=>q!==term)].slice(0,8);setRecent(next);localStorage.setItem('dt-recent',JSON.stringify(next))}}
  const choose=(item:DtShelf)=>{lastCard.current=item;setSelected(item);if(item.kind==='artist')setArtist(item);setFilter('All')}
@@ -82,10 +83,10 @@ export function DowntifyBrowser({onSettings}:{onSettings:()=>void}){
   {!server?<div className="dt-empty"><h1>Make room for your next listen</h1><p>Connect Downtify to browse your music and discover something new.</p><button className="primary" onClick={onSettings}>Connect Downtify</button></div>:<>
    {error&&!creating&&<div className="dt-error" role="alert"><span>{error}</span><button className="icon-button" aria-label="Dismiss Downtify error" onClick={()=>setError('')}><X size={16}/></button></div>}
    {(selected?detail:data).warnings.map(w=><p className="muted" role="status" key={w}>{w}</p>)}
-   {(busy&&view!=='Home'||detailBusy)&&<p className="muted dt-loading" role="status">Loading {selected?'collection':label.toLowerCase()}…</p>}
+   {busy&&view!=='Home'&&!selected&&<p className="muted dt-loading" role="status">Loading {selected?'collection':label.toLowerCase()}…</p>}
    {selected?.kind==='playlist'&&selected.saved?<><button className="text-button back" onClick={returnToList}><ArrowLeft size={16}/>Back to {view==='Home'?'Listening room':'playlists'}</button><DowntifyPlaylist serverId={server} name={selected.title} coverId={selected.coverId} onRename={title=>setSelected({...selected,id:title,title})}/></>:selected?<>
     <button className="text-button back" onClick={returnToList}><ArrowLeft size={16}/>{artist&&selected.kind==='album'?'Back to artist':`Back to ${label.toLowerCase()}`}</button>
-    <DowntifyTracks tracks={detail.tracks} title={selected.kind==='artist'?'Artist tracks':'Tracks'} renderHeader={actions=><><CollectionHeader className={selected.kind==='artist'?'artist-profile':''}><Art item={{id:selected.coverId,serverId:server,title:selected.title,kind:'downtify-track'}}/><div className="detail-heading"><p className="eyebrow">{selected.saved?'YOUR LIBRARY':'DISCOVER'} · {selected.kind}</p><h1>{selected.title}</h1><p>{selected.kind==='artist'?`${detail.albums.length} releases`:[selected.artist,`${detail.tracks.length} tracks`].filter(Boolean).join(' · ')}</p>{detail.description&&<details><summary>About this artist</summary><p>{plain(detail.description)}</p></details>}{selected.kind==='playlist'&&!selected.saved?<div className="dt-playlist-discovery-actions">{actions}<MoreOptions iconOnly label="Playlist options"><button onClick={()=>void api.dtChartOpen({serverId:selected.serverId,id:selected.id}).catch(e=>setError(message(e)))}>Open on Deezer<ArrowUpRight size={15}/></button></MoreOptions></div>:actions}</div></CollectionHeader>{selected.kind==='artist'&&<ArtistDiscography releases={detail.albums.map(c=>({id:c.id,title:c.title,releaseType:c.releaseType,subtitle:[c.artist,c.year,c.releaseType].filter(Boolean).join(' · '),art:<Art item={{id:c.coverId,serverId:server,title:c.title,kind:'downtify-track'}}/>}))} onOpen={id=>{const c=detail.albums.find(c=>c.id===id);if(c)choose(c)}}/>}</>}/>
+    <DowntifyTracks key={server+selected.kind+selected.id} playlist={selected.kind==='playlist'} loading={detailBusy} error={detailError} onRetry={()=>setDetailRevision(n=>n+1)} tracks={detail.tracks} title={selected.kind==='artist'?'Artist tracks':'Tracks'} renderHeader={actions=><><CollectionHeader className={selected.kind==='artist'?'artist-profile':''}><Art item={{id:selected.coverId,serverId:server,title:selected.title,kind:'downtify-track'}}/><div className="detail-heading"><p className="eyebrow">{selected.saved?'YOUR LIBRARY':'DISCOVER'} · {selected.kind}</p><h1>{selected.title}</h1><p>{selected.kind==='artist'?`${detail.albums.length} releases`:[selected.artist,`${detail.tracks.length} tracks`].filter(Boolean).join(' · ')}</p>{detail.description&&<details><summary>About this artist</summary><p>{plain(detail.description)}</p></details>}{selected.kind==='playlist'&&!selected.saved?<div className="dt-playlist-discovery-actions">{actions}<MoreOptions iconOnly label="Playlist options"><button onClick={()=>void api.dtChartOpen({serverId:selected.serverId,id:selected.id}).catch(e=>setError(message(e)))}>Open on Deezer<ArrowUpRight size={15}/></button></MoreOptions></div>:actions}</div></CollectionHeader>{selected.kind==='artist'&&<ArtistDiscography releases={detail.albums.map(c=>({id:c.id,title:c.title,releaseType:c.releaseType,subtitle:[c.artist,c.year,c.releaseType].filter(Boolean).join(' · '),art:<Art item={{id:c.coverId,serverId:server,title:c.title,kind:'downtify-track'}}/>}))} onOpen={id=>{const c=detail.albums.find(c=>c.id===id);if(c)choose(c)}}/>}</>}/>
    </>:view==='Home'?<DowntifyRoom serverId={server} discovery={data} saved={saved} busy={busy} revision={revision} status={status} open={open} choose={choose} onError={setError} onSearch={submit}/>:view==='Collection'?<DowntifyCollection data={data} open={open} serverId={server}/>:view==='Monitor'||view==='Podcasts'?<DowntifyManager key={server+view} serverId={server} mode={view==='Monitor'?'Monitor':'Podcasts'}/>:view==='Downloads'?<DowntifyJobs serverId={server}/>:view==='Discover'?<>
     <div className="dt-view-heading"><div><h1>{search?`Results for “${search}”`:'Discover new music'}</h1><p className="muted">Find an artist, explore a release, or listen before you save.</p></div></div>
     {recent.length>0&&<div className="recent-searches"><span>Recent searches</span>{recent.map(q=><button className="secondary" key={q} onClick={()=>submit(q)}>{q}</button>)}<button className="text-button" onClick={()=>{setRecent([]);localStorage.removeItem('dt-recent')}}>Clear</button></div>}

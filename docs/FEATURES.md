@@ -619,3 +619,11 @@ Android cached-video progress review (2026-11-10): explicit Jellyfin source-vers
 - Existing main-process APIs, authentication, stable media identities, server configuration, settings and cache are unchanged. No live-server maintenance mutation is part of design verification. Mobile is unchanged.
 
 - Deezer chart playlists resolve through Downtify’s read-only `/api/song/url` route into an in-app track view. Source order and repeated songs are retained; native playback and queueing use existing discovery streaming. Open on Deezer remains an explicit overflow action. A malformed or unavailable resolver fails without browser fallback or download.
+
+
+## Desktop 2.4.1 — Playlist controls and update identification
+
+- Settings → Updates displays a compile-time source revision; modified local builds carry a local suffix. Stable 2.4.1 supersedes the earlier same-version 2.4.0 preview.
+- Chart and saved playlists support title/artist/album search, duplicate-preserving Shuffle play and whole-list Play next. Filtered playback uses the matching occurrences; saved edits still use original membership/occurrence positions. Reorder arrows are disabled during a filtered saved view to avoid an ambiguous move.
+- Playlist loading, empty/search-empty, unavailable and explicit retry states stay inside the app. Chart back navigation retains page position/card focus using media-kind-specific page keys.
+- Existing main-process playback, queue semantics and credentials/cache storage remain unchanged. Verification uses fictional isolated profiles rather than user-server mutations.

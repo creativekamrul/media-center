@@ -1,7 +1,7 @@
 // Source-derived 3.13.0 fixture. Fictional identities only; no downloads or external requests.
 const http=require('node:http');const {createHash}=require('node:crypto');
 function createFixture(){
- let cursor=1,identity='qa-downtify-313',malformed=false,failWrite=false,libraryOnly=false;
+ let cursor=1,identity='qa-downtify-313',malformed=false,failWrite=false,libraryOnly=false,playlistMode='normal';
  const likes=new Set(),hidden=new Map(),watches=[],shows=[{id:1,name:'QA Podcast',author:'QA Author',feed_url:'https://qa.invalid/feed',enabled:true,retention:0,interval_minutes:720,episode_count:2,downloaded_count:1}],episodes=[{id:11,show_id:1,title:'QA Episode One',duration_seconds:30,filename:'Podcasts/QA/One.wav',position_seconds:4,played:false},{id:12,show_id:1,title:'QA Episode Two',duration_seconds:30,filename:null,position_seconds:0,played:false}];
  let upgrade={state:'idle',categories:['artwork','lyrics','metadata'],counts:{lyrics:2,artwork:1,metadata:3}},doctor={job:null,last:{duplicates:{groups:[{files:['QA/One.flac','QA/Duplicate.flac']}]},playlists:{groups:[{paths:['QA/A.m3u','QA/B.m3u']}]},navidrome:{delete:[{id:'nav-duplicate'}]}},stale:[]};
  let tracks=['One','Two','Three'].map((title,i)=>({id:'t'+i,file:'QA/'+title+'.flac',title:'QA '+title,artist:'QA Artist',artists:['QA Artist'],album:'QA Album',album_artist:'QA Artist',album_id:'qa-album',artist_id:'qa-artist',duration:30,has_cover:false,revision:'r1'}));
@@ -9,13 +9,13 @@ function createFixture(){
  const requests=[],writes=[],sockets=new Set();
  const server=http.createServer(async(req,res)=>{try{const u=new URL(req.url,'http://qa');const path=u.pathname.replace(/^\/downtify\//,'/');let text='';for await(const chunk of req)text+=chunk;const raw=req.headers['content-type']==='application/octet-stream',body=raw?{bytes:Buffer.byteLength(text)}:text?JSON.parse(text):typeof req.body==='string'?JSON.parse(req.body):req.body??{};requests.push({path,method:req.method,body});const send=(status,value,headers={})=>{res.writeHead(status,{'Content-Type':'application/json',...headers});res.end(JSON.stringify(value))};
  if(path==='/__state')return send(200,{cursor,tracks,playlists,requests:requests.slice(-200),writes,websockets:sockets.size});
- if(path==='/__control'){if(body.event){const payload=Buffer.from(JSON.stringify({type:body.event}));for(const socket of sockets)socket.write(Buffer.concat([Buffer.from([0x81,payload.length]),payload]))}if(body.libraryOnly!==undefined)libraryOnly=body.libraryOnly;if(body.rename){tracks[0].file='QA/Renamed.flac';tracks[0].title='QA Renamed';cursor++}if(body.identity)identity=body.identity;if(body.malformed!==undefined)malformed=body.malformed;if(body.stale)playlists[0].track_ids.push('t2');if(body.readonly)playlists[0].can_edit_tracks=false;if(body.failWrite!==undefined)failWrite=body.failWrite;return send(200,{ok:true})}
+ if(path==='/__control'){if(body.playlistMode)playlistMode=body.playlistMode;if(body.event){const payload=Buffer.from(JSON.stringify({type:body.event}));for(const socket of sockets)socket.write(Buffer.concat([Buffer.from([0x81,payload.length]),payload]))}if(body.libraryOnly!==undefined)libraryOnly=body.libraryOnly;if(body.rename){tracks[0].file='QA/Renamed.flac';tracks[0].title='QA Renamed';cursor++}if(body.identity)identity=body.identity;if(body.malformed!==undefined)malformed=body.malformed;if(body.stale)playlists[0].track_ids.push('t2');if(body.readonly)playlists[0].can_edit_tracks=false;if(body.failWrite!==undefined)failWrite=body.failWrite;return send(200,{ok:true})}
  if(path==='/api/songs/search'){
   const query=u.searchParams.get('query');const index=query==='QA Artist QA Playlist One'?0:query==='QA Artist QA Playlist Two'?1:-1;
   return send(200,index<0?[]:[{name:'QA Playlist '+(index?'Two':'One'),artists:['QA Artist'],duration:30,song_id:index?'lmnopqrstuv':'abcdefghijk',source:'youtube'}]);
  }
  if(path==='/api/song/url'){
-  const link=u.searchParams.get('url');
+  const link=u.searchParams.get('url');if(playlistMode==='slow')await new Promise(r=>setTimeout(r,1200));if(playlistMode==='error')return send(502,{detail:'Fixture upstream unavailable'});if(playlistMode==='empty')return send(200,[]);
   if(link==='https://www.deezer.com/playlist/98')return send(502,{detail:'Fixture upstream unavailable'});
   if(link==='https://www.deezer.com/playlist/97')return send(200,{unexpected:true});
   if(link==='https://www.deezer.com/playlist/96')return send(200,[]);
@@ -70,7 +70,7 @@ function createFixture(){
  if(path.match(/^\/api\/v1\/tracks\/[^/]+\/cover$/))return send(404,{detail:'The fictional track has no embedded cover.'});
  if(path.match(/^\/api\/v1\/tracks\/[^/]+\/lyrics$/))return send(200,{synced:'[00:00.00]QA synced lyric',plain:'QA synced lyric'});
  if(path==='/api/stream/file'||path.startsWith('/media/')||path.match(/^\/api\/v1\/tracks\/[^/]+\/stream$/)){const bytes=Buffer.alloc(44+48000*2*2*30);bytes.write('RIFF');bytes.writeUInt32LE(bytes.length-8,4);bytes.write('WAVEfmt ',8);bytes.writeUInt32LE(16,16);bytes.writeUInt16LE(1,20);bytes.writeUInt16LE(2,22);bytes.writeUInt32LE(48000,24);bytes.writeUInt32LE(192000,28);bytes.writeUInt16LE(4,32);bytes.writeUInt16LE(16,34);bytes.write('data',36);bytes.writeUInt32LE(bytes.length-44,40);const range=/bytes=(\d+)-(\d*)/.exec(req.headers.range||''),start=range?Number(range[1]):0,end=range&&range[2]?Math.min(Number(range[2]),bytes.length-1):bytes.length-1;if(start> end){res.writeHead(416);return res.end()}res.writeHead(range?206:200,{'Content-Type':'audio/wav','Content-Length':end-start+1,'Accept-Ranges':'bytes',...(range?{'Content-Range':`bytes ${start}-${end}/${bytes.length}`}:{})});return res.end(req.method==='HEAD'?undefined:bytes.subarray(start,end+1))}
- if(path==='/api/discover/chart')return send(200,{tracks:[{song_id:'abcdefghijk',name:'QA Chart Song',source:'deezer',artists:['QA Artist'],duration:30}],albums:[{album_id:42,name:'QA Chart Album',artist:'QA Artist'}],artists:[{artist_id:24,name:'QA Artist'}],playlists:[{playlist_id:99,name:'QA Chart Playlist'}]});
+ if(path==='/api/discover/chart')return send(200,{tracks:[{song_id:'abcdefghijk',name:'QA Chart Song',source:'deezer',artists:['QA Artist'],duration:30}],albums:[{album_id:42,name:'QA Chart Album',artist:'QA Artist'}],artists:[{artist_id:24,name:'QA Artist'}],playlists:[{playlist_id:99,name:'QA Chart Playlist'},...Array.from({length:29},(_,i)=>({playlist_id:100+i,name:'QA Other Playlist '+i}))]});
  if(path==='/api/finder/search')return send(200,{songs:[],albums:[],artists:[]});
  if(path==='/api/discover')return send(200,{artists:[]});
  if(path==='/api/download/batch'){writes.push({path,body});return send(200,{job_ids:['qa-download'],count:body.songs?.length??0})}
