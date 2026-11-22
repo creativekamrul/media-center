@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.1
+
+- Include the desktop Downtify expansion from 2.3.0, whose initial release workflow stopped before publication.
+- Update release-screen validation to follow the new Downtify entry point.
+
 ## 2.3.0
 
 - Add Downtify 3.13 server identity, capability checks, optional device sign-in/pairing, incremental library sync and ticketed change notifications while retaining existing sessions and local track references.

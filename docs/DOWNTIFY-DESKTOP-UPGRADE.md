@@ -1,6 +1,6 @@
-# Downtify desktop 2.3.0
+# Downtify desktop 2.3.1
 
-Scope authorized November 22, 2026: desktop only; retain existing server accounts, media cache, settings and listening references. Mobile is deferred. The local candidate was built and verified first. GitHub publication was explicitly authorized on November 22, 2026 after local acceptance checks.
+Scope authorized November 22, 2026: desktop only; retain existing server accounts, media cache, settings and listening references. Mobile is deferred. The local candidate was built and verified first. GitHub publication was explicitly authorized on November 22, 2026 after local acceptance checks. The initial 2.3.0 workflow stopped on an outdated release-screen test before publication; 2.3.1 corrects that validation without moving the original tag.
 
 ## Implemented scope
 
