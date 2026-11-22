@@ -41,7 +41,7 @@ export const personalCommandSchema=z.discriminatedUnion('action',[
 export type PersonalCommand=z.infer<typeof personalCommandSchema>
 export interface CoverCandidate{id:string;title:string;artist:string;date:string;source:string;image?:string}
 export interface OfflineCheck{items:{item:QueueItem;status:string;bytes:number;error?:string}[];knownBytes:number;unknownSizes:number;ready:number;total:number;freeBudget:number}
-export interface PersonResult{ref:MediaRef;role:'artist'|'author'|'narrator';name:string}
+export interface PersonResult{libraryId?:string;sourceName?:string;ref:MediaRef;role:'artist'|'author'|'narrator';name:string}
 export interface PersonalAPI{
  mixPreview(input:{mix:MixDefinition;refresh?:boolean}):Promise<MixPreview>;
  mixSources():Promise<{source:MixSource;name:string}[]>;

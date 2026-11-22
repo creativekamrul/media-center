@@ -28,7 +28,7 @@ async function contents(collection:SearchCollection) {
     tracks=matching.map(dtQueue)
     if(collection.kind==='artist'){
       const keys=new Set(matching.map(t=>JSON.stringify([t.artist,t.album])))
-      releases=saved.albums.filter(a=>keys.has(a.id)).map(a=>({provider,sourceId,id:a.id,title:a.title,kind:'album',subtitle:a.artist,cover:a.coverId}))
+      releases=saved.albums.filter(a=>keys.has(JSON.stringify([a.artist,a.title]))||matching.some(t=>t.albumId===a.id)).map(a=>({provider,sourceId,id:a.id,title:a.title,kind:'album',subtitle:a.artist,cover:a.coverId}))
     }
   }
   return {tracks,releases}

@@ -1,77 +1,78 @@
 # Media Center
 
-An open-source media client for **Navidrome, Downtify, Audiobookshelf, Jellyfin and local audio**, with Windows desktop and Android applications. Play music, audiobooks, podcasts, movies and TV with native MPV. Connect existing servers; Media Center does not host or bundle media.
+### Your media, together.
 
-[Download for Windows](https://github.com/creativekamrul/media-center/releases/latest) · [Android app](mobile-native/README.md) · [Website](https://creativekamrul.github.io/media-center/) · [User guide](docs/USER-GUIDE.md) · [Changelog](CHANGELOG.md)
+An open-source **Windows desktop and Android client for Navidrome, Downtify, Audiobookshelf, Jellyfin and local audio**. Browse your libraries, discover saved content, and play music, audiobooks, podcasts, films and shows through native MPV. Bring your own servers and media.
 
-![Latest stable release](https://img.shields.io/github/v/release/creativekamrul/media-center) ![Windows x64](https://img.shields.io/badge/platform-Windows_x64-blue) ![GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue)
+[Download Windows](https://github.com/creativekamrul/media-center/releases/latest) · [Android guide](mobile-native/README.md) · [Website](https://creativekamrul.github.io/media-center/) · [User guide](docs/USER-GUIDE.md) · [Changelog](CHANGELOG.md)
 
-## Supported sources
+![Latest desktop release](https://img.shields.io/github/v/release/creativekamrul/media-center) ![Windows x64](https://img.shields.io/badge/desktop-Windows_x64-1db954) ![Android](https://img.shields.io/badge/mobile-Android-88c999) ![GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue)
 
-| Source | Media | Compatibility baseline |
+Media Center is an **independent, unofficial Downtify client** as well as a client for your other media servers. It is not affiliated with those projects and does not host or bundle media.
+
+## One place to explore
+
+Home is your daily starting point: continue listening or watching, revisit favorites and mixes, and arrange shelves around your habits. Explore brings available content together while keeping each source visible.
+
+Desktop 2.5 adds content-grouped search with a ranked title match, artists, tracks, albums, authors/narrators, audiobooks, indexed podcast episodes, movies and shows. Artist profiles bring matching names and available discographies together across sources; author and narrator pages lead into real audiobook details. Source badges and filters remain available. Name matching never merges recordings, editions, queues or listening progress.
+
+Central search uses **saved library content**. Unsaved music belongs in Downtify discovery, reached through an explicit action rather than silently querying external catalogs.
+
+## A proper Downtify listening room
+
+![Downtify Listening Room with fictional test content](site/assets/downtify-room.png)
+
+- Artwork-led Listening Room, saved collections, charts, artist discovery and similar-track exploration.
+- In-app chart playlists with ordered/repeated songs, search, Shuffle play, Play next and an optional external-link action.
+- Supported server playlist creation, ordering, sharing and imported-entry controls.
+- Follow artists and playlists; browse wanted releases and inventory using your account’s permissions.
+- Podcast subscriptions, retained episode files, independent episode progress and explicit retention settings.
+- Server lyrics, metadata editing, replacement audio and administrator library-care tools, with confirmation for changes.
+- Capability-aware modern API integration; older servers retain supported legacy behavior.
+
+## Your sources
+
+| Source | What you can bring | Desktop integration baseline |
 | --- | --- | --- |
-| Navidrome | Music, albums, artists, playlists and radio | 0.60.3 |
-| Downtify | Saved music, Discover, streaming and supported library actions | 3.9.0 |
-| Audiobookshelf | Audiobooks and podcasts | 2.35.1 |
-| Jellyfin | Music, movies and TV shows | 10.11.11 |
-| Local folders | Tagged audio and folder browsing | Read-only access to selected roots |
+| Navidrome | Music, albums, artists, playlists, favorites and radio | 0.60.3 |
+| Downtify | Saved music, discovery, streaming, playlists and supported management | 3.13.0, with legacy 3.9.0 checks |
+| Audiobookshelf | Audiobooks, podcast shows and independently playable episodes | 2.35.1 |
+| Jellyfin | Music, movies, TV libraries, seasons and episodes | 10.11.11 |
+| Local folders | Tagged audio, folders, local playlists and artwork | Read-only access to selected roots |
 
-These versions are the project’s API compatibility baselines, not a guarantee for every server configuration or hardware combination.
+These are tested integration baselines, not guarantees for every deployment or device. Provider-specific spaces remain available alongside combined search.
 
-## Windows desktop features
+## Windows desktop
 
-### Music and playlists
+**Listen and watch.** Native MPV, output-device selection, optional exclusive audio, ReplayGain, ten-band EQ, music gapless playback and optional shared-output crossfade. Jellyfin supports original-file Direct Play with fullscreen video, audio/subtitle selection and a compact seek strip. Its playback queue remains separate.
 
-Browse albums, artists, songs, genres, favorites and radio. Connect multiple Navidrome servers, browse each library or combine them, and keep your selected source between visits. Create and edit playlists, preserve duplicate tracks, sort track lists and play them in the displayed order. Build saved mixes from artists, genres, years, favorites and grouped rules.
+**Follow stories.** Resume books across physical files, seek whole-book chapters, use smart rewind, speed controls, bookmarks, notes and chapter-end sleep. Podcasts retain show/episode identity, inbox filters and individual progress. Synchronization failures remain visible with local checkpoints.
 
-### Audiobooks and podcasts
+**Make it yours.** Studio and Lounge listening layouts, timed/plain/custom lyrics, artwork overrides, shared fonts, palettes, interface materials and custom CSS. Pin collection views, build saved rule-based mixes, organise personal shelves and export listening Recaps.
 
-Resume Audiobookshelf books, navigate chapters across files, adjust speed and use smart rewind or chapter-end sleep. Manage bookmarks and timestamped notes. Browse podcast shows and individual episodes, search and filter the inbox, mark listening status and use per-show preferences. Progress sync failures remain visible with local checkpoints.
+**Keep your data.** Local SQLite settings and history, Windows-encrypted credentials, original-file offline audio controls, saved queues, personal exports and GitHub updates. Existing servers and cache are retained during ordinary updates. See the [feature inventory](docs/FEATURES.md) for detailed support and limitations.
 
-### Jellyfin music, movies and TV
+## Audio quality: what actually plays
 
-Browse your server’s own libraries in a dedicated Jellyfin section. View featured titles, Continue watching, seasons, episodes, cast and related titles. Play original files through embedded MPV with fullscreen overlays, five-second skips, audio/subtitle selection, chapters, language defaults and an optional next-episode countdown.
+| Playback | What Media Center requests |
+| --- | --- |
+| Saved Downtify music | The original stored file, without requesting server format/bitrate transcoding. MPV decodes it locally. |
+| Unsaved Downtify discovery | Downtify’s full-track stream cache. In server 3.13.0, its selector prefers `bestaudio[ext=m4a]/bestaudio/best`; the actual codec/bitrate depends on the source. |
+| Local audio / supported original-file server playback | Original media through MPV; optional EQ, ReplayGain, crossfade and output settings can affect the signal. |
 
-### Local audio
+Discovery streaming is **not a promise of lossless, hi-res, or the highest-bitrate codec available**. Saving a lossy source as FLAC does not restore lost detail. Media Center does not add another audio encoding step to these routes. Hardware bit-perfect output requires hardware verification.
 
-Add multiple folders and browse tags as albums, artists, songs and genres, or use the original folder view. Keep device-local favorites, playlists, artwork and metadata overrides. Original files are read-only; local M3U import/export is supported.
+See [Downtify audio paths](docs/DOWNTIFY-AUDIO-QUALITY.md) for source references and practical limits.
 
-### Playback and queues
+## Android has its own release track
 
-Native MPV with output-device selection, optional exclusive audio, ReplayGain, a ten-band EQ, gapless playback and optional shared-output music crossfade. Edit and save queues, use shuffle/repeat, sleep timers, media keys, volume scrolling and the always-on-top mini player. Jellyfin maintains a separate queue.
+The Android app bundles MPV and has mobile portrait/landscape layouts, source connections, offline shared-folder caching and portable M3U8 exports, music/spoken controls, EQ profiles, custom lyrics/artwork and notification artwork. Desktop and Android feature sets and release versions differ. This Explore update is desktop-only.
 
-### Lyrics and appearance
+Read the [Android guide](mobile-native/README.md) and [release gates](docs/mobile/RELEASE-GATES.md). USB-exclusive/bit-perfect output is not established; Android Auto and device handoff are outside the current scope.
 
-Synced LRCLIB lyrics for music, manual matching, cached lyrics, LRC/TXT import and local timing edits. Classic and immersive views, animated lyric backgrounds, 14 palettes including Liquid Glass, 10 interface styles, custom fonts/colors and CSS export/import. Pin and reorder collection views.
+## See it in use
 
-### Home, search and history
-
-Arrange Home sections, source shortcuts, listening continuations, Jellyfin watching shelves and recent items. Search across connected services and local music with source/type filters. Use Listen Later, personal shelves, private listening, device statistics and 12 exportable Recap layouts.
-
-### Downloads and administration
-
-Download original Navidrome and Audiobookshelf audio with a storage quota, status filters, pause/resume/retry and explicit offline-progress reconciliation. Edit and test saved servers, check connection health, search Settings, export personal backups and diagnostics, and install stable updates from the app. Optional Last.fm scrobbling and Discord presence are configurable.
-
-## Android
-
-The Android app bundles MPV and uses a mobile layout with portrait and landscape playback. Its release process is separate from Windows.
-
-- Navidrome and Downtify music, Audiobookshelf books/podcasts, Jellyfin music/video, local audio and radio.
-- Home shelves, cross-library search, recommendations, custom mixes, collections, pins and app playlists.
-- Music queues, optional gapless/crossfade, graphic/parametric EQ, tonal/custom presets, ReplayGain and spoken playback controls.
-- Original-file caching in a selected shared folder, relative M3U8 exports, transfer controls, integrity checks and opt-in offline rules.
-- Custom lyrics/artwork, bookmarks, listening history, notification artwork and native video controls/PiP.
-- Permanent-key APK updates and encrypted personal-data migration. Media/cache catalogs and Android folder grants are excluded from migration.
-
-See the [Android guide](mobile-native/README.md), [1.0 release notes](docs/mobile/RELEASE-NOTES-1.0.0.md) and [release checks](docs/mobile/RELEASE-GATES.md). [Download Android 1.0.0](https://github.com/creativekamrul/media-center/releases/tag/mobile-v1.0.0) (Android 8.0+, ARM64). USB-exclusive/bit-perfect output is not established. Android Auto, device handoff and additional widget work are outside this release's scope.
-
-## Screenshots
-
-![Jellyfin library overview](site/assets/jellyfin.png)
-
-Jellyfin in v2.0.0, using explicitly labeled integration-test data. No media is bundled.
-
-[View the screenshot gallery](https://creativekamrul.github.io/media-center/#explore) for music, books, podcasts, lyrics and settings. Some gallery screenshots are from earlier releases; [asset provenance](site/assets/README.md) lists their versions.
+[Open the screenshot gallery](https://creativekamrul.github.io/media-center/#screens). Screenshots use explicitly fictional collections or isolated test servers; [provenance](site/assets/README.md) lists their versions. No personal server data is published.
 
 ## Install and connect
 

@@ -12,4 +12,11 @@ These are real Media Center screenshots from isolated sample collections and con
 
 All assets are part of this GPL-3.0-only project. To refresh, run desktop checks with MPV_TEST_PATH, review images in ignored artifacts/, and copy only selected screenshots here. Never publish profiles, logs, private addresses or personal collections.
 
-- `jellyfin.png`: v2.0.0 Jellyfin desktop integration test overview, copied from reviewed `artifacts/jellyfin-hub.png`. The named server and all library contents are fixtures. Used as the current website social preview.
+- `jellyfin.png`: v2.0.0 Jellyfin desktop integration test overview, copied from reviewed `artifacts/jellyfin-hub.png`. The named server and all library contents are fixtures. Retained for the Jellyfin screenshot gallery.
+
+- `downtify-room.png`: actual desktop 2.4.0 Listening Room using the isolated fictional Downtify contract fixture. No personal server metadata is present.
+- `dm-sans.woff2` and `sora.woff2`: locally served variable fonts from the app’s pinned Fontsource dependencies, with their upstream license files alongside them.
+
+- `connected-explore.png`: actual 2.5.0 desktop development build, searching explicitly fictional Navidrome/Audiobookshelf fixtures. These sources are disposable test servers; no personal library data is shown.
+
+- `connected-home.png`: desktop 2.5.0 packaged-app Home view, isolated fictional test sources; matching Home and weekly-stat corners.

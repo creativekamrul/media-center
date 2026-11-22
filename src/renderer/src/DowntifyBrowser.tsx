@@ -12,7 +12,7 @@ import {DowntifyRoom,DowntifyCollection,type DtView} from './DowntifyRoom'
 import {DowntifyDrawer} from './DowntifyDrawer'
 import {DowntifyJobs} from './Downtify'
 import {clearSavedCopyCache} from './NavidromeCopies'
-import {takeDowntifyArtist} from './DowntifyNavigation'
+import {takeDowntifyArtist,takeDowntifySearch} from './DowntifyNavigation'
 export {DowntifyTracks} from './DowntifyTracks'
 const api=window.mediaCenter
 const empty:DtWorkspace={tracks:[],artists:[],albums:[],playlists:[],warnings:[]}
@@ -69,6 +69,7 @@ export function DowntifyBrowser({onSettings}:{onSettings:()=>void}){
  },[selected,server,data,saved,view,detailRevision])
  const open=(next:DtView)=>{setView(next);setSelected(undefined);setArtist(undefined);setQuery('');setFilter('All');setError('');if(next==='Discover'){setSearch('');setSearchInput('')}}
  const submit=(text=searchInput)=>{const term=text.trim();setView('Discover');setSelected(undefined);setArtist(undefined);setQuery('');setSearch(term);setSearchInput(term);setFilter('All');if(term){const next=[term,...recent.filter(q=>q!==term)].slice(0,8);setRecent(next);localStorage.setItem('dt-recent',JSON.stringify(next))}}
+ useEffect(()=>{const discover=()=>{const term=takeDowntifySearch();if(term!==undefined)submit(term)};discover();window.addEventListener('downtify-discover',discover);return()=>window.removeEventListener('downtify-discover',discover)},[])
  const choose=(item:DtShelf)=>{lastCard.current=item;setSelected(item);if(item.kind==='artist')setArtist(item);setFilter('All')}
  useEffect(()=>{if(selected||!lastCard.current)return;const item=lastCard.current;const card=Array.from(document.querySelectorAll<HTMLButtonElement>('.dt-page [data-card-key]')).find(el=>el.dataset.cardKey===JSON.stringify([item.kind,item.id]));if(card){card.focus({preventScroll:true});lastCard.current=undefined}},[selected,data])
  const cards=(title:string,items:DtShelf[])=>items.length>0&&<section className="discovery-shelf"><header><h2>{title}</h2><span className="muted">{items.length}</span></header><div className="dt-collection-grid">{items.filter(c=>view==='Discover'||`${c.title} ${c.artist}`.toLowerCase().includes(query.toLowerCase())).map(c=><button className={`dt-collection ${c.kind==='artist'?'artist-card':''}`} data-card-key={JSON.stringify([c.kind,c.id])} key={`${c.kind}:${c.id}`} onClick={()=>choose(c)}><Art item={{id:c.coverId,serverId:c.serverId,title:c.title,kind:'downtify-track'}}/><strong>{c.title}</strong><span>{!c.saved&&c.kind==='playlist'?'Explore playlist':c.reason||[c.artist,c.year,c.releaseType].filter(Boolean).join(' · ')||'Open collection'}</span></button>)}</div></section>

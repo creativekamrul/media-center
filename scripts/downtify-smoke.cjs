@@ -17,7 +17,7 @@ async function main(){
    const query=u.searchParams.get('query')??''
    if(stallNav&&u.pathname==='/rest/search3.view'&&!query){await navGate;res.writeHead(503);return json({})}
    const match=(query===song.name||u.pathname==='/rest/getSong.view')?[{id:'owned-recording',title:song.name,artist:song.artists[0],album:song.album_name,duration:song.duration,albumId:'owned-album'}]:[]
-   return json({'subsonic-response':{status:'ok',song:match[0],searchResult3:{song:match},musicFolders:{musicFolder:[]},albumList2:{album:[]}}})
+   return json({'subsonic-response':{status:'ok',song:match[0],artist:u.pathname.includes('getArtist.view')?{id:'fixture-artist',name:'Fixture artist',album:[{id:'owned-album',name:'Fixture album',artist:'Fixture artist'}]}:undefined,album:u.pathname.includes('getAlbum.view')?{id:'owned-album',name:'Fixture album',artist:'Fixture artist',song:[{id:'owned-recording',title:song.name,artist:song.artists[0],album:song.album_name,duration:30,albumId:'owned-album'}]}:undefined,searchResult3:{song:match,artist:query.toLowerCase().includes('fixture')?[{id:'fixture-artist',name:'Fixture artist',albumCount:1}]:[],album:query.toLowerCase().includes('fixture')?[{id:'owned-album',name:'Fixture album',artist:'Fixture artist'}]:[]},musicFolders:{musicFolder:[]},albumList2:{album:[]}}})
   }
   if(u.pathname==='/api/auth/status')return json({signed_in:req.headers.cookie==='downtify_session=fixture',local_login_enabled:true})
   if(u.pathname==='/api/auth/login'){if(input.password!=='fixture'){res.writeHead(401);return json({})}res.setHeader('Set-Cookie','downtify_session=fixture; HttpOnly; Path=/');return json({})}
@@ -60,7 +60,8 @@ async function main(){
   await page.getByRole('button',{name:'Also in Navidrome',exact:true}).click()
   await page.getByRole('button',{name:'Play from Nav fixture',exact:true}).click()
   await page.waitForFunction(async()=>{const s=await window.mediaCenter.playback();return s.status==='playing'&&s.kind==='music-track'&&s.queue[s.queueIndex]?.target.trackId==='owned-recording'})
-  assert.ok(requests.some(r=>r.path==='/rest/stream.view'))
+  for(let n=0;n<100&&!requests.some(r=>r.path==='/rest/stream.view');n++)await page.waitForTimeout(100)
+  assert.ok(requests.some(r=>r.path==='/rest/stream.view'),JSON.stringify(requests.map(r=>r.path)))
   await page.evaluate(()=>window.mediaCenter.command({action:'stop'}))
   await page.screenshot({path:resolve(artifacts,'downtify-discover.png'),animations:'disabled'})
   await page.locator('.artist-card').filter({hasText:'Fixture artist'}).click();await page.getByRole('heading',{name:'Discography',exact:false}).waitFor();await page.locator('.artist-discography .dt-collection').first().click();await page.getByRole('heading',{name:'Fixture album',exact:true}).first().waitFor()
@@ -98,7 +99,7 @@ async function main(){
   assert.equal(await artistLink.evaluate(el=>el===document.activeElement),true,'Return focus to the originating Explore card')
   await explore.getByRole('button',{name:'Find your next favorite'}).click()
   await explore.getByPlaceholder('Search across your sources…').fill('Fixture')
-  await explore.getByRole('button',{name:'Open album',exact:true}).first().click()
+  await explore.getByRole('button',{name:'Open artist',exact:true}).first().click();await explore.getByRole('heading',{name:'Fixture artist',exact:true}).waitFor();await explore.getByText('2 library matches',{exact:false}).waitFor();await explore.getByRole('button',{name:'Back to results',exact:true}).click();assert.equal(await explore.getByPlaceholder('Search across your sources…').inputValue(),'Fixture');await explore.getByRole('button',{name:'Open album',exact:true}).first().click()
   await explore.getByRole('heading',{name:'Fixture album',exact:true}).waitFor()
   await explore.getByRole('button',{name:'Back',exact:true}).click()
   assert.equal(await explore.getByPlaceholder('Search across your sources…').inputValue(),'Fixture')

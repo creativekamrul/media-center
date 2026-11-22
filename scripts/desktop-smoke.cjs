@@ -221,6 +221,7 @@ async function main() {
     await page.getByRole('button', {name:'Playlists',exact:true}).waitFor()
     if(await page.getByRole('button',{name:'Dismiss error',exact:true}).count())await page.getByRole('button',{name:'Dismiss error',exact:true}).click()
     await require('./layout-smoke.cjs')(page, artifacts)
+    await require('./connected-search-smoke.cjs')({page,artifacts})
     await require('./theme-smoke.cjs')(page, artifacts)
     await require('./settings-polish-smoke.cjs')({desktop,page,artifacts})
     await page.getByRole('button', { name: 'Music', exact: true }).click()

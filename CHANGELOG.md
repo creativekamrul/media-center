@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.5.0
+
+- Add connected Explore search with ranked title matches and content-grouped artists, tracks, albums, authors/narrators, audiobooks, indexed podcast episodes, movies and shows. Keep source/type filters, partial-failure messages and explicit retry.
+- Add cross-source artist discography browsing for matching names, with source identities and editions kept separate. Open source artists, albums and typed audiobook creator details without losing the search query.
+- Keep unsaved Downtify discovery outside central library search, with an explicit handoff that carries the query into Downtify.
+- Match the Home listening and weekly-stat card corners across desktop widths and materials.
+- Refresh the public GitHub Pages site and README for current Windows/Android and Downtify capabilities, with reviewed fictional screenshots and documented audio-quality limits.
+- Preserve existing server credentials, source IDs, cache, progress and settings; no user-profile migration or mobile change is included.
+
 ## 2.4.1
 
 - Give the fixed desktop release a new version so installations of the earlier 2.4.0 local preview receive it through the updater.
