@@ -10,6 +10,18 @@ function createFixture(){
  const server=http.createServer(async(req,res)=>{try{const u=new URL(req.url,'http://qa');const path=u.pathname.replace(/^\/downtify\//,'/');let text='';for await(const chunk of req)text+=chunk;const raw=req.headers['content-type']==='application/octet-stream',body=raw?{bytes:Buffer.byteLength(text)}:text?JSON.parse(text):typeof req.body==='string'?JSON.parse(req.body):req.body??{};requests.push({path,method:req.method,body});const send=(status,value,headers={})=>{res.writeHead(status,{'Content-Type':'application/json',...headers});res.end(JSON.stringify(value))};
  if(path==='/__state')return send(200,{cursor,tracks,playlists,requests:requests.slice(-200),writes,websockets:sockets.size});
  if(path==='/__control'){if(body.event){const payload=Buffer.from(JSON.stringify({type:body.event}));for(const socket of sockets)socket.write(Buffer.concat([Buffer.from([0x81,payload.length]),payload]))}if(body.libraryOnly!==undefined)libraryOnly=body.libraryOnly;if(body.rename){tracks[0].file='QA/Renamed.flac';tracks[0].title='QA Renamed';cursor++}if(body.identity)identity=body.identity;if(body.malformed!==undefined)malformed=body.malformed;if(body.stale)playlists[0].track_ids.push('t2');if(body.readonly)playlists[0].can_edit_tracks=false;if(body.failWrite!==undefined)failWrite=body.failWrite;return send(200,{ok:true})}
+ if(path==='/api/songs/search'){
+  const query=u.searchParams.get('query');const index=query==='QA Artist QA Playlist One'?0:query==='QA Artist QA Playlist Two'?1:-1;
+  return send(200,index<0?[]:[{name:'QA Playlist '+(index?'Two':'One'),artists:['QA Artist'],duration:30,song_id:index?'lmnopqrstuv':'abcdefghijk',source:'youtube'}]);
+ }
+ if(path==='/api/song/url'){
+  const link=u.searchParams.get('url');
+  if(link==='https://www.deezer.com/playlist/98')return send(502,{detail:'Fixture upstream unavailable'});
+  if(link==='https://www.deezer.com/playlist/97')return send(200,{unexpected:true});
+  if(link==='https://www.deezer.com/playlist/96')return send(200,[]);
+  if(link!=='https://www.deezer.com/playlist/99')return send(404,{detail:'Playlist not found'});
+  return send(200,[0,1,0].map(i=>({name:'QA Playlist '+(i?'Two':'One'),artist:'QA Artist',album_name:'QA Album',duration:30,song_id:'deezer:'+(900+i),source:'deezer',url:'https://www.deezer.com/track/'+(900+i)})));
+ }
  if(path==='/api/server/info')return send(200,{product:'Downtify',server_id:identity,api_version:1,version:'3.13.0',capabilities:{library_sync:true,playlist_editing:true,podcasts:true,lyrics:true,password_sign_in:true,pairing:true},library_only:libraryOnly});
  if(path==='/api/auth/login'){res.setHeader('Set-Cookie','downtify_session=qa; HttpOnly; Path=/');return send(200,{})}
  if(path==='/api/auth/ws-ticket')return send(200,{ticket:'qa-ticket'});
@@ -57,7 +69,7 @@ function createFixture(){
  }
  if(path.match(/^\/api\/v1\/tracks\/[^/]+\/cover$/))return send(404,{detail:'The fictional track has no embedded cover.'});
  if(path.match(/^\/api\/v1\/tracks\/[^/]+\/lyrics$/))return send(200,{synced:'[00:00.00]QA synced lyric',plain:'QA synced lyric'});
- if(path.startsWith('/media/')||path.match(/^\/api\/v1\/tracks\/[^/]+\/stream$/)){const bytes=Buffer.alloc(44+48000*2*2*30);bytes.write('RIFF');bytes.writeUInt32LE(bytes.length-8,4);bytes.write('WAVEfmt ',8);bytes.writeUInt32LE(16,16);bytes.writeUInt16LE(1,20);bytes.writeUInt16LE(2,22);bytes.writeUInt32LE(48000,24);bytes.writeUInt32LE(192000,28);bytes.writeUInt16LE(4,32);bytes.writeUInt16LE(16,34);bytes.write('data',36);bytes.writeUInt32LE(bytes.length-44,40);const range=/bytes=(\d+)-(\d*)/.exec(req.headers.range||''),start=range?Number(range[1]):0,end=range&&range[2]?Math.min(Number(range[2]),bytes.length-1):bytes.length-1;if(start> end){res.writeHead(416);return res.end()}res.writeHead(range?206:200,{'Content-Type':'audio/wav','Content-Length':end-start+1,'Accept-Ranges':'bytes',...(range?{'Content-Range':`bytes ${start}-${end}/${bytes.length}`}:{})});return res.end(req.method==='HEAD'?undefined:bytes.subarray(start,end+1))}
+ if(path==='/api/stream/file'||path.startsWith('/media/')||path.match(/^\/api\/v1\/tracks\/[^/]+\/stream$/)){const bytes=Buffer.alloc(44+48000*2*2*30);bytes.write('RIFF');bytes.writeUInt32LE(bytes.length-8,4);bytes.write('WAVEfmt ',8);bytes.writeUInt32LE(16,16);bytes.writeUInt16LE(1,20);bytes.writeUInt16LE(2,22);bytes.writeUInt32LE(48000,24);bytes.writeUInt32LE(192000,28);bytes.writeUInt16LE(4,32);bytes.writeUInt16LE(16,34);bytes.write('data',36);bytes.writeUInt32LE(bytes.length-44,40);const range=/bytes=(\d+)-(\d*)/.exec(req.headers.range||''),start=range?Number(range[1]):0,end=range&&range[2]?Math.min(Number(range[2]),bytes.length-1):bytes.length-1;if(start> end){res.writeHead(416);return res.end()}res.writeHead(range?206:200,{'Content-Type':'audio/wav','Content-Length':end-start+1,'Accept-Ranges':'bytes',...(range?{'Content-Range':`bytes ${start}-${end}/${bytes.length}`}:{})});return res.end(req.method==='HEAD'?undefined:bytes.subarray(start,end+1))}
  if(path==='/api/discover/chart')return send(200,{tracks:[{song_id:'abcdefghijk',name:'QA Chart Song',source:'deezer',artists:['QA Artist'],duration:30}],albums:[{album_id:42,name:'QA Chart Album',artist:'QA Artist'}],artists:[{artist_id:24,name:'QA Artist'}],playlists:[{playlist_id:99,name:'QA Chart Playlist'}]});
  if(path==='/api/finder/search')return send(200,{songs:[],albums:[],artists:[]});
  if(path==='/api/discover')return send(200,{artists:[]});

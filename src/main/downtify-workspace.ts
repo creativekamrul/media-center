@@ -9,7 +9,8 @@ export function savedShelves(records:DtRecord[],names:string[]):DtWorkspace {
  }
  return {tracks,albums:[...albums.values()],artists:[...artists.values()],playlists:names.map(name=>({id:name,title:name,artist:'Saved playlist',serverId:tracks[0]?.serverId??'',coverId:'',kind:'playlist',saved:true})),warnings:[]}
 }
-export async function dtWorkspace(p:Downtify,q:{mode:'saved'|'discover'|'charts'|'artist'|'album';query?:string;id?:string},cache:(r:DtRecord)=>void):Promise<DtWorkspace>{
+export async function dtWorkspace(p:Downtify,q:{mode:'saved'|'discover'|'charts'|'artist'|'album'|'playlist';query?:string;id?:string},cache:(r:DtRecord)=>void):Promise<DtWorkspace>{
+ if(q.mode==='playlist'&&!/^\d{1,30}$/.test(q.id??''))throw Error('Choose a valid chart playlist.')
  if(q.mode!=='saved'&&p.client&&await p.client.available())p.client.assertExternal()
  const result:DtWorkspace={tracks:[],albums:[],artists:[],playlists:[],warnings:[]}
  const songs=(rows:any[])=>rows.map(row=>{const r=normalizeDt(row,p.connection.id);cache(r);return r.track})
@@ -22,6 +23,13 @@ export async function dtWorkspace(p:Downtify,q:{mode:'saved'|'discover'|'charts'
   const records=await p.browse({serverId:p.connection.id,view:'library'});records.forEach(cache)
   let playlists:any[]=[];try{const rows=p.client?await p.client.playlists():await p.json('playlists');if(!Array.isArray(rows))throw Error('Unsupported playlists');playlists=rows}catch{result.warnings.push('Saved playlists could not be loaded.')}
   const saved=savedShelves(records,playlists.map(r=>typeof r==='string'?r:String(r.name??'')).filter(Boolean));saved.playlists.forEach(c=>{c.serverId=p.connection.id;const row=playlists.find(r=>r.name===c.title);if(Array.isArray(row?.track_ids)){c.count=row.track_ids.length;c.coverId=records.find(r=>row.track_ids.includes(r.remoteId))?.track.id??''}else if(Array.isArray(row?.files)){c.count=row.files.length;c.coverId=records.find(r=>row.files.includes(r.file))?.track.id??''}if(row?.cover){c.coverId='playlist-'+Buffer.from(c.title).toString('base64url');cache({track:{id:c.coverId,serverId:p.connection.id,title:c.title,artist:'',album:'',duration:0,saved:false},file:'',video:'',cover:p.url('playlist-cover',{file:String(row.cover)}).href,url:''})}});return {...saved,warnings:result.warnings}
+ }
+ if(q.mode==='playlist'){
+  // This read-only resolver returns the playlist's full ordered song list, not a download job.
+  const rows=await p.json('api/song/url',{url:'https://www.deezer.com/playlist/'+q.id})
+  if(!Array.isArray(rows)||rows.length>10000||rows.some(row=>!row||typeof row!=='object'||Array.isArray(row)))throw Error('Downtify returned an unsupported playlist. Refresh to try again.')
+  const records=rows.map(row=>normalizeDt(row,p.connection.id));records.forEach(cache)
+  result.tracks=records.map(r=>r.track);return result
  }
  if(q.mode==='artist'){
   const data=await p.json('api/finder/artist',{artist_id:q.id!});result.artists=shelf([data],'artist');result.description=String(data.bio??data.bio_html??'');result.tracks=songs(data.top_songs??[])

@@ -13,6 +13,20 @@ describe('Downtify 3.13 additive compatibility',()=>{
  const control=(body:unknown)=>fetch(base+'__control',{method:'POST',body:JSON.stringify(body)})
  beforeEach(async()=>{server=createFixture();await new Promise<void>(r=>server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${(server.address() as any).port}/`;values=new Map<string,unknown>([['preferences',{theme:'unchanged'}],['cached-media','untouched']]);const store={get:(key:string)=>values.get(key),set:(key:string,v:unknown)=>values.set(key,v)} as unknown as Store;p=new Downtify({id:'existing-server',name:'QA',url:base,username:'qa',version:'3.9.0'},'downtify_session=qa');client=new DowntifyClient(p,store);p.client=client})
  afterEach(async()=>{client.close();server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()))})
+ it('resolves chart playlists read-only with repeated entries in source order',async()=>{
+  const records:any[]=[];const data=await dtWorkspace(p,{mode:'playlist',id:'99'},r=>records.push(r));
+  expect(data.tracks.map(t=>t.title)).toEqual(['QA Playlist One','QA Playlist Two','QA Playlist One']);expect(data.tracks[0].id).toBe(data.tracks[2].id);expect(data.tracks.every(t=>t.serverId==='existing-server'&&!t.saved)).toBe(true);
+  const state=await(await fetch(base+'__state')).json();expect(state.writes).toEqual([]);expect(state.requests.find((r:any)=>r.path==='/api/song/url').method).toBe('GET');expect(values.get('cached-media')).toBe('untouched');expect(values.get('preferences')).toEqual({theme:'unchanged'});
+ })
+ it('rejects malformed and unavailable chart playlists without caching partial tracks',async()=>{
+  const cache=vi.fn();await expect(dtWorkspace(p,{mode:'playlist',id:'97'},cache)).rejects.toThrow('unsupported playlist');await expect(dtWorkspace(p,{mode:'playlist',id:'98'},cache)).rejects.toThrow('502');expect(cache).not.toHaveBeenCalled();expect((await dtWorkspace(p,{mode:'playlist',id:'96'},cache)).tracks).toEqual([])
+ })
+ it('does not treat arbitrary links or saved playlist names as chart IDs',async()=>{
+  const cache=vi.fn();for(const id of ['https://attacker.invalid','../99','QA Manual','9'.repeat(31),''])await expect(dtWorkspace(p,{mode:'playlist',id},cache)).rejects.toThrow('valid chart playlist');expect((await(await fetch(base+'__state')).json()).requests.filter((r:any)=>r.path!=='/__state')).toEqual([])
+ })
+ it('respects library-only policy before resolving an external playlist',async()=>{
+  await control({libraryOnly:true});await expect(dtWorkspace(p,{mode:'playlist',id:'99'},()=>{})).rejects.toThrow();expect((await(await fetch(base+'__state')).json()).requests.some((r:any)=>r.path==='/api/song/url')).toBe(false)
+ })
  it('retains legacy references when assigning stable IDs, including after a file rename',async()=>{const old=normalizeDt({file:'QA/One.flac',title:'QA One',artist:'QA Artist'},p.connection.id);values.set(`downtify:track:${p.connection.id}:${old.track.id}`,old);const first=await client.sync();expect(first[0].track.id).toBe(old.track.id);await control({rename:true});const next=await client.sync(true);expect(next[0].track.id).toBe(old.track.id);expect(next[0].file).toBe('QA/Renamed.flac');expect(values.get('cached-media')).toBe('untouched');expect(values.get('preferences')).toEqual({theme:'unchanged'})})
  it('handles unchanged catalogs without clearing them',async()=>{const first=await client.sync();expect((await client.sync()).map(r=>r.track.id)).toEqual(first.map(r=>r.track.id))})
  it('does not advance the cursor or replace the catalog on malformed sync',async()=>{await client.sync();const before=structuredClone(values.get('downtify:v1:existing-server:snapshot'));await control({malformed:true});await expect(client.sync(true)).rejects.toThrow();expect(values.get('downtify:v1:existing-server:snapshot')).toEqual(before)})

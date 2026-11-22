@@ -23,7 +23,7 @@ export interface DowntifyAPI {
  dtManage(input:DtManage):Promise<unknown>
  dtReplaceFile(input:{serverId:string;trackId:string}):Promise<{cancelled:boolean;message:string}>
  dtEpisodePlay(input:{serverId:string;showId:string;episodeId:string;choice?:'local'|'server';revision?:string}):Promise<void>
- dtWorkspace(input:{serverId:string;mode:'saved'|'discover'|'charts'|'artist'|'album';query?:string;id?:string}):Promise<DtWorkspace>
+ dtWorkspace(input:{serverId:string;mode:'saved'|'discover'|'charts'|'artist'|'album'|'playlist';query?:string;id?:string}):Promise<DtWorkspace>
  dtJobs(serverId:string):Promise<DtJob[]>
  dtCollections(input:{serverId:string;kind:'album'|'artist';query:string}):Promise<DtCollection[]>
 

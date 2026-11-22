@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.4.0
+
+- Give desktop Downtify an artwork-led Listening Room with a featured listen, collection destinations, discovery shelves, recent listening and followed items. Replace the long top tab strip with contextual navigation.
+- Move playlist creation, follow setup, podcast subscriptions and podcast retention settings into compact drawers. Keep downloads, library care and connections under Tools.
+- Fix oversized checkboxes, stretching forms, podcast search sharing the subscription field, persistent success notices and refresh flicker. Keep Doctor selections when previewing a playlist merge.
+- Open Deezer chart playlists inside the app with ordered tracks, native playback and queue controls. Keep Open on Deezer as an optional playlist-menu action; browsing does not download the collection.
+- Retain existing playback, search, server playlists, sharing, metadata, following, podcasts and maintenance actions. No server, cache or settings migration is performed; mobile is unchanged.
+
 ## 2.3.1
 
 - Include the desktop Downtify expansion from 2.3.0, whose initial release workflow stopped before publication.

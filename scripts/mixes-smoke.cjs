@@ -12,6 +12,8 @@ module.exports=async function({desktop,page,artifacts}){
  assert.equal(await page.getByRole('button',{name:'Load more albums',exact:true}).count(),0)
  await page.getByRole('button',{name:'Create mix',exact:true}).click()
  const dialog=page.getByRole('dialog',{name:'Create your mix',exact:true})
+ // Source discovery is asynchronous; wait for the real default source before previewing.
+ await dialog.locator('.mix-sources input:checked').first().waitFor()
  await dialog.getByLabel('Mix name',{exact:true}).fill('Evening test mix')
  await dialog.getByLabel('Description',{exact:true}).fill('Artist, genre and year rules from my collection.')
  await dialog.getByRole('button',{name:'Preview mix',exact:true}).click()

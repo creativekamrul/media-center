@@ -37,6 +37,13 @@ assumptions:
     verification: Owner mock discovery was skipped because Postman CLI whoami reported signed out. A locally authored source-derived mock was used instead. Real-server maintenance/download acceptance has not been performed; it requires deliberate user operations on the configured server.
     source: postman/mocks/downtify-desktop-313/fixture.cjs; docs/DOWNTIFY-DESKTOP-UPGRADE.md
     updated_at: "2026-11-22"
+  - id: chart-playlist-in-app
+    status: supported
+    claim: Chart playlist cards resolve inside the app without opening a browser or starting a download, and retain ordered repeated songs.
+    reason: Downtify 3.9.0 api.py _resolve_url supports Deezer playlist URLs through GET /api/song/url; the current official API reference retains the array response.
+    verification: On 2026-11-22, 340 unit tests passed, including malformed, empty, unavailable, invalid-ID and library-only cases. Electron through the local simulation verified ordered queueing, native full playback/seek, no browser opening on card click, and explicit Open on Deezer from the menu. This establishes fixture behavior, not external provider availability on every deployed server.
+    source: https://github.com/henriquesebastiao/downtify/blob/3.9.0/downtify/api.py; https://downtify.henriquesebastiao.com/api-reference/; scripts/downtify-modern-smoke.cjs; artifacts/chart-playlist-simulation.ndjson
+    updated_at: "2026-11-22"
 fingerprints:
   - id: downtify-client-contract
     date: "2026-11-22"

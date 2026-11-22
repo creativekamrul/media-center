@@ -608,3 +608,14 @@ Android cached-video progress review (2026-11-10): explicit Jellyfin source-vers
 - Saved song lyrics prefer Downtify's timed/plain text after any custom binding, then fall back to LRCLIB. Podcast text is never song lyrics. Server likes use stable IDs. Metadata changes retain per-track revision/error results instead of claiming batch atomicity.
 - Administrator web-session controls expose Library Doctor checks, selected playlist/duplicate/Navidrome/Soulseek repairs, selective artwork/lyrics/metadata upgrade jobs, replacement recording candidates and native-selected audio uploads. Device tokens cannot administer the server. Retention/deletion/replacement/download changes require review; unsubscribe always keeps server files. Upgrades accept only the live server's advertised categories.
 - Acceptance uses fictional source-derived fixtures and isolated profiles; no maintenance, watch, download or retention mutation has been run against the user's configured servers. See [Downtify desktop acceptance](DOWNTIFY-DESKTOP-UPGRADE.md) for checks and remaining real-server limitations. Mobile files remain untouched by this work.
+
+
+## Desktop 2.4.0 — Downtify Listening Room
+
+- Artwork-led home with featured playback, discovery album/artist shelves, saved-collection destinations, same-server recent music/podcast shortcuts and followed-item summaries. No fabricated release counts or recommendations are introduced.
+- Contextual breadcrumbs replace the flat ten-view navigation. Collection opens albums, artists, playlists and songs; Tools retains server downloads, administrator library care and connections.
+- Playlist creation, follow creation and podcast subscription/settings use compact drawers. Podcast search and feed drafts are independent. Retention changes require explicit save and confirmation; unsubscribe continues to keep files.
+- Compact checkbox sizing, refresh without clearing current content, dismissible errors and expiring success notices address the reported management-screen defects. Doctor playlist previews retain the selected findings for the subsequent repair.
+- Existing main-process APIs, authentication, stable media identities, server configuration, settings and cache are unchanged. No live-server maintenance mutation is part of design verification. Mobile is unchanged.
+
+- Deezer chart playlists resolve through Downtify’s read-only `/api/song/url` route into an in-app track view. Source order and repeated songs are retained; native playback and queueing use existing discovery streaming. Open on Deezer remains an explicit overflow action. A malformed or unavailable resolver fails without browser fallback or download.
