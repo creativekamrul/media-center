@@ -1,0 +1,6 @@
+simulation: Desktop Downtify 3.13 compatibility
+routing: path
+mocks:
+  - name: Downtify Desktop 3.13 Contract Fixture
+    routeKey: downtify
+    path: ../mocks/downtify-desktop-313/config.yaml

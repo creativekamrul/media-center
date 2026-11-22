@@ -29,6 +29,38 @@ describe('playback coordination', () => {
   })
   afterEach(async () => { await player.shutdown(); vi.useRealTimers() })
 
+  it('keeps Downtify podcast playback and progress separate from ABS books and episodes',async()=>{
+    const target={kind:'downtify-episode' as const,serverId:'discovery',showId:'1',episodeId:'11'}
+    player.downtifyEpisode=vi.fn(async()=>({url:'http://127.0.0.1:1234/episode',position:4,duration:30}))
+    player.downtifyProgress=vi.fn(async()=>{})
+    await player.play([{target,title:'Episode',subtitle:'Show'}],0)
+    expect(player.state.kind).toBe('downtify-episode');expect(player.state.position).toBe(4)
+    expect(abs.start).not.toHaveBeenCalled();expect(nav.track).not.toHaveBeenCalled()
+    await player.command({action:'seek',value:12});await player.command({action:'stop'})
+    expect(player.downtifyProgress).toHaveBeenCalledWith(target,12,30)
+    expect(testStore.get('resume:'+progressKey(target))).toMatchObject({position:12,syncPending:false})
+    expect(progressKey(target)).not.toBe(progressKey({...target,episodeId:'12'}))
+    expect(progressKey(target)).not.toBe(progressKey({...target,kind:'podcast-episode'}))
+  })
+  it('marks new episode checkpoints pending until the server acknowledges them',async()=>{
+    const target={kind:'downtify-episode' as const,serverId:'discovery',showId:'1',episodeId:'11'}
+    player.downtifyEpisode=vi.fn(async()=>({url:'http://127.0.0.1:1234/episode',position:4,duration:30}));player.downtifyProgress=vi.fn(async()=>{})
+    await player.play([{target,title:'Episode',subtitle:'Show'}],0)
+    mpv.emit('event',{event:'property-change',name:'time-pos',data:9});await vi.advanceTimersByTimeAsync(5000)
+    expect(testStore.get('resume:'+progressKey(target))).toMatchObject({position:9,syncPending:true})
+    await player.command({action:'stop'});expect(testStore.get('resume:'+progressKey(target))).toMatchObject({position:9,syncPending:false})
+  })
+  it('preserves pending Downtify podcast progress on sync failure and honors an explicit resume choice',async()=>{
+    const target={kind:'downtify-episode' as const,serverId:'discovery',showId:'1',episodeId:'11'}
+    testStore.set('resume:'+progressKey(target),{position:18,syncPending:true})
+    player.downtifyEpisode=vi.fn(async()=>({url:'http://127.0.0.1:1234/episode',position:4,duration:30}))
+    player.downtifyProgress=vi.fn(async()=>{throw Error('offline')})
+    await player.play([{target,title:'Episode',subtitle:'Show'}],0,18)
+    expect(mpv.load).toHaveBeenCalledWith('http://127.0.0.1:1234/episode',{start:'18'})
+    await player.command({action:'stop'})
+    expect(testStore.get('resume:'+progressKey(target))).toMatchObject({position:18,syncPending:true})
+  })
+
   it('plays Downtify through native MPV without routing it to music or spoken servers',async()=>{
     player.downtifyStream=vi.fn(async()=> 'http://127.0.0.1:1234/private-capability')
     const item={target:{kind:'downtify-track' as const,serverId:'discovery',trackId:'track'},title:'Discovery',subtitle:'Artist',duration:30}

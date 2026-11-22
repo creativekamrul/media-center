@@ -2,6 +2,11 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { DesktopAPI, PlaybackState, UpdateState } from '../shared/types'
 
 const api: DesktopAPI = {
+ dtChartOpen:i=>ipcRenderer.invoke('downtify:chart-open',i),
+ onDowntifyChange:fn=>{const cb=()=>fn();ipcRenderer.on('downtify:changed',cb);return()=>ipcRenderer.removeListener('downtify:changed',cb)},
+ dtEpisodePlay:i=>ipcRenderer.invoke('downtify:episode-play',i),
+ dtPanel:i=>ipcRenderer.invoke('downtify:panel',i),dtManage:i=>ipcRenderer.invoke('downtify:manage',i),dtReplaceFile:i=>ipcRenderer.invoke('downtify:replace-file',i),
+ dtStatus:id=>ipcRenderer.invoke('downtify:status',id),dtSync:id=>ipcRenderer.invoke('downtify:sync',id),dtPair:i=>ipcRenderer.invoke('downtify:pair',i),dtPlaylist:i=>ipcRenderer.invoke('downtify:playlist',i),dtPlaylistEdit:i=>ipcRenderer.invoke('downtify:playlist-edit',i),
  exploreSources:()=>ipcRenderer.invoke('explore:sources'),savedCopies:i=>ipcRenderer.invoke('downtify:saved-copies',i),explore:source=>ipcRenderer.invoke('explore:get',source),dtWorkspace:i=>ipcRenderer.invoke('downtify:workspace',i),dtCollections:i=>ipcRenderer.invoke('downtify:collections',i),dtJobs: (id:string) => ipcRenderer.invoke('downtify:jobs',id),dtConnections:()=>ipcRenderer.invoke('downtify:connections'),dtConnect:i=>ipcRenderer.invoke('downtify:connect',i),dtTest:id=>ipcRenderer.invoke('downtify:test',id),dtRemove:id=>ipcRenderer.invoke('downtify:remove',id),dtBrowse:i=>ipcRenderer.invoke('downtify:browse',i),dtPlaylists:id=>ipcRenderer.invoke('downtify:playlists',id),dtSave:i=>ipcRenderer.invoke('downtify:save',i),
  jfPointerActive:()=>ipcRenderer.invoke('jellyfin:pointer-active'),
  jfVideoBounds:i=>ipcRenderer.invoke('jellyfin:video-bounds',i),

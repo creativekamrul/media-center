@@ -5,6 +5,7 @@ export function progressKey(target: PlayTarget): string {
     case 'downtify-track':
     case 'music-track': return JSON.stringify([target.serverId, target.kind, target.trackId])
     case 'audiobook': return JSON.stringify([target.serverId, target.kind, target.bookId])
+    case 'downtify-episode':
     case 'podcast-episode': return JSON.stringify([target.serverId, target.kind, target.showId, target.episodeId])
     case 'local-file': return JSON.stringify(['local', target.rootId, target.fileId])
     case 'radio': return JSON.stringify([target.serverId, 'radio', target.stationId])

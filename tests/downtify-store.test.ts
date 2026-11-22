@@ -1,0 +1,4 @@
+import {describe,it,expect,vi} from 'vitest'
+vi.mock('electron',()=>({safeStorage:{}}))
+import {Store} from '../src/main/store'
+describe('atomic catalog updates',()=>{it('rolls back incomplete aliases and snapshots without altering cache or preferences',()=>{const store=new Store(':memory:');try{store.set('preferences',{theme:'custom'});store.set('downtify:snapshot',{cursor:1});store.cacheSet('original-cover','keep');expect(()=>store.atomic(()=>{store.set('downtify:identity:new','new-id');store.set('downtify:snapshot',{cursor:2});throw Error('disk failure')})).toThrow('disk failure');expect(store.get('downtify:identity:new')).toBeUndefined();expect(store.get('downtify:snapshot')).toEqual({cursor:1});expect(store.get('preferences')).toEqual({theme:'custom'});expect(store.cache('original-cover')?.value).toBe('keep')}finally{store.close()}})})

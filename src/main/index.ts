@@ -138,7 +138,7 @@ else {
     powerMonitor.on('suspend',()=>{void player.suspend().catch(()=>{});void jellyfin?.pause().catch(()=>{})})
     powerMonitor.on('resume',()=>{store.cacheClear('music:');for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('system:resume')})
     const mpv = new Mpv(), local = new LocalFiles(store); downloads = new Downloads(join(app.getPath('userData'),'downloads'),store,provider); player = new Player(mpv, store, provider, local, downloads)
-    const downtify=registerDowntify(handle,store,player)
+    const downtify=registerDowntify(handle,store,player,()=>{for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('downtify:changed')})
     app.on('before-quit',()=>{void downtify.close()})
     jellyfin=registerJellyfin(handle,store,async()=>{if(player.state.status==='playing')await player.suspend()},new VideoHost(()=>window),()=>!!player.state.privateListening)
     jellyfin.on('state',state=>{if(window&&!window.isDestroyed())window.webContents.send('jellyfin:state',state)})
@@ -161,10 +161,11 @@ else {
       if(binding)return {...binding,key,saved:true,recordId:binding.id} satisfies LyricsResult
       let signature: import('../shared/lyrics').LyricsSignature | undefined
       const content=await automaticLyrics({
-        source:target.kind==='local-file'?'embedded':'navidrome',
+        source:target.kind==='local-file'?'embedded':target.kind==='downtify-track'?'downtify':'navidrome',
         assertCurrent:()=>lyricTarget(key),
         preferred:async()=>{
           if(target.kind==='local-file')return local.lyrics(target.rootId,target.fileId)
+          if(target.kind==='downtify-track')return downtify.lyrics(target.serverId,target.trackId)
           if(target.kind==='music-track'){
             const p=provider(target.serverId);if(!(p instanceof Navidrome))throw new Error('Choose a music source.')
             return p.lyrics(target.trackId)
@@ -201,7 +202,7 @@ else {
     const experienceChanged=()=>{localWatcher?.refresh();for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('experience:state',experienceSchema.parse(store.get('experience')??{}))}
     registerExperience(handle,store,player,downloads,local,localIndex,provider,()=>window!,()=>daily.inbox(),experienceChanged,async()=>{
       undo.clear();resetting=true;try{podcastAutomation?.stop();await player.command({action:'stop'});await player.edit({action:'clear'});const result=await downloads.batch(downloads.snapshot().entries.map(e=>e.id),'remove');if(result.failed.length)throw Error('Some downloads are in use. Close other players and try again.');localWatcher?.stop();windowsMedia?.stop();discord.stop();await downloads.stop();await player.shutdown();await session.defaultSession.clearCache();await session.defaultSession.clearStorageData();store.resetData('all');setTimeout(()=>{app.relaunch();app.exit(0)},150)}catch(e){resetting=false;throw e}
-    },undo)
+    },undo,downtify.provider)
     registerPodcastDiscovery(handle,store,provider,()=>window!)
     registerMixes(handle,store,local,localIndex,provider)
     registerPersonal(handle,store,player,local,downloads,provider,()=>window!,()=>{for(const w of [window,miniWindow])if(w&&!w.isDestroyed())w.webContents.send('personal:changed')})
@@ -300,7 +301,7 @@ else {
     const mediaKeys=[['MediaPlayPause','toggle'],['MediaNextTrack','next'],['MediaPreviousTrack','previous'],['MediaStop','stop']] as const
     const mediaAvailable=(ready:boolean)=>{for(const [key,action]of mediaKeys){globalShortcut.unregister(key);if(!ready)globalShortcut.register(key,()=>{void mediaCommand({action}).catch(()=>{})})}}
     mediaAvailable(false)
-    windowsMedia=new WindowsMedia(player,async item=>{const t=item.target;if(t.kind==='downtify-track')return downtify.cover(t.serverId,t.trackId);if(t.kind==='local-file')return local.cover(t.rootId,t.fileId);const id=item.cover??(t.kind==='music-track'?t.trackId:t.kind==='audiobook'?t.bookId:t.kind==='podcast-episode'?t.showId:'');return id?downloads.cover(t.serverId,id)??await provider(t.serverId).cover(id):null},mediaAvailable,{
+    windowsMedia=new WindowsMedia(player,async item=>{const t=item.target;if(t.kind==='downtify-track')return downtify.cover(t.serverId,t.trackId);if(t.kind==='downtify-episode')return downtify.cover(t.serverId,'podcast-'+t.showId);if(t.kind==='local-file')return local.cover(t.rootId,t.fileId);const id=item.cover??(t.kind==='music-track'?t.trackId:t.kind==='audiobook'?t.bookId:t.kind==='podcast-episode'?t.showId:'');return id?downloads.cover(t.serverId,id)??await provider(t.serverId).cover(id):null},mediaAvailable,{
       snapshot:()=>{const jf=jellyfinActive();if(!jf)return;const s=jf.state,i=s.queue[s.index];return {title:i?.title??'Jellyfin',subtitle:i?.subtitle??'',status:s.status,position:s.position,duration:s.duration}},
       command:async(action,value)=>{const jf=jellyfinActive();if(!jf)return;if(action==='play'&&jf.state.status==='paused'||action==='pause'&&jf.state.status==='playing')await jf.command({action:'toggle'});else if(action==='seek'&&Number.isFinite(value)&&value!>=0)await jf.command({action:'seek',value:value!});else if(['next','previous','stop'].includes(action))await jf.command({action:action as 'next'|'previous'|'stop'})},
       subscribe:fn=>{jellyfin!.on('state',fn);return()=>jellyfin!.off('state',fn)}

@@ -1,0 +1,10 @@
+version: 1
+name: Downtify Desktop 3.13 Contract Fixture
+slug: downtify-desktop-313
+protocol: http
+port: 18556
+interceptRequests: true
+scenarios:
+  - name: default
+    path: ./default.js
+    default: true

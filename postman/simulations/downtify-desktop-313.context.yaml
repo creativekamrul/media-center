@@ -1,0 +1,44 @@
+purpose:
+  stands_in_for: Downtify 3.13.0 desktop client and web-management HTTP APIs with fictional media and accounts.
+  unblocks: Additive desktop compatibility, playlists, Charts, Monitor, podcasts, lyrics, metadata, replacement and maintenance verification without changing a user server.
+assumptions:
+  - id: stable-sync-identities
+    status: supported
+    claim: The 3.13.0 client contract provides stable track IDs and cursor/ETag library changes, retaining identity through ordinary file renames.
+    reason: Pinned upstream mobile-client-contract.md and mobile_routes.py describe these semantics; actual deployment acceptance is separate.
+    verification: On 2026-11-22, HTTP regression cases retained legacy local IDs after fixture renames and rejected malformed feeds and changed server identities. SQLite rollback retained the prior snapshot, cache and settings. This establishes caller behavior under the source-derived fixture, not every server filesystem change.
+    source: https://github.com/henriquesebastiao/downtify/blob/3.13.0/docs/mobile-client-contract.md; tests/downtify-client.test.ts; tests/downtify-store.test.ts
+    updated_at: "2026-11-22"
+  - id: playlist-permissions-and-repeats
+    status: supported
+    claim: Modern playlists preserve repeated track IDs; owners and shared song editors have distinct permissions and stale membership can reject an order write.
+    reason: The pinned client contract specifies repeated occurrences, permissions and 409 responses.
+    verification: Local HTTP tests cover repeated entries, one-occurrence removal, revoked rights, follow, hide/restore and an uncertain applied write with no automatic retry. Electron exercised order, sharing and native playback against the simulation.
+    source: https://github.com/henriquesebastiao/downtify/blob/3.13.0/docs/mobile-client-contract.md; tests/downtify-client.test.ts; scripts/downtify-modern-smoke.cjs; artifacts/nov22-downtify-simulation.ndjson
+    updated_at: "2026-11-22"
+  - id: privileged-web-operations
+    status: supported
+    claim: Device tokens cannot perform the web administrator maintenance and replacement operations used here.
+    reason: The 3.13.0 client contract restricts device management; the application checks auth mode and role before these writes and the server reauthorizes them.
+    verification: The device-token HTTP case rejected maintenance and sharing without a write. Explicit maintenance category and selected-path cases passed. Native replacement upload and candidate requests passed with a fictional web-admin fixture.
+    source: https://github.com/henriquesebastiao/downtify/blob/3.13.0/docs/mobile-client-contract.md; src/main/downtify-management.ts; tests/downtify-client.test.ts; scripts/downtify-modern-smoke.cjs
+    updated_at: "2026-11-22"
+  - id: saved-podcast-file-progress
+    status: supported
+    claim: Downloaded podcast episodes have show/episode IDs, a library-relative filename and per-episode playback position; keep_files=true preserves files when unsubscribing.
+    reason: The pinned API reference defines the episode and unsubscribe contracts. Playback uses those IDs and rejects unsafe paths; no undocumented enclosure stream is assumed.
+    verification: Native MPV music and podcast playback, position advancement, seeking and episode progress PUT passed through the local simulation. Player tests isolate Downtify episode, Audiobookshelf book and Audiobookshelf episode identities and preserve unsynced checkpoints until acknowledged. Unsubscribe requests explicitly retain files.
+    source: https://github.com/henriquesebastiao/downtify/blob/3.13.0/docs/api-reference.md; scripts/downtify-modern-smoke.cjs; tests/player.test.ts; tests/downtify-client.test.ts
+    updated_at: "2026-11-22"
+  - id: deployed-server-acceptance
+    status: unknown
+    claim: Every newly exposed management flow behaves identically on the user's deployed Downtify instance and external provider configuration.
+    reason: Tests intentionally avoid writes on the user's server. Provider limits, server settings and deployed versions may differ.
+    verification: Owner mock discovery was skipped because Postman CLI whoami reported signed out. A locally authored source-derived mock was used instead. Real-server maintenance/download acceptance has not been performed; it requires deliberate user operations on the configured server.
+    source: postman/mocks/downtify-desktop-313/fixture.cjs; docs/DOWNTIFY-DESKTOP-UPGRADE.md
+    updated_at: "2026-11-22"
+fingerprints:
+  - id: downtify-client-contract
+    date: "2026-11-22"
+    commit: "upstream tag 3.13.0"
+    cli: "Postman CLI 1.73.0"

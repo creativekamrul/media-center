@@ -28,7 +28,7 @@ export function MediaSearch({close,error,embedded=false}:{close:()=>void;error:(
  },[query])
  const sourceId=(g:Discovery['entries'][number])=>`jellyfin:${g.library.serverId}:${g.library.id}`
  const sources=[...new Map([...groups.map(g=>({id:g.id,name:g.name})),...jf.map(g=>({id:sourceId(g),name:`${g.library.serverName} · ${g.library.name}`}))].map(s=>[s.id,s])).values()].sort((a,b)=>a.name.localeCompare(b.name))
- const mediaType=(kind:string)=>kind==='MusicArtist'&&type==='artist'?'artist':kind==='MusicAlbum'&&type==='album'?'album':kind==='Movie'?'movies':kind==='Series'||kind==='Episode'?'tv':kind==='audiobook'?'books':kind==='podcast-episode'?'podcasts':'music'
+ const mediaType=(kind:string)=>kind==='MusicArtist'&&type==='artist'?'artist':kind==='MusicAlbum'&&type==='album'?'album':kind==='Movie'?'movies':kind==='Series'||kind==='Episode'?'tv':kind==='audiobook'?'books':(kind==='podcast-episode'||kind==='downtify-episode')?'podcasts':'music'
  const filtered=groups.map(g=>({...g,collections:(g.collections??[]).filter(c=>type==='all'||type==='music'||type===c.kind),items:g.items.filter(i=>type==='all'||mediaType(i.target.kind)===type)})).filter(g=>(g.items.length||g.collections.length)&&(source==='all'||source===g.id))
  const filteredJf=jf.map(g=>({...g,items:g.items.filter(i=>type==='all'||mediaType(i.kind)===type)})).filter(g=>g.items.length&&(source==='all'||source===sourceId(g)))
  const count=filtered.reduce((n,g)=>n+g.items.length+g.collections.length,0)+filteredJf.reduce((n,g)=>n+g.items.length,0)

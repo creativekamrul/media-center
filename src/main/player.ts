@@ -40,6 +40,8 @@ export function rewindPosition(
 }
 
 export class Player extends EventEmitter {
+  downtifyEpisode?: (serverId:string,showId:string,episodeId:string,position?:number)=>Promise<{url:string;position:number;duration:number}>
+  downtifyProgress?: (target:Extract<PlayTarget,{kind:'downtify-episode'}>,position:number,duration:number)=>Promise<void>
   downtifyStream?: (serverId:string,trackId:string)=>Promise<string>
 
   private closing = false
@@ -80,6 +82,7 @@ export class Player extends EventEmitter {
   private serial: Promise<unknown> = Promise.resolve()
   private listened = 0
   private lastTick = Date.now()
+  private downtifySyncedPosition?: number
   private scrobbled = false
   private switchingFile = false
   private timer: NodeJS.Timeout
@@ -267,6 +270,7 @@ export class Player extends EventEmitter {
   }
   private async load(item: QueueItem, position?: number) {
     this.retryPosition=position
+    this.downtifySyncedPosition=undefined
     this.generation++
     this.state.status = 'loading'
     this.state.error = undefined
@@ -314,11 +318,11 @@ export class Player extends EventEmitter {
     await this.audioPreferences(prefs)
     this.offline = await this.downloads?.ready(item.target)
     const provider =
-      item.target.kind === 'local-file' || item.target.kind === 'downtify-track' || this.offline
+      item.target.kind === 'local-file' || item.target.kind === 'downtify-track' || item.target.kind === 'downtify-episode' || this.offline
         ? undefined
         : this.provider(item.target.serverId)
     this.state.speed =
-      item.target.kind === 'audiobook' || item.target.kind === 'podcast-episode'
+      item.target.kind === 'audiobook' || item.target.kind === 'podcast-episode' || item.target.kind === 'downtify-episode'
         ? (this.store.get<number>(`speed:${progressKey(item.target)}`) ??
           (item.target.kind==='podcast-episode'?this.store.get<import('../shared/personal-library').PersonalState>('personal-library')?.shows?.[showKey(item.target.serverId,item.target.showId)]?.speed:undefined) ??
           this.store.get<number>('profileSpeed') ??
@@ -364,6 +368,13 @@ export class Player extends EventEmitter {
         { start: String(position ?? 0) },
       )
       this.state.position = position ?? 0
+    } else if (item.target.kind === 'downtify-episode') {
+      if(!this.downtifyEpisode)throw Error('Downtify podcasts are unavailable.')
+      const episode=await this.downtifyEpisode(item.target.serverId,item.target.showId,item.target.episodeId,position)
+      const checkpoint=this.store.get<{position:number;syncPending?:boolean}>(`resume:${progressKey(item.target)}`)
+      const start=Math.max(0,Math.min(episode.duration||Infinity,position??(checkpoint?.syncPending?checkpoint.position:episode.position)))
+      this.downtifySyncedPosition=episode.position
+      this.state.duration=episode.duration;await this.mpv.load(episode.url,{start:String(start)});this.state.position=start
     } else if (item.target.kind === 'downtify-track') {
       if(!this.downtifyStream)throw Error('Downtify is unavailable.')
       this.state.duration=item.duration??0
@@ -867,12 +878,12 @@ export class Player extends EventEmitter {
     )
       return
     this.flushStats()
-    if(this.privateMode && this.target.kind!=='audiobook' && this.target.kind!=='podcast-episode')return
+    if(this.privateMode && this.target.kind!=='audiobook' && this.target.kind!=='podcast-episode'&&this.target.kind!=='downtify-episode')return
     this.store.set(`resume:${progressKey(this.target)}`, {
       position: this.state.position,
       duration: this.state.duration,
       updatedAt: Date.now(),
-      syncPending: !!this.state.syncError,
+      syncPending: this.target.kind==='downtify-episode'?(this.downtifySyncedPosition===undefined||Math.abs(this.state.position-this.downtifySyncedPosition)>.25||!!this.state.syncError):!!this.state.syncError,
     })
     if (
       this.offline &&
@@ -897,6 +908,9 @@ export class Player extends EventEmitter {
   }
   private async sync(close = false) {
     this.saveResume()
+    if(this.target?.kind==='downtify-episode'&&this.downtifyProgress){
+      try{const position=this.state.position;await this.downtifyProgress(this.target,position,this.state.duration);this.downtifySyncedPosition=position;this.state.syncError=undefined}catch{this.state.syncError='Downtify progress sync failed. Your position is saved on this device.'}this.saveResume();this.publish();return
+    }
     if (this.session) {
       const elapsed = this.privateMode ? 0 : this.listened
       try {

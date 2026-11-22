@@ -34,14 +34,14 @@ export function navidromeLyrics(raw: unknown): LyricsContent | undefined {
 
 /** Local/server lookup always runs before LRCLIB, including when LRCLIB has cached a match. */
 export async function automaticLyrics(options: {
-  source: 'embedded' | 'navidrome'
+  source: 'embedded' | 'navidrome' | 'downtify'
   preferred: () => Promise<LyricsContent | undefined>
   fallback: () => Promise<LyricsContent>
   assertCurrent: () => void
-}): Promise<LyricsContent & { source: 'embedded' | 'navidrome' | 'lrclib'; warning?: string }> {
+}): Promise<LyricsContent & { source: 'embedded' | 'navidrome' | 'downtify' | 'lrclib'; warning?: string }> {
   let preferred: LyricsContent | undefined, warning: string | undefined
   try { preferred = await options.preferred() }
-  catch { warning = options.source === 'embedded' ? 'Embedded lyrics could not be read; tried LRCLIB.' : 'Navidrome lyrics are unavailable; tried LRCLIB.' }
+  catch { warning = options.source === 'embedded' ? 'Embedded lyrics could not be read; tried LRCLIB.' : options.source==='downtify'?'Downtify lyrics are unavailable; tried LRCLIB.':'Navidrome lyrics are unavailable; tried LRCLIB.' }
   options.assertCurrent()
   if (preferred?.status === 'found' || preferred?.status === 'instrumental') return { ...preferred, source: options.source }
   const content = await options.fallback()

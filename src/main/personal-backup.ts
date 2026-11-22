@@ -124,7 +124,7 @@ export const personalExtraSchema = z
             kind: z.enum([
               'music-track',
               'audiobook',
-              'podcast-episode',
+              'podcast-episode','downtify-track','downtify-episode',
               'local-file',
               'radio','jellyfin-music','jellyfin-movie','jellyfin-episode',
             ]),

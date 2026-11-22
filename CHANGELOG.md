@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.3.0
+
+- Add Downtify 3.13 server identity, capability checks, optional device sign-in/pairing, incremental library sync and ticketed change notifications while retaining existing sessions and local track references.
+- Add server playlist creation, rename, ordering, repeated occurrences, shared editor permissions, follow/unfollow, imported-song hiding/restoration and sharing controls; retain collection artwork and bounded track rendering.
+- Add Charts, artist/playlist Monitor, Wanted releases, server podcast subscriptions and original native episode playback with independent progress and resume conflict choices.
+- Prefer Downtify song lyrics before LRCLIB, add idempotent server likes, batch metadata editing, recording replacement and native audio uploads.
+- Add administrator Library Doctor and selective artwork/lyrics/metadata upgrades with explicit server-change confirmation. No automatic cleanup, watch or download is enabled.
+- Reuse stable catalog identities in central search and Explore, use atomic catalog writes and preserve existing connections, settings, queues, history and cache. Mobile changes are deferred.
+
 ## 2.2.3
 
 - Make the Jellyfin seek strip flush with the playback bar in browsing, video and fullscreen views, without a seek ball or extra top band.

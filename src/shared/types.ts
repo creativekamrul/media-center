@@ -24,7 +24,7 @@ export type LibraryItem = MusicAlbum | Audiobook | PodcastShow
 export type ItemDetail = { kind: 'album'; item: MusicAlbum; tracks: MusicTrack[] } | { kind: 'audiobook'; item: Audiobook } | { kind: 'podcast-show'; item: PodcastShow }
 export interface Page { items: LibraryItem[]; total: number; page: number; hasMore: boolean }
 // A show is never playable. Episode playback always includes its parent show ID.
-export type PlayTarget = {kind:'downtify-track';serverId:string;trackId:string} | { kind: 'music-track'; serverId: string; trackId: string } | { kind: 'audiobook'; serverId: string; bookId: string } | { kind: 'podcast-episode'; serverId: string; showId: string; episodeId: string } | { kind: 'local-file'; serverId: 'local'; rootId: string; fileId: string } | { kind: 'radio'; serverId: string; stationId: string }
+export type PlayTarget = {kind:'downtify-episode';serverId:string;showId:string;episodeId:string} | {kind:'downtify-track';serverId:string;trackId:string} | { kind: 'music-track'; serverId: string; trackId: string } | { kind: 'audiobook'; serverId: string; bookId: string } | { kind: 'podcast-episode'; serverId: string; showId: string; episodeId: string } | { kind: 'local-file'; serverId: 'local'; rootId: string; fileId: string } | { kind: 'radio'; serverId: string; stationId: string }
 export type SpokenTarget = Extract<PlayTarget, { kind: 'audiobook' | 'podcast-episode' }>
 export interface QueueItem { target: PlayTarget; title: string; subtitle: string; cover?: string; context?: string; duration?: number }
 export interface PlaybackState {

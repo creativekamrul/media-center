@@ -12,7 +12,7 @@ export function MiniPlayer() {
   const togglePin=async()=>{setPinBusy(true);setError('');try{setPinned((await api.miniPlayer({action:'pin',pinned:!pinned})).pinned)}catch(e){setError(message(e))}finally{setPinBusy(false)}}
   const command=(c:PlayerCommand)=>void api.command(c).catch(e=>setError(message(e)))
   const item=player.queue[player.queueIndex]
-  const media=player.kind==='audiobook'?'Audiobook':player.kind==='podcast-episode'?'Podcast':player.kind==='radio'?'Radio':'Music'
+  const media=player.kind==='audiobook'?'Audiobook':(player.kind==='podcast-episode'||player.kind==='downtify-episode')?'Podcast':player.kind==='radio'?'Radio':'Music'
   const status=player.status==='loading'?'Loading':player.buffering?'Buffering':player.status==='playing'?'Playing':player.status==='paused'?'Paused':'Ready'
   return <section className="mini-player" aria-label="Mini player">
     <header className="mini-drag">

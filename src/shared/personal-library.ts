@@ -3,6 +3,7 @@ import {z} from 'zod'
 import type {QueueItem} from './types'
 const id=z.string().min(1).max(2048),text=z.string().trim().max(2000)
 export const personalTargetSchema=z.discriminatedUnion('kind',[
+ z.object({kind:z.literal('downtify-episode'),serverId:id,showId:z.string().regex(/^\d+$/),episodeId:z.string().regex(/^\d+$/)}).strict(),
  z.object({kind:z.literal('downtify-track'),serverId:id,trackId:id}).strict(), z.object({kind:z.literal('music-track'),serverId:id,trackId:id}).strict(),
  z.object({kind:z.literal('audiobook'),serverId:id,bookId:id}).strict(),
  z.object({kind:z.literal('podcast-episode'),serverId:id,showId:id,episodeId:id}).strict(),

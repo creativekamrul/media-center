@@ -4,7 +4,7 @@ import { Navidrome } from '../src/main/providers/navidrome'
 
 const found = textLyrics('[00:01.25]Embedded verse')!
 describe('automatic lyric source priority', () => {
-  it.each(['embedded', 'navidrome'] as const)('uses %s before even a cached LRCLIB match', async source => {
+  it.each(['embedded', 'navidrome', 'downtify'] as const)('uses %s before even a cached LRCLIB match', async source => {
     const fallback = vi.fn().mockResolvedValue(textLyrics('Cached LRCLIB verse'))
     expect(await automaticLyrics({ source, preferred: async () => found, fallback, assertCurrent() {} })).toEqual({ ...found, source })
     expect(fallback).not.toHaveBeenCalled()

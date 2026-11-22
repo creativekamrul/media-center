@@ -6,6 +6,7 @@ const api = window.mediaCenter
 let coverRevision=0;const coverListeners=new Set<()=>void>();api.onPersonal(()=>{coverCache.clear();coverRevision++;coverListeners.forEach(l=>l())});const subscribeCover=(l:()=>void)=>{coverListeners.add(l);return()=>{coverListeners.delete(l)}}
 const coverCache = new Map<string, Promise<string | null>>()
 function serverArtwork(serverId:string,itemId:string) {
+ if(!serverId||!itemId)return Promise.resolve(null)
  const key=JSON.stringify([serverId,itemId]);let pending=coverCache.get(key)
  if(!pending){pending=api.cover({serverId,itemId}).catch(e=>{coverCache.delete(key);throw e});coverCache.set(key,pending);if(coverCache.size>128)coverCache.delete(coverCache.keys().next().value!)}
  return pending

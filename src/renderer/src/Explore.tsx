@@ -13,7 +13,7 @@ import {MediaSearch} from './MediaSearch'
 import {ExploreCinema} from './ExploreCinema'
 import {ArtistLink} from './ArtistNavigation'
 import {Rail} from './JellyfinHub'
-const mediaKind=(r:Recommendation)=>r.item.target.kind==='audiobook'?'books':r.item.target.kind==='podcast-episode'?'podcasts':'music'
+const mediaKind=(r:Recommendation)=>r.item.target.kind==='audiobook'?'books':(r.item.target.kind==='podcast-episode'||r.item.target.kind==='downtify-episode')?'podcasts':'music'
 function savedList(key='explore-hidden'):string[]{try{const value=JSON.parse(localStorage.getItem(key)??'[]');return Array.isArray(value)?value.filter(v=>typeof v==='string').slice(0,500):[]}catch{return []}}
 export function Explore(){
  const [revision,setRevision]=useState(0),[error,setError]=useState(''),[search,setSearch]=useState(false),[type,setType]=useState('all'),[featureKey,setFeatureKey]=useState<string>()
